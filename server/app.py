@@ -130,7 +130,16 @@ async def root_redirect():
     return RedirectResponse(url="/dashboard/index.html")
 
 # Templates & Static Files
-templates = Jinja2Templates(directory=os.path.join(BASE_DIR, "templates"))
+# Resolve templates directory (check api/templates first for Vercel bundling compatibility)
+api_templates_dir = os.path.join(PROJECT_DIR, "api", "templates")
+server_templates_dir = os.path.join(BASE_DIR, "templates")
+
+if os.path.exists(api_templates_dir):
+    templates = Jinja2Templates(directory=api_templates_dir)
+elif os.path.exists(server_templates_dir):
+    templates = Jinja2Templates(directory=server_templates_dir)
+else:
+    templates = Jinja2Templates(directory=server_templates_dir)
 
 # Only mount static directories locally. On Vercel, static files are served directly by the Vercel CDN.
 if not os.getenv("VERCEL"):
