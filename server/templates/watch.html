@@ -43,99 +43,10 @@
             </div>
 
             <!-- Booking Widget Column -->
-            <div class="card booking-card">
-                <!-- Screen 1: Calendar & Slots -->
-                <div class="scheduler-container" id="schedulerMain">
-                    <div class="scheduler-profile">
-                        <div class="scheduler-avatar">
-                            <img src="/static/profile_photo.png" alt="Sheharyar">
-                        </div>
-                        <div class="scheduler-details">
-                            <h3>Sheharyar Abid</h3>
-                            <p>Founder, Sherry Automates</p>
-                        </div>
-                    </div>
-                    
-                    <div class="meeting-meta">
-                        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                        <span>10 Min Strategy Session</span>
-                    </div>
-
-                    <div class="calendar-section">
-                        <span class="calendar-title">Select a Date & Time</span>
-                        <div class="days-grid" id="daysGrid">
-                            <!-- Dynamic days will be loaded here -->
-                        </div>
-
-                        <div class="slots-container">
-                            <div class="slots-grid" id="slotsGrid">
-                                <!-- Dynamic slots will be loaded here -->
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="scheduler-actions">
-                        <button class="scheduler-btn" id="nextBtn" disabled>
-                            <span>Confirm Date & Time</span>
-                            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Screen 2: Booking Form -->
-                <div class="scheduler-container" id="schedulerFormScreen" style="display: none;">
-                    <div class="scheduler-form-screen">
-                        <button class="back-btn" id="backBtn">
-                            <svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-                            <span>Back</span>
-                        </button>
-                        
-                        <div class="scheduler-profile" style="margin-bottom: 12px;">
-                            <div class="scheduler-avatar" style="width: 36px; height: 36px;">
-                                <img src="/static/profile_photo.png" alt="Sheharyar">
-                            </div>
-                            <div class="scheduler-details">
-                                <h3 style="font-size: 14px;">Booking with Sheharyar</h3>
-                                <p style="font-size: 11px;" id="selectedSummary">Mon, Jun 28 at 10:00 AM</p>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="leadName">Your Name *</label>
-                            <input type="text" id="leadName" value="{{ name }}" required placeholder="e.g. Tyler Dawson">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="leadEmail">Your Email *</label>
-                            <input type="email" id="leadEmail" required placeholder="e.g. tyler@company.com">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="leadCompany">Company *</label>
-                            <input type="text" id="leadCompany" value="{{ company }}" required placeholder="e.g. ADknown">
-                        </div>
-
-                        <div class="scheduler-actions" style="padding-top: 8px;">
-                            <button class="scheduler-btn" id="bookBtn">
-                                <span>Schedule Meeting</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Screen 3: Success Screen -->
-                <div class="scheduler-container" id="schedulerSuccessScreen" style="display: none;">
-                    <div class="scheduler-success-screen">
-                        <div class="success-icon-wrap">
-                            <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
-                        </div>
-                        <h3>Meeting Scheduled!</h3>
-                        <p>A calendar invitation and zoom link have been sent to your email address.</p>
-                        <div class="appointment-badge" id="appointmentBadge">
-                            Mon, Jun 28 · 10:00 AM (EST)
-                        </div>
-                    </div>
-                </div>
+            <div class="card booking-card" style="padding: 0; overflow: hidden; height: 700px;">
+                <!-- Calendly Inline Widget -->
+                <div class="calendly-inline-widget" data-url="{{ calendly_url }}?background_color=1a1a1a&text_color=ffffff&primary_color=dc143c" style="min-width:320px;height:100%;width:100%;border:none;"></div>
+                <script type="text/javascript" src="https://assets.calendly.com/assets/external/widget.js" async></script>
             </div>
         </section>
     </main>
@@ -217,154 +128,16 @@
             }));
         });
 
-        // Custom Scheduler Logic
-        const daysGrid = document.getElementById('daysGrid');
-        const slotsGrid = document.getElementById('slotsGrid');
-        const nextBtn = document.getElementById('nextBtn');
-        const backBtn = document.getElementById('backBtn');
-        const bookBtn = document.getElementById('bookBtn');
-        
-        const mainScreen = document.getElementById('schedulerMain');
-        const formScreen = document.getElementById('schedulerFormScreen');
-        const successScreen = document.getElementById('schedulerSuccessScreen');
-        
-        const selectedSummary = document.getElementById('selectedSummary');
-        const appointmentBadge = document.getElementById('appointmentBadge');
-        
-        let selectedDate = null;
-        let selectedTime = null;
-        
-        // Generate next 5 weekdays
-        function generateWeekdays() {
-            const weekdays = [];
-            const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-            let current = new Date();
-            
-            while (weekdays.length < 5) {
-                current.setDate(current.getDate() + 1);
-                // Skip Sat (6) and Sun (0)
-                if (current.getDay() !== 0 && current.getDay() !== 6) {
-                    weekdays.push({
-                        dayName: daysOfWeek[current.getDay()],
-                        dateNum: current.getDate(),
-                        month: months[current.getMonth()],
-                        year: current.getFullYear(),
-                        fullString: `${daysOfWeek[current.getDay()]}, ${months[current.getMonth()]} ${current.getDate()}`
-                    });
-                }
+        // Calendly Event Listener
+        window.addEventListener("message", function(e) {
+            if (e.origin === "https://calendly.com" && e.data.event === "calendly.event_scheduled") {
+                console.log("Calendly event booked:", e.data);
+                logEvent('meeting_booked', {
+                    event_uri: e.data.payload.event.uri,
+                    invitee_uri: e.data.payload.invitee.uri
+                });
             }
-            return weekdays;
-        }
-        
-        const weekdays = generateWeekdays();
-        const baseSlots = ["9:00 AM", "10:30 AM", "11:15 AM", "1:30 PM", "3:00 PM", "4:30 PM"];
-        
-        // Render Days
-        weekdays.forEach((day, index) => {
-            const btn = document.createElement('button');
-            btn.className = 'day-btn';
-            if (index === 0) btn.classList.add('active');
-            btn.innerHTML = `
-                <span class="day-name">${day.dayName}</span>
-                <span class="day-date">${day.dateNum}</span>
-            `;
-            
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('.day-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                selectedDate = day;
-                loadSlotsForDay(day);
-            });
-            
-            daysGrid.appendChild(btn);
         });
-        
-        // Set initial selected date
-        selectedDate = weekdays[0];
-        
-        function loadSlotsForDay(day) {
-            if (!slotsGrid) return;
-            slotsGrid.innerHTML = '';
-            selectedTime = null;
-            if (nextBtn) nextBtn.disabled = true;
-            
-            // Add slight variation to mock slots
-            const hourOffset = (day.dateNum % 3) - 1; // -1, 0, or 1
-            const slots = baseSlots.map(time => {
-                if (hourOffset === 0) return time;
-                const [hourMin, ampm] = time.split(' ');
-                let [h, m] = hourMin.split(':');
-                let newH = parseInt(h) + hourOffset;
-                if (newH > 12) newH -= 12;
-                if (newH <= 0) newH += 12;
-                return `${newH}:${m} ${ampm}`;
-            });
-            
-            slots.forEach(time => {
-                const btn = document.createElement('button');
-                btn.className = 'slot-btn';
-                btn.textContent = time;
-                
-                btn.addEventListener('click', () => {
-                    document.querySelectorAll('.slot-btn').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                    selectedTime = time;
-                    if (nextBtn) nextBtn.disabled = false;
-                });
-                
-                slotsGrid.appendChild(btn);
-            });
-        }
-        
-        // Initial load of slots
-        loadSlotsForDay(selectedDate);
-        
-        // Navigation events
-        if (nextBtn) {
-            nextBtn.addEventListener('click', () => {
-                if (mainScreen) mainScreen.style.display = 'none';
-                if (formScreen) formScreen.style.display = 'flex';
-                if (selectedSummary) selectedSummary.textContent = `${selectedDate.fullString} at ${selectedTime}`;
-            });
-        }
-        
-        if (backBtn) {
-            backBtn.addEventListener('click', () => {
-                if (formScreen) formScreen.style.display = 'none';
-                if (mainScreen) mainScreen.style.display = 'flex';
-            });
-        }
-        
-        if (bookBtn) {
-            bookBtn.addEventListener('click', async () => {
-                const nameVal = document.getElementById('leadName').value.trim();
-                const emailVal = document.getElementById('leadEmail').value.trim();
-                const companyVal = document.getElementById('leadCompany').value.trim();
-                
-                if (!nameVal || !emailVal) {
-                    alert("Please fill in all required fields.");
-                    return;
-                }
-                
-                bookBtn.disabled = true;
-                bookBtn.textContent = "Scheduling...";
-                
-                // Log meeting booked event in the portal database!
-                await logEvent('meeting_booked', {
-                    date: selectedDate.fullString,
-                    time: selectedTime,
-                    prospect_name: nameVal,
-                    prospect_email: emailVal,
-                    prospect_company: companyVal
-                });
-                
-                // Transition to success screen
-                if (formScreen) formScreen.style.display = 'none';
-                if (successScreen) successScreen.style.display = 'flex';
-                if (appointmentBadge) appointmentBadge.textContent = `${selectedDate.fullString} · ${selectedTime} (EST)`;
-            });
-        }
     </script>
 </body>
 </html>

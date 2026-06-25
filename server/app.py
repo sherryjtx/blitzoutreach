@@ -73,6 +73,9 @@ else:
     except Exception as e:
         logger.error(f"❌ Failed to initialize Supabase client: {e}")
 
+# Calendly Configuration
+CALENDLY_URL = os.getenv("CALENDLY_URL", "https://calendly.com/sherryjtx9")
+
 def seed_database_if_empty():
     try:
         leads_res = supabase.table("leads").select("video_id", count="exact").limit(1).execute()
@@ -210,7 +213,8 @@ async def watch_video(video_id: str, request: Request):
                 "company": company,
                 "video_url": video_url,
                 "company_logo": company_logo,
-                "video_id": video_id
+                "video_id": video_id,
+                "calendly_url": CALENDLY_URL
             }
         )
     except HTTPException as http_err:
