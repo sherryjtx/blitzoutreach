@@ -6,10 +6,14 @@
 }
 
 body {
-    font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    background-color: #030308;
-    color: #f1f5f9;
+    font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background-color: #040406;
+    color: #FAFAFA;
     min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 24px;
     overflow-x: hidden;
     position: relative;
     line-height: 1.5;
@@ -18,10 +22,7 @@ body {
 /* Background glows */
 .glow-container {
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    inset: 0;
     overflow: hidden;
     z-index: -1;
     pointer-events: none;
@@ -30,539 +31,365 @@ body {
 .glow-orb {
     position: absolute;
     border-radius: 50%;
-    filter: blur(120px);
+    filter: blur(140px);
     opacity: 0.15;
+    mix-blend-mode: screen;
 }
 
 .orb-1 {
-    width: 500px;
-    height: 500px;
-    background: radial-gradient(circle, #CC2222 0%, rgba(204,34,34,0) 70%);
-    top: -100px;
-    right: -100px;
-}
-
-.orb-2 {
     width: 600px;
     height: 600px;
-    background: radial-gradient(circle, #8B1A1A 0%, rgba(139,26,26,0) 70%);
-    bottom: -200px;
-    left: -200px;
+    background: radial-gradient(circle, #CC2222 0%, rgba(204,34,34,0) 70%);
+    top: 25%;
+    left: 50%;
+    transform: translate(-50%, -50%);
 }
 
-/* Header styling */
-.app-header {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 24px 32px;
+/* Centered card container */
+.watch-card {
+    width: 100%;
+    max-width: 900px;
+    background: rgba(255, 255, 255, 0.015);
+    border: 1px solid rgba(255, 255, 255, 0.045);
+    border-radius: 20px;
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.035), 0 24px 60px rgba(0, 0, 0, 0.6);
+    padding: 32px 48px 48px;
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
     align-items: center;
+    position: relative;
+    z-index: 10;
+    text-align: center;
+}
+
+@media (max-width: 640px) {
+    body {
+        padding: 12px;
+    }
+    .watch-card {
+        padding: 24px 20px 32px;
+    }
+}
+
+/* Co-branding header */
+.co-brand-header {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    margin-bottom: 40px;
 }
 
 .logo-area {
     display: flex;
     align-items: center;
-    gap: 12px;
-}
-
-.brand-logo {
-    font-size: 18px;
-    font-weight: 700;
-    letter-spacing: -0.5px;
-    background: linear-gradient(135deg, #f8fafc 0%, #cbd5e1 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    gap: 10px;
 }
 
 .company-logo {
-    height: 28px;
+    height: 24px;
     object-fit: contain;
+    mix-blend-mode: screen;
 }
 
 .logo-divider {
-    color: #475569;
-    font-size: 16px;
+    color: rgba(255, 255, 255, 0.3);
+    font-size: 14px;
     font-weight: 300;
 }
 
-/* Content Layout */
-.content-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 32px 64px 32px;
+.client-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.65);
 }
 
+/* Title & Subtitle */
 .intro-section {
-    margin-bottom: 40px;
-    max-width: 800px;
+    margin-bottom: 32px;
+    max-width: 600px;
 }
 
 .personalized-title {
-    font-size: 36px;
-    font-weight: 700;
-    letter-spacing: -1px;
-    line-height: 1.2;
-    margin-bottom: 12px;
+    font-size: 2.25rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.15;
+    margin-bottom: 8px;
+    color: #FFF;
 }
 
-.gradient-text {
-    background: linear-gradient(135deg, #E63939 0%, #CC2222 100%);
+.personalized-title span {
+    background: linear-gradient(135deg, #FFF 30%, #FF4D4D 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 
 .personalized-subtitle {
-    font-size: 16px;
-    color: #94a3b8;
+    font-size: 0.9375rem;
+    color: rgba(255, 255, 255, 0.65);
     font-weight: 400;
 }
 
-/* Workspace Grid (Bento style) */
-.workspace-grid {
-    display: grid;
-    grid-template-columns: 1.4fr 1fr;
-    gap: 28px;
-    align-items: start;
-}
-
-/* Translucent Cards */
-.card {
-    background: rgba(15, 23, 42, 0.45);
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    border-radius: 16px;
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    overflow: hidden;
-    box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5);
-    transition: border-color 0.3s ease;
-}
-
-.card:hover {
-    border-color: rgba(255, 255, 255, 0.12);
-}
-
-/* Video Card specifics */
-.video-card {
-    padding: 0;
-}
-
+/* Video Player Wrapper */
 .video-wrapper {
     position: relative;
-    padding-top: 56.25%; /* 16:9 Aspect Ratio */
-    background-color: #020205;
+    width: 100%;
+    aspect-ratio: 16/9;
+    background-color: #000;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.04), 0 20px 48px -10px rgba(0, 0, 0, 0.5);
+    overflow: hidden;
+    margin-bottom: 32px;
 }
 
 .video-wrapper video {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+}
+
+/* Circular Webcam overlay */
+.webcam-overlay {
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    border: 0;
-}
-
-/* Booking Card specifics */
-.booking-card {
-    display: flex;
-    flex-direction: column;
-    height: 600px;
-}
-
-.booking-header {
-    padding: 24px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.booking-header h3 {
-    font-size: 18px;
-    font-weight: 600;
-    margin-bottom: 4px;
-}
-
-.booking-header p {
-    font-size: 14px;
-    color: #94a3b8;
-}
-
-.calendly-embed-container {
-    flex-grow: 1;
-    overflow: hidden;
-    background-color: transparent;
-}
-
-.calendly-embed-container iframe {
-    width: 100%;
-    height: 100%;
-}
-
-/* Responsive breakdowns */
-@media (max-width: 968px) {
-    .workspace-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .booking-card {
-        height: 550px;
-    }
-    
-    .personalized-title {
-        font-size: 28px;
-    }
-    
-    .app-header {
-        padding: 20px 16px;
-    }
-    
-    .content-container {
-        padding: 0 16px 40px 16px;
-    }
-}
-
-/* Custom Booking Scheduler */
-.scheduler-container {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    padding: 24px;
-    background: transparent;
-}
-
-.scheduler-profile {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    margin-bottom: 20px;
-}
-
-.scheduler-avatar {
-    width: 52px;
-    height: 52px;
+    bottom: 16px;
+    left: 16px;
+    width: 76px;
+    height: 76px;
     border-radius: 50%;
+    border: 2px solid #FFF;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
     overflow: hidden;
-    border: 2px solid #CC2222;
-    box-shadow: 0 0 15px rgba(204, 34, 34, 0.25);
-    flex-shrink: 0;
+    z-index: 10;
 }
 
-.scheduler-avatar img {
+.webcam-overlay img {
     width: 100%;
     height: 100%;
     object-fit: cover;
 }
 
-.scheduler-details h3 {
-    font-size: 16px;
-    font-weight: 700;
-    color: #f1f5f9;
-    margin-bottom: 2px;
-}
-
-.scheduler-details p {
-    font-size: 13px;
-    color: #94a3b8;
-}
-
-.meeting-meta {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 20px;
-    padding: 10px 14px;
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.04);
-    border-radius: 10px;
-    font-size: 13px;
-    color: #cbd5e1;
-}
-
-.meeting-meta svg {
-    width: 16px;
-    height: 16px;
-    stroke: #CC2222;
-    fill: none;
-    stroke-width: 2;
-}
-
-/* Calendar Section */
-.calendar-section {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    flex-grow: 1;
-}
-
-.calendar-title {
-    font-size: 13px;
-    font-weight: 600;
-    color: #f1f5f9;
-}
-
-.days-grid {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 6px;
-}
-
-.day-btn {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 8px 4px;
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.day-btn:hover {
-    background: rgba(255, 255, 255, 0.05);
-    border-color: rgba(255, 255, 255, 0.12);
-}
-
-.day-btn.active {
-    background: rgba(204, 34, 34, 0.12);
-    border-color: #CC2222;
-}
-
-.day-name {
-    font-size: 9px;
-    text-transform: uppercase;
-    color: #94a3b8;
-    margin-bottom: 2px;
-    letter-spacing: 0.5px;
-}
-
-.day-date {
-    font-size: 15px;
-    font-weight: 700;
-    color: #f1f5f9;
-}
-
-.day-btn.active .day-name {
-    color: #E63939;
-}
-
-.day-btn.active .day-date {
-    color: #fff;
-}
-
-/* Time Slots */
-.slots-container {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin-top: 4px;
-}
-
-.slots-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
-    max-height: 140px;
-    overflow-y: auto;
-    padding-right: 4px;
-}
-
-/* Scrollbar styling */
-.slots-grid::-webkit-scrollbar {
-    width: 4px;
-}
-.slots-grid::-webkit-scrollbar-track {
-    background: rgba(255,255,255,0.01);
-}
-.slots-grid::-webkit-scrollbar-thumb {
-    background: rgba(255,255,255,0.08);
-    border-radius: 2px;
-}
-
-.slot-btn {
-    padding: 10px;
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    border-radius: 8px;
-    color: #cbd5e1;
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    text-align: center;
-    transition: all 0.15s ease;
-}
-
-.slot-btn:hover {
-    background: rgba(255, 255, 255, 0.05);
-    border-color: rgba(255, 255, 255, 0.12);
-}
-
-.slot-btn.active {
-    background: #CC2222;
-    border-color: #CC2222;
-    color: #fff;
-    box-shadow: 0 0 12px rgba(204, 34, 34, 0.25);
-}
-
-/* Actions */
-.scheduler-actions {
-    margin-top: auto;
-    padding-top: 12px;
-}
-
-.scheduler-btn {
-    width: 100%;
-    padding: 12px;
-    background: #CC2222;
-    border: none;
-    border-radius: 8px;
-    color: #fff;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
+/* Custom Play Overlay */
+.play-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.3);
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-}
-
-.scheduler-btn:hover {
-    background: #E63939;
-    box-shadow: 0 4px 15px rgba(204, 34, 34, 0.3);
-    transform: translateY(-1px);
-}
-
-.scheduler-btn:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-    transform: none !important;
-    box-shadow: none !important;
-}
-
-/* Form Screen */
-.scheduler-form-screen {
-    display: none;
-    flex-direction: column;
-    gap: 14px;
-    height: 100%;
-    animation: fadeIn 0.3s ease;
-}
-
-.back-btn {
-    background: none;
-    border: none;
-    color: #94a3b8;
-    font-size: 13px;
     cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 0;
-    margin-bottom: 4px;
-    align-self: flex-start;
-    transition: color 0.15s;
+    z-index: 5;
+    transition: opacity 300ms ease;
 }
 
-.back-btn:hover {
-    color: #f1f5f9;
+.play-overlay.hidden {
+    opacity: 0;
+    pointer-events: none;
 }
 
-.back-btn svg {
-    width: 16px;
-    height: 16px;
-    fill: none;
-    stroke: currentColor;
-    stroke-width: 2;
-}
-
-.form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-
-.form-group label {
-    font-size: 12px;
-    font-weight: 500;
-    color: #94a3b8;
-}
-
-.form-group input {
-    padding: 10px 12px;
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 8px;
-    color: #f1f5f9;
-    font-size: 13px;
-    font-family: inherit;
-    transition: all 0.2s;
-}
-
-.form-group input:focus {
-    outline: none;
-    border-color: #CC2222;
-    background: rgba(255, 255, 255, 0.04);
-    box-shadow: 0 0 0 3px rgba(204, 34, 34, 0.15);
-}
-
-/* Success Screen */
-.scheduler-success-screen {
-    display: none;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    height: 100%;
-    padding: 20px;
-    animation: fadeIn 0.4s ease;
-}
-
-.success-icon-wrap {
-    width: 60px;
-    height: 60px;
+.play-btn {
+    width: 64px;
+    height: 64px;
     border-radius: 50%;
-    background: rgba(34, 197, 94, 0.1);
-    border: 2px solid #22C55E;
+    background: rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #22C55E;
-    margin-bottom: 20px;
-    box-shadow: 0 0 20px rgba(34, 197, 94, 0.2);
+    transition: all 200ms ease;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
 }
 
-.success-icon-wrap svg {
-    width: 28px;
-    height: 28px;
-    fill: none;
+.play-overlay:hover .play-btn {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+}
+
+.play-btn svg {
+    width: 22px;
+    height: 22px;
+    fill: #FFF;
+    margin-left: 3px;
+}
+
+/* Sender Info Row */
+.sender-info-block {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.sender-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 1.5px solid rgba(255, 255, 255, 0.1);
+}
+
+.sender-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.sender-details {
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+}
+
+.sender-name {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #FFF;
+    line-height: 1.2;
+}
+
+.sender-title {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.5);
+    margin-top: 1px;
+}
+
+/* Booking Button */
+.book-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: #CC2222;
+    color: #FFF;
+    font-family: 'Outfit', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    padding: 14px 36px;
+    border-radius: 9999px;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(204, 34, 34, 0.35), inset 0 1px 0 rgba(255,255,255,0.15);
+    transition: all 250ms cubic-bezier(0.16, 1, 0.3, 1);
+    margin-bottom: 16px;
+    text-decoration: none;
+}
+
+.book-btn:hover {
+    background: #FF4D4D;
+    transform: translateY(-1.5px);
+    box-shadow: 0 6px 24px rgba(204, 34, 34, 0.5), inset 0 1px 0 rgba(255,255,255,0.25);
+}
+
+.book-btn:active {
+    transform: scale(0.97) translateY(0);
+}
+
+.book-btn svg {
+    width: 18px;
+    height: 18px;
     stroke: currentColor;
-    stroke-width: 2.5;
+    fill: none;
+    stroke-width: 2.25;
 }
 
-.scheduler-success-screen h3 {
-    font-size: 18px;
-    font-weight: 700;
-    color: #f1f5f9;
-    margin-bottom: 8px;
+/* Muted secondary texts */
+.secondary-text {
+    font-size: 11.5px;
+    color: rgba(255, 255, 255, 0.4);
 }
 
-.scheduler-success-screen p {
-    font-size: 13px;
-    color: #94a3b8;
-    line-height: 1.5;
-    margin-bottom: 20px;
+/* Booking modal overlay */
+.booking-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 300ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.appointment-badge {
-    padding: 10px 14px;
-    background: rgba(204, 34, 34, 0.08);
-    border: 1px solid rgba(204, 34, 34, 0.15);
-    border-radius: 8px;
-    font-size: 13px;
-    color: #E63939;
-    font-weight: 500;
+.booking-modal.open {
+    opacity: 1;
+    pointer-events: auto;
 }
 
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(6px); }
-    to { opacity: 1; transform: translateY(0); }
+.modal-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
 }
+
+.modal-content {
+    position: relative;
+    width: 90%;
+    max-width: 840px;
+    height: 700px;
+    background: #111113;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    overflow: hidden;
+    z-index: 10;
+    transform: translateY(24px) scale(0.97);
+    transition: transform 300ms cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
+}
+
+.booking-modal.open .modal-content {
+    transform: translateY(0) scale(1);
+}
+
+.close-modal-btn {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.6);
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 100;
+    transition: all 200ms;
+}
+
+.close-modal-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
+/* Animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(16px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.intro-section, .video-wrapper, .sender-info-block, .book-btn, .secondary-text {
+    animation: fadeInUp 600ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.intro-section { animation-delay: 50ms; }
+.video-wrapper { animation-delay: 120ms; }
+.sender-info-block { animation-delay: 180ms; }
+.book-btn { animation-delay: 240ms; }
+.secondary-text { animation-delay: 280ms; }

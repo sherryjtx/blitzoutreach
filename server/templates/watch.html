@@ -6,69 +6,116 @@
     <title>Quick Video for {{ name }} - Sherry Automates</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/static/style.css?v=2.1">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Geist:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css?v=2.2">
 </head>
 <body>
     <div class="glow-container">
         <div class="glow-orb orb-1"></div>
-        <div class="glow-orb orb-2"></div>
     </div>
 
-    <header class="app-header">
-        <div class="logo-area">
-            <img src="/static/logo_wordmark.png" alt="Sherry Automates" class="company-logo" style="mix-blend-mode: screen; height: 28px;">
-            {% if company_logo %}
-                <span class="logo-divider">×</span>
-                <img src="{{ company_logo }}" alt="{{ company }}" class="company-logo">
-            {% endif %}
-        </div>
-    </header>
+    <div class="watch-card">
+        <!-- Co-branding Header -->
+        <header class="co-brand-header">
+            <div class="logo-area">
+                <img src="/static/logo_wordmark.png" alt="Sherry Automates" class="company-logo" style="mix-blend-mode: screen; height: 24px;">
+                {% if company_logo %}
+                    <span class="logo-divider">×</span>
+                    <img src="{{ company_logo }}" alt="{{ company }}" class="company-logo" style="height: 24px;">
+                {% else %}
+                    <span class="logo-divider">×</span>
+                    <span class="client-name">{{ company }}</span>
+                {% endif %}
+            </div>
+        </header>
 
-    <main class="content-container">
+        <!-- Intro Greeting Section -->
         <section class="intro-section">
-            <h1 class="personalized-title">Hey <span class="gradient-text">{{ name }}</span>, I recorded this breakdown for you</h1>
-            <p class="personalized-subtitle">A customized look at how we can optimize operations at {{ company }}.</p>
+            <h1 class="personalized-title">Hey <span>{{ name.split(' ')[0] }}</span>,</h1>
+            <p class="personalized-subtitle">I put together a quick breakdown for {{ company }}</p>
         </section>
 
-        <section class="workspace-grid">
-            <!-- Video Player Column -->
-            <div class="card video-card">
-                <div class="video-wrapper">
-                    <video id="outreachVideo" controls poster="/static/poster_placeholder.png" playsinline>
-                        <source src="{{ video_url }}" type="video/mp4">
-                        Your browser does not support the video tag.
-                    </video>
-                </div>
+        <!-- Video Player Column -->
+        <div class="video-wrapper">
+            <video id="outreachVideo" controls poster="/static/poster_placeholder.png" playsinline>
+                <source src="{{ video_url }}" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+            <!-- Webcam bubble overlay -->
+            <div class="webcam-overlay">
+                <img src="/static/profile_photo.png" alt="Sheharyar">
             </div>
+        </div>
 
-            <!-- Booking Widget Column -->
-            <div class="card booking-card" style="padding: 0; overflow: hidden; height: 700px;">
-                <!-- Calendly Inline Widget -->
-                <div class="calendly-inline-widget" data-url="{{ calendly_url }}?background_color=1a1a1a&text_color=ffffff&primary_color=dc143c" style="min-width:320px;height:100%;width:100%;border:none;"></div>
-                <script type="text/javascript" src="https://assets.calendly.com/assets/external/widget.js" async></script>
+        <!-- Sender Profile Info -->
+        <div class="sender-info-block">
+            <div class="sender-avatar">
+                <img src="/static/profile_photo.png" alt="Sheharyar">
             </div>
-        </section>
-    </main>
+            <div class="sender-details">
+                <span class="sender-name">Sheharyar A.</span>
+                <span class="sender-title">Founder, Sherry Automates</span>
+            </div>
+        </div>
 
-    <!-- Tracking Script -->
+        <!-- Booking CTA (Triggers smooth Modal) -->
+        <button class="book-btn" id="bookCallBtn">
+            <span>Book a 30-min call</span>
+            <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2.5" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        </button>
+
+        <p class="secondary-text">or reply to the email — I read every one</p>
+    </div>
+
+    <!-- Booking Modal (Glassmorphic) -->
+    <div class="booking-modal" id="bookingModal">
+        <div class="modal-overlay" id="modalOverlay"></div>
+        <div class="modal-content">
+            <button class="close-modal-btn" id="closeModalBtn" title="Close">
+                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            <!-- Calendly Inline Widget -->
+            <div class="calendly-inline-widget" data-url="{{ calendly_url }}?background_color=1a1a1a&text_color=ffffff&primary_color=dc143c" style="min-width:320px;height:100%;width:100%;"></div>
+        </div>
+    </div>
+
+    <!-- Calendly widget javascript -->
+    <script type="text/javascript" src="https://assets.calendly.com/assets/external/widget.js" async></script>
+
+    <!-- Interactive Scripting -->
     <script>
         const video = document.getElementById('outreachVideo');
+        const bookCallBtn = document.getElementById('bookCallBtn');
+        const bookingModal = document.getElementById('bookingModal');
+        const modalOverlay = document.getElementById('modalOverlay');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        
         const videoId = "{{ video_id }}";
         let watched25 = false;
         let watched50 = false;
         let watched75 = false;
         let watched100 = false;
-        let timeSpentStart = Date.now();
 
-        // Send event to backend
+        // Modal triggers
+        if (bookCallBtn && bookingModal) {
+            bookCallBtn.addEventListener('click', () => {
+                bookingModal.classList.add('open');
+            });
+        }
+        
+        const closeModal = () => {
+            bookingModal.classList.remove('open');
+        };
+        
+        if (modalOverlay) modalOverlay.addEventListener('click', closeModal);
+        if (closeModalBtn) closeModalBtn.addEventListener('click', closeModal);
+
+        // Tracking events to Supabase
         async function logEvent(eventType, metadata = {}) {
             try {
                 await fetch('/track', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         video_id: videoId,
                         event_type: eventType,
@@ -81,16 +128,9 @@
             }
         }
 
-        // Track Video Events
         if (video) {
-            video.addEventListener('play', () => {
-                logEvent('play');
-            });
-
-            video.addEventListener('pause', () => {
-                logEvent('pause');
-            });
-
+            video.addEventListener('play', () => logEvent('play'));
+            video.addEventListener('pause', () => logEvent('pause'));
             video.addEventListener('timeupdate', () => {
                 if (!video.duration) return;
                 const progress = (video.currentTime / video.duration) * 100;
@@ -107,35 +147,26 @@
                     watched75 = true;
                     logEvent('progress_75');
                 }
-            });
-
-            video.addEventListener('ended', () => {
-                if (!watched100) {
+                if (progress >= 98 && !watched100) {
                     watched100 = true;
-                    logEvent('completed');
+                    logEvent('progress_100');
                 }
             });
         }
 
-        // Track time spent on page when user leaves
-        window.addEventListener('beforeunload', () => {
-            const timeSpentSec = Math.round((Date.now() - timeSpentStart) / 1000);
-            // Fire beacon (more reliable during unload)
-            navigator.sendBeacon('/track-beacon', JSON.stringify({
-                video_id: videoId,
-                event_type: 'time_spent',
-                metadata: { seconds: timeSpentSec }
-            }));
-        });
+        // Calendly telemetry callbacks
+        function isCalendlyEvent(e) {
+            return e.origin === "https://calendly.com" && e.data.event && e.data.event.indexOf("calendly.") === 0;
+        }
 
-        // Calendly Event Listener
         window.addEventListener("message", function(e) {
-            if (e.origin === "https://calendly.com" && e.data.event === "calendly.event_scheduled") {
-                console.log("Calendly event booked:", e.data);
-                logEvent('meeting_booked', {
-                    event_uri: e.data.payload.event.uri,
-                    invitee_uri: e.data.payload.invitee.uri
-                });
+            if (isCalendlyEvent(e)) {
+                if (e.data.event === "calendly.event_scheduled") {
+                    logEvent('booked', { invitee_uri: e.data.payload.invitee.uri, event_uri: e.data.payload.event.uri });
+                    setTimeout(() => {
+                        closeModal();
+                    }, 1500);
+                }
             }
         });
     </script>
