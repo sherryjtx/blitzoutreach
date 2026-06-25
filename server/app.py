@@ -61,11 +61,14 @@ logger = logging.getLogger("BlitzOutreachPortal")
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY") or os.getenv("SUPABASE_ANON_KEY")
 
+supabase = None
 if not SUPABASE_URL or not SUPABASE_KEY:
-    logger.error("❌ SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY/ANON_KEY must be set in .env")
-    sys.exit(1)
-
-supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+    logger.error("❌ SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY/ANON_KEY must be set in environment variables")
+else:
+    try:
+        supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+    except Exception as e:
+        logger.error(f"❌ Failed to initialize Supabase client: {e}")
 
 def seed_database_if_empty():
     try:
@@ -128,9 +131,12 @@ async def root_redirect():
 
 # Templates & Static Files
 templates = Jinja2Templates(directory=os.path.join(BASE_DIR, "templates"))
-app.mount("/static", StaticFiles(directory=os.path.join(BASE_DIR, "static")), name="static")
-app.mount("/dashboard", StaticFiles(directory=os.path.join(PROJECT_DIR, "dashboard")), name="dashboard")
-app.mount("/assets", StaticFiles(directory=os.path.join(PROJECT_DIR, "assets")), name="assets")
+
+# Only mount static directories locally. On Vercel, static files are served directly by the Vercel CDN.
+if not os.getenv("VERCEL"):
+    app.mount("/static", StaticFiles(directory=os.path.join(BASE_DIR, "static")), name="static")
+    app.mount("/dashboard", StaticFiles(directory=os.path.join(PROJECT_DIR, "dashboard")), name="dashboard")
+    app.mount("/assets", StaticFiles(directory=os.path.join(PROJECT_DIR, "assets")), name="assets")
 
 # Models for tracking payload
 class TrackingPayload(BaseModel):
@@ -144,6 +150,11 @@ async def watch_video(video_id: str, request: Request):
     """
     Renders the personalized video page for a lead.
     """
+    if not supabase:
+        raise HTTPException(
+            status_code=500,
+            detail="Supabase is not configured. Please add SUPABASE_URL and SUPABASE_ANON_KEY (or SUPABASE_SERVICE_ROLE_KEY) to your Vercel Project Environment Variables."
+        )
     try:
         response = supabase.table("leads").select("name, company, video_url, company_logo").eq("video_id", video_id).execute()
         if not response.data:
