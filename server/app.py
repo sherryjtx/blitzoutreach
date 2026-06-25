@@ -14,7 +14,10 @@ from starlette.middleware.base import BaseHTTPMiddleware
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_DIR = os.path.dirname(BASE_DIR)
 WORKSPACE_DIR = os.path.dirname(PROJECT_DIR)
-load_dotenv(dotenv_path=os.path.join(WORKSPACE_DIR, ".env"))
+try:
+    load_dotenv(dotenv_path=os.path.join(WORKSPACE_DIR, ".env"))
+except Exception as e:
+    pass
 
 app = FastAPI(title="BlitzOutreach Video Portal")
 
