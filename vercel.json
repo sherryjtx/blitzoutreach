@@ -20,19 +20,19 @@
     },
     {
       "src": "/v/(.*)",
-      "dest": "/api/index.py"
+      "dest": "/api/index"
     },
     {
       "src": "/track(.*)",
-      "dest": "/api/index.py"
+      "dest": "/api/index"
     },
     {
       "src": "/api/(.*)",
-      "dest": "/api/index.py"
+      "dest": "/api/index"
     },
     {
       "src": "/(.*)",
-      "dest": "/api/index.py"
+      "dest": "/api/index"
     }
   ]
 }
