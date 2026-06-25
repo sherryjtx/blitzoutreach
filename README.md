@@ -2,6 +2,10 @@
 
 BlitzOutreach is a standalone, cloud-native video personalization and outreach pipeline designed to generate and host 500-600 custom video landing pages per day for **$0.00/month** in cloud fees.
 
+It is deployed on Vercel at:
+- Dashboard: https://dashboard.sherryautomates.com
+- Video Watch Portal: https://video.sherryautomates.com
+
 It is completely independent of the existing `AutoLoom` project.
 
 ---
