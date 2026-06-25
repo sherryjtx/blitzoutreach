@@ -203,9 +203,9 @@ async def watch_video(video_id: str, request: Request):
             company_logo = f"https://logo.clearbit.com/{clean_company}.com"
             
         return templates.TemplateResponse(
-            "watch.html",
-            {
-                "request": request,
+            request=request,
+            name="watch.html",
+            context={
                 "name": name,
                 "company": company,
                 "video_url": video_url,
