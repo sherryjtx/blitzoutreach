@@ -161,58 +161,63 @@ async def watch_video(video_id: str, request: Request):
     """
     Renders the personalized video page for a lead.
     """
-    if not supabase:
-        raise HTTPException(
-            status_code=500,
-            detail="Supabase is not configured. Please add SUPABASE_URL and SUPABASE_ANON_KEY (or SUPABASE_SERVICE_ROLE_KEY) to your Vercel Project Environment Variables."
+    try:
+        if not supabase:
+            raise Exception("Supabase is not configured. Please add SUPABASE_URL and SUPABASE_ANON_KEY (or SUPABASE_SERVICE_ROLE_KEY) to your Vercel Project Environment Variables.")
+        
+        try:
+            response = supabase.table("leads").select("name, company, video_url, company_logo").eq("video_id", video_id).execute()
+            if not response.data:
+                raise Exception(f"Video lead '{video_id}' not found in Supabase table 'leads'.")
+            
+            lead = response.data[0]
+            name = lead["name"]
+            company = lead["company"]
+            video_url = lead["video_url"]
+            company_logo = lead["company_logo"]
+        except Exception as db_err:
+            if "not found in Supabase" in str(db_err):
+                raise db_err
+            raise Exception(f"Failed to fetch lead from Supabase: {db_err}")
+            
+        # Log page view automatically
+        ip = request.client.host if request.client else "unknown"
+        ua = request.headers.get("user-agent", "unknown")
+        
+        try:
+            event_data = {
+                "video_id": video_id,
+                "event_type": "page_view",
+                "ip_address": ip,
+                "user_agent": ua
+            }
+            supabase.table("events").insert(event_data).execute()
+        except Exception as e:
+            logger.warning(f"Failed to log page view event to Supabase: {e}")
+            
+        logger.info(f"👀 Page view on video '{video_id}' from IP: {ip}")
+        
+        # Get clearbit logo fallback if no custom logo provided
+        if not company_logo and company:
+            clean_company = company.lower().replace(" ", "").replace("ltd", "").replace("inc", "")
+            company_logo = f"https://logo.clearbit.com/{clean_company}.com"
+            
+        return templates.TemplateResponse(
+            "watch.html",
+            {
+                "request": request,
+                "name": name,
+                "company": company,
+                "video_url": video_url,
+                "company_logo": company_logo,
+                "video_id": video_id
+            }
         )
-    try:
-        response = supabase.table("leads").select("name, company, video_url, company_logo").eq("video_id", video_id).execute()
-        if not response.data:
-            raise HTTPException(status_code=404, detail="Video not found")
-        
-        lead = response.data[0]
-        name = lead["name"]
-        company = lead["company"]
-        video_url = lead["video_url"]
-        company_logo = lead["company_logo"]
-    except Exception as e:
-        logger.error(f"Failed to fetch lead from Supabase: {e}")
-        raise HTTPException(status_code=500, detail="Database error")
-        
-    # Log page view automatically
-    ip = request.client.host if request.client else "unknown"
-    ua = request.headers.get("user-agent", "unknown")
-    
-    try:
-        event_data = {
-            "video_id": video_id,
-            "event_type": "page_view",
-            "ip_address": ip,
-            "user_agent": ua
-        }
-        supabase.table("events").insert(event_data).execute()
-    except Exception as e:
-        logger.warning(f"Failed to log page view event to Supabase: {e}")
-        
-    logger.info(f"👀 Page view on video '{video_id}' from IP: {ip}")
-    
-    # Get clearbit logo fallback if no custom logo provided
-    if not company_logo and company:
-        clean_company = company.lower().replace(" ", "").replace("ltd", "").replace("inc", "")
-        company_logo = f"https://logo.clearbit.com/{clean_company}.com"
-        
-    return templates.TemplateResponse(
-        "watch.html",
-        {
-            "request": request,
-            "name": name,
-            "company": company,
-            "video_url": video_url,
-            "company_logo": company_logo,
-            "video_id": video_id
-        }
-    )
+    except Exception as err:
+        import traceback
+        tb = traceback.format_exc()
+        logger.error(f"Error in watch_video: {tb}")
+        return HTMLResponse(content=f"<pre>Error in watch_video:\n{tb}</pre>", status_code=500)
 
 @app.post("/track")
 async def track_event(payload: TrackingPayload, request: Request):
