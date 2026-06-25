@@ -168,16 +168,16 @@ async def watch_video(video_id: str, request: Request):
         try:
             response = supabase.table("leads").select("name, company, video_url, company_logo").eq("video_id", video_id).execute()
             if not response.data:
-                raise Exception(f"Video lead '{video_id}' not found in Supabase table 'leads'.")
+                raise HTTPException(status_code=404, detail="Video outreach page not found.")
             
             lead = response.data[0]
             name = lead["name"]
             company = lead["company"]
             video_url = lead["video_url"]
             company_logo = lead["company_logo"]
+        except HTTPException as http_e:
+            raise http_e
         except Exception as db_err:
-            if "not found in Supabase" in str(db_err):
-                raise db_err
             raise Exception(f"Failed to fetch lead from Supabase: {db_err}")
             
         # Log page view automatically
@@ -213,6 +213,8 @@ async def watch_video(video_id: str, request: Request):
                 "video_id": video_id
             }
         )
+    except HTTPException as http_err:
+        return HTMLResponse(content=f"<div style='font-family: sans-serif; text-align: center; margin-top: 10%;'><h2>404: Not Found</h2><p>{http_err.detail}</p></div>", status_code=http_err.status_code)
     except Exception as err:
         import traceback
         tb = traceback.format_exc()
