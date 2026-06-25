@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Outreach — BlitzOutreach by Sherry Automates</title>
+    <meta name="description" content="Manage your multi-sender email campaigns, create templates, and track delivery progress.">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Email Outreach Specific Styles */
+        .email-grid {
+            display: grid;
+            grid-template-columns: 1.6fr 1fr;
+            gap: var(--space-xl);
+            margin-bottom: var(--space-xl);
+        }
+
+        @media (max-width: 1024px) {
+            .email-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Editor Styles */
+        .editor-container {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-default);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            margin-top: var(--space-md);
+            transition: border-color 200ms var(--ease-out-expo);
+        }
+
+        .editor-container:focus-within {
+            border-color: var(--brand-primary);
+            box-shadow: 0 0 12px var(--brand-primary-glow);
+        }
+
+        .editor-toolbar {
+            background: rgba(255, 255, 255, 0.02);
+            border-bottom: 1px solid var(--border-subtle);
+            padding: var(--space-sm) var(--space-md);
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-xs);
+            align-items: center;
+        }
+
+        .toolbar-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            width: 32px;
+            height: 32px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 150ms var(--ease-out-expo);
+        }
+
+        .toolbar-btn:hover {
+            background: var(--bg-surface-hover);
+            color: var(--text-primary);
+        }
+
+        .toolbar-btn.active {
+            background: var(--brand-primary-subtle);
+            color: var(--brand-primary-light);
+        }
+
+        .toolbar-separator {
+            width: 1px;
+            height: 18px;
+            background: var(--border-subtle);
+            margin: 0 var(--space-xs);
+        }
+
+        .editor-body {
+            min-height: 250px;
+            padding: var(--space-md);
+            color: var(--text-primary);
+            font-size: 0.9375rem;
+            line-height: 1.6;
+            outline: none;
+            overflow-y: auto;
+            background: transparent;
+        }
+
+        .editor-body:empty::before {
+            content: "Write your email content here... Use merge tags to personalize.";
+            color: var(--text-muted);
+            pointer-events: none;
+        }
+
+        /* Merge Tags Bar */
+        .merge-tags-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-sm);
+            margin-top: var(--space-sm);
+        }
+
+        .tag-pill {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-secondary);
+            padding: 4px 10px;
+            border-radius: var(--radius-pill);
+            font-size: 0.75rem;
+            font-family: var(--font-mono);
+            cursor: pointer;
+            transition: all 150ms var(--ease-out-expo);
+        }
+
+        .tag-pill:hover {
+            background: var(--brand-primary-subtle);
+            border-color: var(--brand-primary-light);
+            color: var(--brand-primary-light);
+        }
+
+        /* Senders List */
+        .sender-card {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-sm);
+            padding: var(--space-md);
+            border-radius: var(--radius-md);
+            background: rgba(255, 255, 255, 0.015);
+            border: 1px solid var(--border-subtle);
+            transition: all 200ms var(--ease-out-expo);
+        }
+
+        .sender-card:hover {
+            background: rgba(255, 255, 255, 0.025);
+            border-color: var(--border-default);
+        }
+
+        .sender-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .sender-email {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .sender-badge {
+            font-size: 0.625rem;
+            padding: 2px 6px;
+            border-radius: var(--radius-pill);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 700;
+        }
+
+        .badge-active {
+            background: var(--color-success-subtle);
+            color: var(--color-success);
+            border: 1px solid rgba(34, 197, 94, 0.15);
+        }
+
+        .badge-warmup {
+            background: var(--color-warning-subtle);
+            color: var(--color-warning);
+            border: 1px solid rgba(245, 158, 11, 0.15);
+        }
+
+        .sender-progress-container {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .sender-progress-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.6875rem;
+            color: var(--text-muted);
+        }
+
+        .sender-progress-bar {
+            height: 4px;
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: var(--radius-pill);
+            overflow: hidden;
+        }
+
+        .sender-progress-fill {
+            height: 100%;
+            background: var(--brand-primary);
+            border-radius: var(--radius-pill);
+        }
+
+        /* Sequences */
+        .seq-step {
+            display: flex;
+            align-items: flex-start;
+            gap: var(--space-md);
+            position: relative;
+            padding-bottom: var(--space-lg);
+        }
+
+        .seq-step::after {
+            content: '';
+            position: absolute;
+            left: 12px;
+            top: 24px;
+            bottom: 0;
+            width: 1px;
+            background: var(--border-subtle);
+        }
+
+        .seq-step:last-child {
+            padding-bottom: 0;
+        }
+
+        .seq-step:last-child::after {
+            display: none;
+        }
+
+        .seq-number {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--brand-primary-subtle);
+            border: 1px solid var(--brand-primary-light);
+            color: var(--brand-primary-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 700;
+            flex-shrink: 0;
+            z-index: 1;
+        }
+
+        .seq-content {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.015);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            padding: var(--space-md);
+        }
+
+        /* Table log */
+        .log-table-row {
+            display: grid;
+            grid-template-columns: 1.5fr 1.5fr 1fr 1fr 1fr 0.5fr;
+            padding: var(--space-md);
+            border-bottom: 1px solid var(--border-subtle);
+            align-items: center;
+            transition: background 150ms var(--ease-out-expo);
+        }
+
+        .log-table-row:hover {
+            background: var(--bg-surface-hover);
+        }
+
+        .log-header {
+            grid-template-columns: 1.5fr 1.5fr 1fr 1fr 1fr 0.5fr;
+            font-weight: 600;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 1px solid var(--border-default);
+            background: rgba(255, 255, 255, 0.01);
+        }
+    </style>
+</head>
+<body>
+    <!-- Background Glow -->
+    <div class="bg-glow">
+        <div class="bg-glow-orb bg-glow-orb-1"></div>
+        <div class="bg-glow-orb bg-glow-orb-2"></div>
+    </div>
+
+    <div class="app-shell">
+        <!-- ═══ Sidebar ═══ -->
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <img src="../assets/logo_sa.png" alt="Sherry Automates">
+            </div>
+
+            <nav class="sidebar-nav">
+                <a href="index.html" class="nav-item" title="Dashboard">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+                </a>
+                <a href="campaigns.html" class="nav-item" title="Campaigns">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                </a>
+                <a href="leads.html" class="nav-item" title="Leads">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                </a>
+                <a href="videos.html" class="nav-item" title="Videos">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+                </a>
+                <a href="email.html" class="nav-item active" title="Email Outreach">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                </a>
+                <a href="analytics.html" class="nav-item" title="Analytics">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                </a>
+                <a href="engagement.html" class="nav-item" title="Engagement">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                </a>
+                <a href="#" class="nav-item" title="Settings">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="sidebar-avatar">
+                    <img src="../assets/profile_photo.png" alt="Sheharyar">
+                </div>
+            </div>
+        </aside>
+
+        <!-- ═══ Main Content ═══ -->
+        <main class="main-content">
+            <!-- Top Bar -->
+            <div class="top-bar animate-in">
+                <div class="top-bar-left">
+                    <h1 class="page-title">Email Outreach</h1>
+                    <p class="page-subtitle">Configure sending rotations, build sequences, and launch outbound campaigns.</p>
+                </div>
+                <div class="top-bar-right">
+                    <div class="search-bar">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                        <input type="text" placeholder="Search templates, logs...">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Ribbon -->
+            <div class="stats-grid">
+                <div class="stat-card animate-in">
+                    <div class="stat-label">Total Outbound Emails</div>
+                    <div class="stat-value">1,412</div>
+                    <span class="stat-trend up">
+                        <svg viewBox="0 0 12 12" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 8 4 4 7 6.5 11 2"/></svg>
+                        +18.5%
+                    </span>
+                    <svg class="stat-sparkline" viewBox="0 0 120 50" preserveAspectRatio="none">
+                        <defs><linearGradient id="spark1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#CC2222" stop-opacity="0.4"/><stop offset="100%" stop-color="#CC2222" stop-opacity="0"/></linearGradient></defs>
+                        <path d="M0,45 Q20,30 40,35 T80,20 T120,5 V50 H0 Z" fill="url(#spark1)"/>
+                        <path d="M0,45 Q20,30 40,35 T80,20 T120,5" fill="none" stroke="#CC2222" stroke-width="1.5"/>
+                    </svg>
+                </div>
+
+                <div class="stat-card animate-in">
+                    <div class="stat-label">Deliverability Rate</div>
+                    <div class="stat-value">99.8%</div>
+                    <span class="stat-trend up">
+                        <svg viewBox="0 0 12 12" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 8 4 4 7 6.5 11 2"/></svg>
+                        +0.1%
+                    </span>
+                    <svg class="stat-sparkline" viewBox="0 0 120 50" preserveAspectRatio="none">
+                        <defs><linearGradient id="spark2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#CC2222" stop-opacity="0.3"/><stop offset="100%" stop-color="#CC2222" stop-opacity="0"/></linearGradient></defs>
+                        <path d="M0,15 Q30,12 60,10 T120,5 V50 H0 Z" fill="url(#spark2)"/>
+                        <path d="M0,15 Q30,12 60,10 T120,5" fill="none" stroke="#CC2222" stroke-width="1.5"/>
+                    </svg>
+                </div>
+
+                <div class="stat-card animate-in">
+                    <div class="stat-label">Average Open Rate</div>
+                    <div class="stat-value">68.4%</div>
+                    <span class="stat-trend up">
+                        <svg viewBox="0 0 12 12" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 8 4 4 7 6.5 11 2"/></svg>
+                        +4.2%
+                    </span>
+                    <svg class="stat-sparkline" viewBox="0 0 120 50" preserveAspectRatio="none">
+                        <defs><linearGradient id="spark3" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#CC2222" stop-opacity="0.3"/><stop offset="100%" stop-color="#CC2222" stop-opacity="0"/></linearGradient></defs>
+                        <path d="M0,35 Q20,38 40,28 T80,22 T120,15 V50 H0 Z" fill="url(#spark3)"/>
+                        <path d="M0,35 Q20,38 40,28 T80,22 T120,15" fill="none" stroke="#CC2222" stroke-width="1.5"/>
+                    </svg>
+                </div>
+
+                <div class="stat-card animate-in">
+                    <div class="stat-label">Response Rate</div>
+                    <div class="stat-value">23.2%</div>
+                    <span class="stat-trend up">
+                        <svg viewBox="0 0 12 12" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 8 4 4 7 6.5 11 2"/></svg>
+                        +2.5%
+                    </span>
+                    <svg class="stat-sparkline" viewBox="0 0 120 50" preserveAspectRatio="none">
+                        <defs><linearGradient id="spark4" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#CC2222" stop-opacity="0.3"/><stop offset="100%" stop-color="#CC2222" stop-opacity="0"/></linearGradient></defs>
+                        <path d="M0,42 Q20,38 40,32 T80,24 T120,18 V50 H0 Z" fill="url(#spark4)"/>
+                        <path d="M0,42 Q20,38 40,32 T80,24 T120,18" fill="none" stroke="#CC2222" stroke-width="1.5"/>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Bento Layout -->
+            <div class="email-grid">
+                <!-- LEFT COLUMN: Template Editor -->
+                <div class="card animate-in" style="display: flex; flex-direction: column;">
+                    <div class="card-header" style="justify-content: space-between; align-items: center; display: flex;">
+                        <div>
+                            <h2 class="card-title">Email Template Builder</h2>
+                            <p class="card-subtitle">Create highly-converting email copy with dynamic video integrations.</p>
+                        </div>
+                        <div style="display: flex; gap: var(--space-sm);">
+                            <select id="template-select" class="form-control" style="width: 180px; padding: 4px var(--space-md); border-radius: var(--radius-sm); font-size: 0.8125rem;">
+                                <option value="custom">-- Custom Draft --</option>
+                                <option value="saas">SaaS Intro Pitch</option>
+                                <option value="hvac">HVAC Speed To Lead</option>
+                                <option value="followup">Follow-up: Video Unwatched</option>
+                            </select>
+                            <button class="btn btn-secondary" style="padding: 6px var(--space-md); font-size: 0.8125rem;" id="save-temp-btn">Save</button>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; gap: var(--space-md); margin-top: var(--space-md); flex: 1;">
+                        <!-- Subject Line -->
+                        <div style="display: flex; flex-direction: column; gap: 6px;">
+                            <label style="font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em;">Subject Line</label>
+                            <input type="text" id="subject-input" class="form-control" placeholder="e.g. {{first_name}}, check out this quick video I made for {{company}}..." style="font-size: 0.9375rem; padding: var(--space-md); border-radius: var(--radius-md);">
+                        </div>
+
+                        <!-- Content Editor -->
+                        <div style="display: flex; flex-direction: column; gap: 6px; flex: 1;">
+                            <label style="font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em;">Email Body (HTML/Rich Text)</label>
+                            
+                            <div class="editor-container">
+                                <!-- Formatting Toolbar -->
+                                <div class="editor-toolbar">
+                                    <button class="toolbar-btn" onclick="execCmd('bold')" title="Bold"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="16" height="16" stroke-width="2.5"><path d="M6 4h8a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"/><path d="M6 12h9a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"/></svg></button>
+                                    <button class="toolbar-btn" onclick="execCmd('italic')" title="Italic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="16" height="16" stroke-width="2.5"><line x1="19" y1="4" x2="10" y2="4"/><line x1="14" y1="20" x2="5" y2="20"/><line x1="15" y1="4" x2="9" y2="20"/></svg></button>
+                                    <button class="toolbar-btn" onclick="execCmd('underline')" title="Underline"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="16" height="16" stroke-width="2.5"><path d="M6 3v7a6 6 0 0 0 6 6 6 6 0 0 0 6-6V3"/><line x1="4" y1="21" x2="20" y2="21"/></svg></button>
+                                    <div class="toolbar-separator"></div>
+                                    <button class="toolbar-btn" onclick="execCmd('insertUnorderedList')" title="Bullet List"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="16" height="16" stroke-width="2.5"><line x1="9" y1="6" x2="20" y2="6"/><line x1="9" y1="12" x2="20" y2="12"/><line x1="9" y1="18" x2="20" y2="18"/><line x1="5" y1="6" x2="5.01" y2="6"/><line x1="5" y1="12" x2="5.01" y2="12"/><line x1="5" y1="18" x2="5.01" y2="18"/></svg></button>
+                                    <button class="toolbar-btn" onclick="execCmd('insertOrderedList')" title="Ordered List"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="16" height="16" stroke-width="2.5"><line x1="10" y1="6" x2="21" y2="6"/><line x1="10" y1="12" x2="21" y2="12"/><line x1="10" y1="18" x2="21" y2="18"/><path d="M4 6h1v4"/><path d="M4 10h2"/><path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg></button>
+                                    <div class="toolbar-separator"></div>
+                                    <button class="toolbar-btn" onclick="insertLink()" title="Insert Link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="16" height="16" stroke-width="2.5"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></button>
+                                </div>
+                                <!-- Content Body -->
+                                <div id="email-editor-body" class="editor-body" contenteditable="true" spellcheck="false"></div>
+                            </div>
+
+                            <!-- Merge Tags -->
+                            <div class="merge-tags-bar">
+                                <span class="tag-pill" onclick="insertMergeTag('{{first_name}}')">+ {{first_name}}</span>
+                                <span class="tag-pill" onclick="insertMergeTag('{{company}}')">+ {{company}}</span>
+                                <span class="tag-pill" onclick="insertMergeTag('{{video_link}}')">+ {{video_link}}</span>
+                                <span class="tag-pill" onclick="insertMergeTag('{{booking_link}}')">+ {{booking_link}}</span>
+                                <span class="tag-pill" onclick="insertMergeTag('{{sender_name}}')">+ {{sender_name}}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RIGHT COLUMN: Senders + Campaign Launcher -->
+                <div style="display: flex; flex-direction: column; gap: var(--space-xl);">
+                    <!-- 1. SMTP Multi-Sender Rotation Status -->
+                    <div class="card animate-in">
+                        <div class="card-header" style="justify-content: space-between; display: flex; align-items: center;">
+                            <div>
+                                <h2 class="card-title">Multi-Sender Accounts</h2>
+                                <p class="card-subtitle">Domain rotation & daily warmups.</p>
+                            </div>
+                            <a href="#" style="color: var(--brand-primary-light); font-size: 0.75rem; text-decoration: none; font-weight: 600;">Config</a>
+                        </div>
+
+                        <div style="display: flex; flex-direction: column; gap: var(--space-md); margin-top: var(--space-md);">
+                            <!-- Sender 1 -->
+                            <div class="sender-card">
+                                <div class="sender-header">
+                                    <span class="sender-email">sherry@sherryautomates.com</span>
+                                    <span class="sender-badge badge-active">Active</span>
+                                </div>
+                                <div class="sender-progress-container">
+                                    <div class="sender-progress-meta">
+                                        <span>Sends Today</span>
+                                        <span>8 / 10 limit</span>
+                                    </div>
+                                    <div class="sender-progress-bar">
+                                        <div class="sender-progress-fill" style="width: 80%;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Sender 2 -->
+                            <div class="sender-card">
+                                <div class="sender-header">
+                                    <span class="sender-email">outreach@sherryautomates.com</span>
+                                    <span class="sender-badge badge-active">Active</span>
+                                </div>
+                                <div class="sender-progress-container">
+                                    <div class="sender-progress-meta">
+                                        <span>Sends Today</span>
+                                        <span>5 / 10 limit</span>
+                                    </div>
+                                    <div class="sender-progress-bar">
+                                        <div class="sender-progress-fill" style="width: 50%;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Sender 3 -->
+                            <div class="sender-card">
+                                <div class="sender-header">
+                                    <span class="sender-email">growth@sherryautomates.com</span>
+                                    <span class="sender-badge badge-warmup">Warmup</span>
+                                </div>
+                                <div class="sender-progress-container">
+                                    <div class="sender-progress-meta">
+                                        <span>Sends Today</span>
+                                        <span>3 / 10 limit</span>
+                                    </div>
+                                    <div class="sender-progress-bar">
+                                        <div class="sender-progress-fill" style="width: 30%;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Sender 4 -->
+                            <div class="sender-card">
+                                <div class="sender-header">
+                                    <span class="sender-email">systems@sherryautomates.com</span>
+                                    <span class="sender-badge badge-active">Active</span>
+                                </div>
+                                <div class="sender-progress-container">
+                                    <div class="sender-progress-meta">
+                                        <span>Sends Today</span>
+                                        <span>9 / 10 limit</span>
+                                    </div>
+                                    <div class="sender-progress-bar">
+                                        <div class="sender-progress-fill" style="width: 90%;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Sender 5 -->
+                            <div class="sender-card">
+                                <div class="sender-header">
+                                    <span class="sender-email">scale@sherryautomates.com</span>
+                                    <span class="sender-badge badge-active">Active</span>
+                                </div>
+                                <div class="sender-progress-container">
+                                    <div class="sender-progress-meta">
+                                        <span>Sends Today</span>
+                                        <span>4 / 10 limit</span>
+                                    </div>
+                                    <div class="sender-progress-bar">
+                                        <div class="sender-progress-fill" style="width: 40%;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2. Campaign Launcher -->
+                    <div class="card animate-in">
+                        <div class="card-header">
+                            <h2 class="card-title">Create Campaign</h2>
+                            <p class="card-subtitle">Launch and automate a sequence now.</p>
+                        </div>
+
+                        <div style="display: flex; flex-direction: column; gap: var(--space-md); margin-top: var(--space-md);">
+                            <!-- Name -->
+                            <div style="display: flex; flex-direction: column; gap: 4px;">
+                                <label style="font-size: 0.6875rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em;">Campaign Name</label>
+                                <input type="text" id="campaign-name-input" class="form-control" placeholder="e.g. HVAC Founders Outreach" style="padding: 10px; border-radius: var(--radius-sm);">
+                            </div>
+                            
+                            <!-- Lead List -->
+                            <div style="display: flex; flex-direction: column; gap: 4px;">
+                                <label style="font-size: 0.6875rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em;">Target Segment List</label>
+                                <select id="campaign-segment-select" class="form-control" style="padding: 10px; border-radius: var(--radius-sm);">
+                                    <option value="hvac">HVAC Business Owners (2,847 leads)</option>
+                                    <option value="saas">SaaS Founders & VC (1,240 leads)</option>
+                                    <option value="agencies">Digital Marketing Agencies (548 leads)</option>
+                                </select>
+                            </div>
+ 
+                            <!-- Sequences -->
+                            <div style="display: flex; flex-direction: column; gap: 8px;">
+                                <label style="font-size: 0.6875rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em;">Sequence Steps</label>
+                                
+                                <div class="seq-step">
+                                    <div class="seq-number">1</div>
+                                    <div class="seq-content">
+                                        <div style="font-size: 0.75rem; font-weight: 600; color: var(--text-primary);">Initial Video Outreach</div>
+                                        <div style="font-size: 0.625rem; color: var(--text-muted); margin-top: 2px;">Triggers immediately on launch. Rotates senders.</div>
+                                    </div>
+                                </div>
+                                <div class="seq-step">
+                                    <div class="seq-number">2</div>
+                                    <div class="seq-content">
+                                        <div style="font-size: 0.75rem; font-weight: 600; color: var(--text-primary);">Follow-up: Video Unwatched</div>
+                                        <div style="font-size: 0.625rem; color: var(--text-muted); margin-top: 2px;">Send after 2 days if video watched &lt; 50% duration.</div>
+                                    </div>
+                                </div>
+                            </div>
+ 
+                            <!-- Action -->
+                            <button class="btn btn-primary" style="margin-top: var(--space-sm); padding: var(--space-md); width: 100%; display: flex; align-items: center; justify-content: center; gap: var(--space-sm); font-weight: 700; font-size: 0.9375rem;" id="launch-btn">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="18" height="18" stroke-width="2.5"><polyline points="22 2 15 22 11 13 2 9 22 2"/><line x1="22" y1="2" x2="11" y2="13"/></svg>
+                                Launch Outreach Campaign
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+ 
+            <!-- Outreach Logs Table -->
+            <div class="card animate-in">
+                <div class="card-header" style="justify-content: space-between; display: flex; align-items: center; margin-bottom: var(--space-md);">
+                    <div>
+                        <h2 class="card-title">Outreach Logs & Queue</h2>
+                        <p class="card-subtitle">Real-time status updates of rotates, sends, opens, and clicks.</p>
+                    </div>
+                    <div class="status-pill status-active" style="display: flex; align-items: center; gap: var(--space-xs); font-size: 0.6875rem; padding: 4px var(--space-md);">
+                        <span class="pulse-dot"></span>
+                        Live Queue
+                    </div>
+                </div>
+ 
+                <div style="display: flex; flex-direction: column; overflow: hidden; border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+                    <!-- Header -->
+                    <div class="log-table-row log-header">
+                        <div>Recipient</div>
+                        <div>Sender Account</div>
+                        <div>Subject Line</div>
+                        <div>Timestamp</div>
+                        <div>Status</div>
+                        <div style="text-align: right;">Action</div>
+                    </div>
+ 
+                    <div id="logs-container">
+                        <!-- Dynamic logs loaded here -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+ 
+    <!-- Script Logic for Editor Interactions -->
+    <script>
+        const editor = document.getElementById('email-editor-body');
+        const subjectInput = document.getElementById('subject-input');
+        const templateSelect = document.getElementById('template-select');
+        const saveBtn = document.getElementById('save-temp-btn');
+        const launchBtn = document.getElementById('launch-btn');
+ 
+        // Text Templates definitions
+        const templates = {
+            custom: {
+                subject: "",
+                body: ""
+            },
+            saas: {
+                subject: "Quick question for {{first_name}} about scaling at {{company}}...",
+                body: `<p>Hey {{first_name}},</p>
+<p>I was browsing <strong>{{company}}</strong> and noticed you're scaling outreach channels. I recorded a quick 1-minute personalized video explaining how we automate this with AI.</p>
+<p>You can watch the video on your personalized portal page here: {{video_link}}</p>
+<p>Let me know if this aligns with your current initiatives!</p>
+<p>Best regards,<br><strong>{{sender_name}}</strong></p>`
+            },
+            hvac: {
+                subject: "Speed to lead video walk-through for {{company}} owners",
+                body: `<p>Hi {{first_name}},</p>
+<p>Quick question: how fast do you follow up on inbound estimates at {{company}}?</p>
+<p>Most HVAC businesses lose 50%+ of their jobs because they don't reply within 5 minutes. I recorded a fast video demo for you explaining how our speed-to-lead bot handles this instantly.</p>
+<p>Check the walk-through here: {{video_link}}</p>
+<p>If you like what you see, feel free to book a direct 10-minute audit with me using the scheduler on the right of the video player: {{booking_link}}</p>
+<p>Cheers,<br><strong>{{sender_name}}</strong></p>`
+            },
+            followup: {
+                subject: "Did you catch my video message, {{first_name}}?",
+                body: `<p>Hey {{first_name}},</p>
+<p>Just checking back. I noticed you haven't had a chance to check out the personalized video analysis I sent over for {{company}}.</p>
+<p>No worries at all, I know things are busy. In case you missed it, here is the direct link: {{video_link}}</p>
+<p>It goes over 3 exact bottlenecks we found in your outreach stack.</p>
+<p>Let me know your thoughts!<br><strong>{{sender_name}}</strong></p>`
+            }
+        };
+ 
+        // Handle Template Switch
+        templateSelect.addEventListener('change', (e) => {
+            const selected = templates[e.target.value];
+            if (selected) {
+                subjectInput.value = selected.subject;
+                editor.innerHTML = selected.body;
+            }
+        });
+ 
+        // Run Rich Text Editor ExecCommands
+        function execCmd(cmd, value = null) {
+            document.execCommand(cmd, false, value);
+            editor.focus();
+        }
+ 
+        // Insert Link Helper
+        function insertLink() {
+            const url = prompt("Enter the URL:");
+            if (url) {
+                execCmd("createLink", url);
+            }
+        }
+ 
+        // Insert Merge Tag
+        function insertMergeTag(tag) {
+            editor.focus();
+            
+            const sel = window.getSelection();
+            if (sel.rangeCount > 0) {
+                const range = sel.getRangeAt(0);
+                
+                if (editor.contains(range.commonAncestorContainer)) {
+                    range.deleteContents();
+                    
+                    const tagNode = document.createTextNode(tag);
+                    range.insertNode(tagNode);
+                    
+                    range.setStartAfter(tagNode);
+                    range.setEndAfter(tagNode);
+                    sel.removeAllRanges();
+                    sel.addRange(range);
+                    return;
+                }
+            }
+            
+            editor.innerHTML += tag;
+        }
+ 
+        // Action Interactions
+        saveBtn.addEventListener('click', () => {
+            saveBtn.innerHTML = '<span style="display:inline-block; border: 2px solid var(--text-muted); border-top: 2px solid var(--text-primary); border-radius: 50%; width: 10px; height: 10px; animation: spin 1s linear infinite; margin-right: 4px;"></span> Saving...';
+            setTimeout(() => {
+                saveBtn.innerText = "Saved!";
+                setTimeout(() => {
+                    saveBtn.innerText = "Save";
+                }, 1500);
+            }, 1000);
+        });
+ 
+        launchBtn.addEventListener('click', async () => {
+            const nameInput = document.getElementById('campaign-name-input');
+            const segmentSelect = document.getElementById('campaign-segment-select');
+            
+            const payload = {
+                name: nameInput.value || 'HVAC Outreach Campaign',
+                lead_list: segmentSelect.options[segmentSelect.selectedIndex].text,
+                template_name: templateSelect.value,
+                subject: subjectInput.value,
+                body: editor.innerHTML
+            };
+            
+            launchBtn.disabled = true;
+            launchBtn.innerHTML = '<span style="border: 2px solid var(--brand-primary-light); border-top: 2px solid var(--text-primary); border-radius: 50%; width: 14px; height: 14px; display: inline-block; animation: spin 1s linear infinite; margin-right: 8px;"></span> Deploying Outbound Sequence...';
+            
+            try {
+                const res = await fetch('/api/campaigns/create', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                if (res.ok) {
+                    launchBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="var(--color-success)" width="18" height="18" stroke-width="3" style="margin-right: 8px;"><polyline points="20 6 9 17 4 12"/></svg> Campaign Active & Scheduled!';
+                    launchBtn.style.background = 'var(--color-success-subtle)';
+                    launchBtn.style.color = 'var(--color-success)';
+                    launchBtn.style.borderColor = 'rgba(34, 197, 94, 0.3)';
+                    launchBtn.style.boxShadow = '0 0 16px rgba(34, 197, 94, 0.2)';
+                    
+                    setTimeout(() => {
+                        launchBtn.disabled = false;
+                        launchBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="18" height="18" stroke-width="2.5"><polyline points="22 2 15 22 11 13 2 9 22 2"/><line x1="22" y1="2" x2="11" y2="13"/></svg> Launch Outreach Campaign';
+                        launchBtn.style.background = '';
+                        launchBtn.style.color = '';
+                        launchBtn.style.borderColor = '';
+                        launchBtn.style.boxShadow = '';
+                        
+                        nameInput.value = '';
+                    }, 3000);
+                }
+            } catch (err) {
+                console.error('Error launching campaign:', err);
+                launchBtn.disabled = false;
+                launchBtn.textContent = 'Launch Outreach Campaign';
+            }
+        });
+
+        function timeAgo(dateString) {
+            if (!dateString) return 'Just now';
+            const date = new Date(dateString);
+            const now = new Date();
+            const seconds = Math.floor((now - date) / 1000);
+            if (seconds < 60) return 'Just now';
+            const minutes = Math.floor(seconds / 60);
+            if (minutes < 60) return `${minutes}m ago`;
+            const hours = Math.floor(minutes / 60);
+            if (hours < 24) return `${hours}h ago`;
+            const days = Math.floor(hours / 24);
+            return `${days}d ago`;
+        }
+
+        async function fetchLogs() {
+            try {
+                const res = await fetch('/api/leads');
+                const leads = await res.json();
+                
+                const logsContainer = document.getElementById('logs-container');
+                if (logsContainer) {
+                    logsContainer.innerHTML = '';
+                    
+                    if (leads.length === 0) {
+                        logsContainer.innerHTML = `
+                            <div style="padding: var(--space-xl); text-align: center; color: var(--text-muted); font-size: 0.875rem;">
+                                No outreach logs found.
+                            </div>
+                        `;
+                        return;
+                    }
+                    
+                    const senders = [
+                        'sherry@sherryautomates.com',
+                        'outreach@sherryautomates.com',
+                        'growth@sherryautomates.com',
+                        'systems@sherryautomates.com',
+                        'scale@sherryautomates.com'
+                    ];
+                    
+                    leads.forEach((lead, i) => {
+                        const cleanDomain = lead.company.toLowerCase().replace(/[^a-z0-9]/g, '') + '.com';
+                        const email = `${lead.name.split(' ')[0].toLowerCase()}@${cleanDomain}`;
+                        const sender = senders[i % senders.length];
+                        const timeStr = timeAgo(lead.created_at);
+                        
+                        let statusHtml = '<span class="status-pill status-sent" style="font-size: 0.6875rem; padding: 2px 8px;">Delivered</span>';
+                        if (lead.status === 'Viewed') {
+                            statusHtml = `<span class="status-pill status-viewed" style="font-size: 0.6875rem; padding: 2px 8px;">Opened (${lead.watch_percent})</span>`;
+                        } else if (lead.status === 'Replied') {
+                            statusHtml = `<span class="status-pill status-replied" style="font-size: 0.6875rem; padding: 2px 8px;">Replied</span>`;
+                        } else if (lead.status === 'Booked') {
+                            statusHtml = `<span class="status-pill status-booked" style="font-size: 0.6875rem; padding: 2px 8px;">Booked ✓</span>`;
+                        }
+                        
+                        const row = document.createElement('div');
+                        row.className = 'log-table-row';
+                        row.innerHTML = `
+                            <div>
+                                <div style="font-weight: 600; color: var(--text-primary); font-size: 0.875rem;">${lead.name}</div>
+                                <div style="color: var(--text-muted); font-size: 0.75rem;">${email}</div>
+                            </div>
+                            <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-secondary);">${sender}</div>
+                            <div style="font-size: 0.8125rem; color: var(--text-secondary); text-overflow: ellipsis; overflow: hidden; white-space: nowrap; padding-right: var(--space-md);">Outreach video walkthrough for ${lead.company}</div>
+                            <div style="font-size: 0.8125rem; color: var(--text-muted);">${timeStr}</div>
+                            <div>${statusHtml}</div>
+                            <div style="text-align: right; color: var(--text-muted); cursor: pointer;" onclick="window.open('/v/${lead.video_id}', '_blank')">•••</div>
+                        `;
+                        logsContainer.appendChild(row);
+                    });
+                }
+                
+                // Update total outreach email count cards
+                const statsRes = await fetch('/api/stats');
+                const stats = await statsRes.json();
+                const cards = document.querySelectorAll('.stats-grid .stat-card');
+                if (cards.length >= 4) {
+                    cards[0].querySelector('.stat-value').textContent = stats.total_sent.toLocaleString();
+                    cards[2].querySelector('.stat-value').textContent = `${stats.open_rate}%`;
+                    cards[3].querySelector('.stat-value').textContent = `${stats.response_rate}%`;
+                }
+            } catch (err) {
+                console.error('Error fetching outreach logs:', err);
+            }
+        }
+        
+        fetchLogs();
+        setInterval(fetchLogs, 5000);
+    </script>
+</body>
+</html>

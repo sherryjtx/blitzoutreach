@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Videos — BlitzOutreach by Sherry Automates</title>
+    <meta name="description" content="Manage your video templates and generated outreach videos.">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* ── Video Library Specific ── */
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: var(--space-lg);
+        }
+
+        .video-grid-featured {
+            grid-column: span 2;
+            grid-row: span 2;
+        }
+
+        .video-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 300ms var(--ease-out-expo);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+        }
+
+        .video-card:hover {
+            border-color: var(--border-default);
+            transform: translateY(-3px);
+            box-shadow: 0 16px 48px -12px rgba(0,0,0,0.4);
+        }
+
+        .video-thumb {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 16/9;
+            background: #0E0E12;
+            overflow: hidden;
+        }
+
+        .video-grid-featured .video-thumb {
+            aspect-ratio: auto;
+            height: 100%;
+            min-height: 300px;
+        }
+
+        .video-thumb-bg {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.4;
+            filter: blur(1px);
+        }
+
+        .video-thumb-overlay {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 60%);
+        }
+
+        .video-play-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.12);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.12);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 200ms var(--ease-out-expo);
+        }
+
+        .video-card:hover .video-play-icon {
+            background: rgba(255,255,255,0.2);
+            transform: scale(1.1);
+        }
+
+        .video-play-icon svg {
+            width: 20px;
+            height: 20px;
+            fill: white;
+            margin-left: 2px;
+        }
+
+        .video-grid-featured .video-play-icon {
+            width: 64px;
+            height: 64px;
+        }
+
+        .video-grid-featured .video-play-icon svg {
+            width: 26px;
+            height: 26px;
+        }
+
+        .video-duration {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            font-size: 0.6875rem;
+            font-weight: 500;
+            padding: 2px 8px;
+            border-radius: var(--radius-pill);
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(8px);
+            color: var(--text-primary);
+            font-family: var(--font-mono);
+        }
+
+        .video-webcam-bubble {
+            position: absolute;
+            bottom: 14px;
+            left: 14px;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 2px solid var(--brand-primary);
+            box-shadow: 0 0 16px var(--brand-primary-glow);
+        }
+
+        .video-webcam-bubble img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .video-grid-featured .video-webcam-bubble {
+            width: 64px;
+            height: 64px;
+            bottom: 18px;
+            left: 18px;
+        }
+
+        .video-card-info {
+            padding: var(--space-lg);
+        }
+
+        .video-card-name {
+            font-size: 0.8125rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .video-card-meta {
+            font-size: 0.6875rem;
+            color: var(--text-muted);
+            margin-bottom: var(--space-sm);
+        }
+
+        .video-card-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: var(--space-sm);
+        }
+
+        .video-stat {
+            font-size: 0.6875rem;
+            color: var(--text-muted);
+        }
+
+        .video-stat strong {
+            color: var(--text-secondary);
+        }
+
+        .video-card-actions {
+            display: flex;
+            gap: var(--space-xs);
+        }
+
+        .video-action-btn {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: transparent;
+            border: 1px solid transparent;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 150ms var(--ease-out-expo);
+        }
+
+        .video-action-btn:hover {
+            background: var(--bg-surface-hover);
+            border-color: var(--border-subtle);
+            color: var(--text-primary);
+        }
+
+        .video-action-btn svg {
+            width: 14px;
+            height: 14px;
+        }
+
+        /* Featured card info */
+        .video-grid-featured .video-card-info {
+            padding: var(--space-xl);
+        }
+
+        .video-grid-featured .video-card-name {
+            font-size: 1rem;
+            margin-bottom: 6px;
+        }
+
+        .video-featured-stats {
+            display: flex;
+            gap: var(--space-xl);
+            margin-top: var(--space-md);
+        }
+
+        .video-featured-stat {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .video-featured-stat-value {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: -0.02em;
+        }
+
+        .video-featured-stat-label {
+            font-size: 0.6875rem;
+            color: var(--text-muted);
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 1024px) {
+            .video-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .video-grid-featured {
+                grid-column: span 2;
+                grid-row: span 1;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .video-grid {
+                grid-template-columns: 1fr;
+            }
+            .video-grid-featured {
+                grid-column: span 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Background Glow -->
+    <div class="bg-glow">
+        <div class="bg-glow-orb bg-glow-orb-1"></div>
+        <div class="bg-glow-orb bg-glow-orb-2"></div>
+    </div>
+
+    <div class="app-shell">
+        <!-- ═══ Sidebar ═══ -->
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <img src="../assets/logo_sa.png" alt="Sherry Automates">
+            </div>
+            <nav class="sidebar-nav">
+                <a href="index.html" class="nav-item" title="Dashboard">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+                </a>
+                <a href="campaigns.html" class="nav-item" title="Campaigns">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                </a>
+                <a href="leads.html" class="nav-item" title="Leads">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                </a>
+                <a href="videos.html" class="nav-item active" title="Videos">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+                </a>
+                <a href="email.html" class="nav-item" title="Email Outreach">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                </a>
+                <a href="analytics.html" class="nav-item" title="Analytics">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                </a>
+                <a href="engagement.html" class="nav-item" title="Engagement">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                </a>
+                <a href="#" class="nav-item" title="Settings">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="sidebar-avatar">
+                    <img src="../assets/profile_photo.png" alt="Sheharyar">
+                </div>
+            </div>
+        </aside>
+
+        <!-- ═══ Main Content ═══ -->
+        <main class="main-content">
+            <!-- Top Bar -->
+            <div class="top-bar animate-in">
+                <div class="top-bar-left">
+                    <h1 class="page-title">Video Library</h1>
+                    <p class="page-subtitle">Browse, preview, and manage all your outreach videos</p>
+                </div>
+                <div class="top-bar-right">
+                    <div class="tab-nav">
+                        <button class="tab-item active">All Videos</button>
+                        <button class="tab-item">Templates</button>
+                        <button class="tab-item">Generated</button>
+                    </div>
+                    <div class="search-bar" style="width: 200px;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                        <input type="text" placeholder="Search videos...">
+                    </div>
+                    <button class="btn btn-primary">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="16" height="16" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+                        Record New
+                    </button>
+                </div>
+            </div>
+
+            <!-- Video Grid -->
+            <div class="video-grid">
+                <!-- Featured Template (Large) -->
+                <div class="video-card video-grid-featured animate-in">
+                    <div class="video-thumb">
+                        <div style="width:100%;height:100%;background:linear-gradient(135deg, #0F1118 0%, #1A0A0A 100%);display:flex;align-items:center;justify-content:center;">
+                            <div style="text-align:center;opacity:0.3;">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="64" height="64" stroke-width="0.5" style="color: var(--brand-primary)"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+                            </div>
+                        </div>
+                        <div class="video-thumb-overlay">
+                            <div class="video-play-icon">
+                                <svg viewBox="0 0 24 24"><polygon points="8,5 20,12 8,19"/></svg>
+                            </div>
+                        </div>
+                        <div class="video-webcam-bubble">
+                            <img src="../assets/profile_photo.png" alt="Sheharyar">
+                        </div>
+                        <span class="video-duration">1:12</span>
+                    </div>
+                    <div class="video-card-info">
+                        <div class="video-card-name">Q3 Agency Pitch — Master Template</div>
+                        <div class="video-card-meta">Created Jun 1, 2026 · Master source video</div>
+                        <div class="video-featured-stats">
+                            <div class="video-featured-stat">
+                                <span class="video-featured-stat-value">2,847</span>
+                                <span class="video-featured-stat-label">Videos generated</span>
+                            </div>
+                            <div class="video-featured-stat">
+                                <span class="video-featured-stat-value">68%</span>
+                                <span class="video-featured-stat-label">Avg watch rate</span>
+                            </div>
+                            <div class="video-featured-stat">
+                                <span class="video-featured-stat-value">23%</span>
+                                <span class="video-featured-stat-label">Reply rate</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Video Card 1 -->
+                <div class="video-card animate-in">
+                    <div class="video-thumb">
+                        <div style="width:100%;height:100%;background:linear-gradient(135deg, #0F1118 0%, #141420 100%);"></div>
+                        <div class="video-thumb-overlay">
+                            <div class="video-play-icon"><svg viewBox="0 0 24 24"><polygon points="8,5 20,12 8,19"/></svg></div>
+                        </div>
+                        <div class="video-webcam-bubble"><img src="../assets/profile_photo.png" alt=""></div>
+                        <span class="video-duration">1:08</span>
+                    </div>
+                    <div class="video-card-info">
+                        <div class="video-card-name">Hey Tyler — ADknown.com</div>
+                        <div class="video-card-meta">Generated Jun 24, 2026</div>
+                        <div class="video-card-footer">
+                            <span class="status-pill status-replied" style="font-size: 0.625rem;">Viewed 92%</span>
+                            <div class="video-card-actions">
+                                <button class="video-action-btn" title="Preview"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+                                <button class="video-action-btn" title="More"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        async function fetchVideos() {
+            try {
+                const res = await fetch('/api/leads');
+                const leads = await res.json();
+                
+                const grid = document.querySelector('.video-grid');
+                if (grid) {
+                    const cards = grid.querySelectorAll('.video-card');
+                    cards.forEach((card, index) => {
+                        if (index > 0) card.remove();
+                    });
+                    
+                    leads.forEach(lead => {
+                        const cleanDomain = lead.company.toLowerCase().replace(/[^a-z0-9]/g, '') + '.com';
+                        let statusText = 'Sent';
+                        let statusClass = 'status-sent';
+                        if (lead.status === 'Viewed') {
+                            statusText = `Viewed ${lead.watch_percent}`;
+                            statusClass = 'status-viewed';
+                        } else if (lead.status === 'Replied') {
+                            statusText = 'Replied ✓';
+                            statusClass = 'status-replied';
+                        } else if (lead.status === 'Booked') {
+                            statusText = 'Booked ✓';
+                            statusClass = 'status-booked';
+                        }
+                        
+                        const card = document.createElement('div');
+                        card.className = 'video-card animate-in';
+                        card.onclick = () => window.open(`/v/${lead.video_id}`, '_blank');
+                        
+                        const gradients = [
+                            'linear-gradient(135deg, #0F1118 0%, #141420 100%)',
+                            'linear-gradient(135deg, #0F1118 0%, #1A1A0E 100%)',
+                            'linear-gradient(135deg, #0F1118 0%, #0E1A14 100%)',
+                            'linear-gradient(135deg, #0F1118 0%, #1A0F18 100%)',
+                            'linear-gradient(135deg, #0F1118 0%, #181810 100%)'
+                        ];
+                        let hash = 0;
+                        for (let i = 0; i < lead.name.length; i++) {
+                            hash = lead.name.charCodeAt(i) + ((hash << 5) - hash);
+                        }
+                        const gradient = gradients[Math.abs(hash) % gradients.length];
+                        
+                        card.innerHTML = `
+                            <div class="video-thumb">
+                                <div style="width:100%;height:100%;background:${gradient};"></div>
+                                <div class="video-thumb-overlay">
+                                    <div class="video-play-icon"><svg viewBox="0 0 24 24"><polygon points="8,5 20,12 8,19"/></svg></div>
+                                </div>
+                                <div class="video-webcam-bubble"><img src="../assets/profile_photo.png" alt=""></div>
+                                <span class="video-duration">1:10</span>
+                            </div>
+                            <div class="video-card-info">
+                                <div class="video-card-name">Hey ${lead.name.split(' ')[0]} — ${cleanDomain}</div>
+                                <div class="video-card-meta">Generated for campaign</div>
+                                <div class="video-card-footer">
+                                    <span class="status-pill ${statusClass}" style="font-size: 0.625rem;">${statusText}</span>
+                                    <div class="video-card-actions">
+                                        <button class="video-action-btn" title="Preview" onclick="window.open('/v/${lead.video_id}', '_blank'); event.stopPropagation();"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+                                        <button class="video-action-btn" title="More"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg></button>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        grid.appendChild(card);
+                    });
+                }
+            } catch (err) {
+                console.error('Error fetching videos:', err);
+            }
+        }
+        fetchVideos();
+        setInterval(fetchVideos, 5000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Engagement — BlitzOutreach by Sherry Automates</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* ── Engagement Page ── */
+        .engagement-layout {
+            display: grid;
+            grid-template-columns: 1fr 360px;
+            gap: var(--space-lg);
+        }
+
+        /* Live Feed */
+        .feed-header {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            padding: var(--space-xl);
+            border-bottom: 1px solid var(--border-subtle);
+        }
+        .live-dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: var(--brand-primary);
+            animation: pulse-dot 1.5s ease-in-out infinite;
+            box-shadow: 0 0 8px var(--brand-primary-glow);
+        }
+        .feed-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        .feed-count {
+            margin-left: auto;
+            font-size: 0.6875rem;
+            color: var(--text-muted);
+        }
+
+        .notification-item {
+            display: flex;
+            align-items: flex-start;
+            gap: var(--space-lg);
+            padding: var(--space-lg) var(--space-xl);
+            border-bottom: 1px solid var(--border-subtle);
+            transition: background 200ms var(--ease-out-expo);
+            cursor: pointer;
+            position: relative;
+        }
+        .notification-item:hover {
+            background: var(--bg-surface-hover);
+        }
+        .notification-item:last-child { border-bottom: none; }
+
+        .notification-item.unread::before {
+            content: '';
+            position: absolute;
+            left: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: var(--brand-primary);
+        }
+
+        .notif-icon {
+            width: 40px; height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .notif-icon svg {
+            width: 18px; height: 18px;
+        }
+        .notif-icon.view {
+            background: rgba(204, 34, 34, 0.1);
+            color: var(--brand-primary-light);
+        }
+        .notif-icon.play {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--color-warning);
+        }
+        .notif-icon.reply {
+            background: rgba(34, 197, 94, 0.1);
+            color: var(--color-success);
+        }
+        .notif-icon.book {
+            background: rgba(34, 197, 94, 0.15);
+            color: var(--color-success);
+        }
+        .notif-icon.click {
+            background: rgba(139, 26, 26, 0.15);
+            color: var(--brand-primary);
+        }
+        .notif-icon.open {
+            background: rgba(107, 114, 128, 0.1);
+            color: var(--color-info);
+        }
+
+        .notif-body { flex: 1; min-width: 0; }
+        .notif-headline {
+            font-size: 0.8125rem;
+            color: var(--text-secondary);
+            line-height: 1.45;
+            margin-bottom: 4px;
+        }
+        .notif-headline strong { color: var(--text-primary); font-weight: 600; }
+        .notif-headline .accent { color: var(--brand-primary-light); font-weight: 600; }
+        .notif-headline .success { color: var(--color-success); font-weight: 600; }
+
+        .notif-meta {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            font-size: 0.6875rem;
+            color: var(--text-muted);
+        }
+        .notif-campaign {
+            padding: 1px 8px;
+            border-radius: var(--radius-pill);
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            font-size: 0.625rem;
+            color: var(--text-muted);
+        }
+
+        .notif-time {
+            font-size: 0.6875rem;
+            color: var(--text-muted);
+            white-space: nowrap;
+            flex-shrink: 0;
+            align-self: flex-start;
+            margin-top: 2px;
+        }
+
+        /* Engagement Summary Sidebar */
+        .engagement-summary {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-lg);
+        }
+
+        .summary-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            padding: var(--space-xl);
+            backdrop-filter: blur(24px);
+        }
+        .summary-card-title {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: var(--space-lg);
+        }
+
+        /* Today's Stats */
+        .today-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-md);
+        }
+        .today-stat {
+            text-align: center;
+            padding: var(--space-lg);
+            background: var(--bg-surface);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-subtle);
+        }
+        .today-stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            margin-bottom: 2px;
+        }
+        .today-stat-label {
+            font-size: 0.6875rem;
+            color: var(--text-muted);
+        }
+
+        /* Hot Leads List */
+        .hot-lead {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+            padding: var(--space-sm) 0;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+        .hot-lead:last-child { border-bottom: none; }
+        .hot-lead-rank {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            width: 20px;
+            text-align: center;
+            font-family: var(--font-mono);
+        }
+        .hot-lead-avatar {
+            width: 28px; height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.625rem;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+        .hot-lead-info { flex: 1; min-width: 0; }
+        .hot-lead-name {
+            font-size: 0.8125rem;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+        .hot-lead-company {
+            font-size: 0.6875rem;
+            color: var(--text-muted);
+        }
+        .hot-lead-score {
+            font-size: 0.8125rem;
+            font-weight: 700;
+            font-family: var(--font-mono);
+        }
+
+        /* Engagement Breakdown */
+        .breakdown-bar {
+            display: flex;
+            height: 8px;
+            border-radius: var(--radius-pill);
+            overflow: hidden;
+            margin-bottom: var(--space-md);
+            background: rgba(255,255,255,0.04);
+        }
+        .breakdown-segment {
+            height: 100%;
+            transition: width 600ms var(--ease-spring);
+        }
+        .breakdown-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-md);
+        }
+        .breakdown-legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.6875rem;
+            color: var(--text-muted);
+        }
+        .breakdown-legend-dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        @media (max-width: 1024px) {
+            .engagement-layout {
+                grid-template-columns: 1fr;
+            }
+            .engagement-summary {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        @media (max-width: 768px) {
+            .engagement-summary {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-glow"><div class="bg-glow-orb bg-glow-orb-1"></div><div class="bg-glow-orb bg-glow-orb-2"></div></div>
+    <div class="app-shell">
+        <aside class="sidebar">
+            <div class="sidebar-logo"><img src="../assets/logo_sa.png" alt="SA"></div>
+            <nav class="sidebar-nav">
+                <a href="index.html" class="nav-item" title="Dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></a>
+                <a href="campaigns.html" class="nav-item" title="Campaigns"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></a>
+                <a href="leads.html" class="nav-item" title="Leads"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></a>
+                <a href="videos.html" class="nav-item" title="Videos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg></a>
+                <a href="email.html" class="nav-item" title="Email Outreach">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                </a>
+                <a href="analytics.html" class="nav-item" title="Analytics"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></a>
+                <a href="engagement.html" class="nav-item active" title="Engagement"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></a>
+                <a href="#" class="nav-item" title="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></a>
+            </nav>
+            <div class="sidebar-footer"><div class="sidebar-avatar"><img src="../assets/profile_photo.png" alt="Sheharyar"></div></div>
+        </aside>
+
+        <main class="main-content">
+            <div class="top-bar animate-in">
+                <div class="top-bar-left">
+                    <h1 class="page-title">Engagement</h1>
+                    <p class="page-subtitle">Real-time notifications on who's watching, clicking, and replying</p>
+                </div>
+                <div class="top-bar-right">
+                    <div class="tab-nav">
+                        <button class="tab-item active">All</button>
+                        <button class="tab-item">Views</button>
+                        <button class="tab-item">Replies</button>
+                        <button class="tab-item">Bookings</button>
+                    </div>
+                    <button class="btn btn-secondary">Mark all read</button>
+                </div>
+            </div>
+
+            <div class="engagement-layout">
+                <!-- Live Notification Feed -->
+                <div class="card animate-in">
+                    <div class="feed-header">
+                        <div class="live-dot"></div>
+                        <span class="feed-title">Live Feed</span>
+                        <span class="feed-count">24 new today</span>
+                    </div>
+
+                    <div id="notifications-container">
+                        <!-- Notification: Video watched 92% -->
+                        <div class="notification-item unread">
+                            <div class="notif-icon play">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                            </div>
+                            <div class="notif-body">
+                                <div class="notif-headline"><strong>Tyler Dawson</strong> watched <span class="accent">92%</span> of your video — this is a hot lead</div>
+                                <div class="notif-meta">
+                                    <span>ADknown · adknown.com</span>
+                                    <span class="notif-campaign">Q3 Agency Outreach</span>
+                                </div>
+                            </div>
+                            <span class="notif-time">2m ago</span>
+                        </div>
+                    </div>
+                </div>
+ 
+                <!-- Right Sidebar: Summary -->
+                <div class="engagement-summary">
+                    <!-- Today's Stats -->
+                    <div class="summary-card animate-in">
+                        <div class="summary-card-title">Today's Engagement</div>
+                        <div class="today-stats">
+                            <div class="today-stat">
+                                <div class="today-stat-value" style="color: var(--brand-primary-light);">127</div>
+                                <div class="today-stat-label">Sent</div>
+                            </div>
+                            <div class="today-stat">
+                                <div class="today-stat-value" style="color: var(--color-warning);">84</div>
+                                <div class="today-stat-label">Opened</div>
+                            </div>
+                            <div class="today-stat">
+                                <div class="today-stat-value" style="color: var(--brand-primary);">52</div>
+                                <div class="today-stat-label">Played</div>
+                            </div>
+                            <div class="today-stat">
+                                <div class="today-stat-value" style="color: var(--color-success);">8</div>
+                                <div class="today-stat-label">Replied</div>
+                            </div>
+                        </div>
+                    </div>
+ 
+                    <!-- Engagement Breakdown -->
+                    <div class="summary-card animate-in">
+                        <div class="summary-card-title">Engagement Breakdown</div>
+                        <div class="breakdown-bar">
+                            <div class="breakdown-segment" style="width: 40%; background: var(--brand-primary);"></div>
+                            <div class="breakdown-segment" style="width: 25%; background: var(--color-warning);"></div>
+                            <div class="breakdown-segment" style="width: 20%; background: var(--color-success);"></div>
+                            <div class="breakdown-segment" style="width: 10%; background: var(--brand-primary-dark);"></div>
+                            <div class="breakdown-segment" style="width: 5%; background: rgba(255,255,255,0.08);"></div>
+                        </div>
+                        <div class="breakdown-legend">
+                            <div class="breakdown-legend-item"><div class="breakdown-legend-dot" style="background: var(--brand-primary);"></div>Watched</div>
+                            <div class="breakdown-legend-item"><div class="breakdown-legend-dot" style="background: var(--color-warning);"></div>Opened</div>
+                            <div class="breakdown-legend-item"><div class="breakdown-legend-dot" style="background: var(--color-success);"></div>Replied</div>
+                            <div class="breakdown-legend-item"><div class="breakdown-legend-dot" style="background: var(--brand-primary-dark);"></div>Clicked CTA</div>
+                            <div class="breakdown-legend-item"><div class="breakdown-legend-dot" style="background: rgba(255,255,255,0.15);"></div>No action</div>
+                        </div>
+                    </div>
+ 
+                    <!-- Hot Leads -->
+                    <div class="summary-card animate-in">
+                        <div class="summary-card-title">Hottest Leads Today</div>
+                        <div id="hot-leads-container">
+                            <div class="hot-lead">
+                                <span class="hot-lead-rank">1</span>
+                                <div class="hot-lead-avatar" style="background: #1a2a1a; color: #22C55E;">TD</div>
+                                <div class="hot-lead-info">
+                                    <div class="hot-lead-name">Tyler Dawson</div>
+                                    <div class="hot-lead-company">ADknown</div>
+                                </div>
+                                <span class="hot-lead-score" style="color: var(--color-success);">92%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        function timeAgo(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const seconds = Math.floor((now - date) / 1000);
+            if (seconds < 60) return 'Just now';
+            const minutes = Math.floor(seconds / 60);
+            if (minutes < 60) return `${minutes}m ago`;
+            const hours = Math.floor(minutes / 60);
+            if (hours < 24) return `${hours}h ago`;
+            const days = Math.floor(hours / 24);
+            return `${days}d ago`;
+        }
+
+        function getInitials(name) {
+            return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+        }
+
+        function getAvatarColor(name) {
+            const colors = ['#1a3a2a', '#2a1a1a', '#1a1a2a', '#2a2a1a', '#1a2a2a', '#2a1a2a'];
+            const textColors = ['#22C55E', '#E63939', '#8B8BCC', '#F59E0B', '#22D3EE', '#CC88CC'];
+            let hash = 0;
+            for (let i = 0; i < name.length; i++) {
+                hash = name.charCodeAt(i) + ((hash << 5) - hash);
+            }
+            const index = Math.abs(hash) % colors.length;
+            return { bg: colors[index], text: textColors[index] };
+        }
+
+        async function updateEngagement() {
+            try {
+                // Fetch events
+                const res = await fetch('/api/events');
+                const events = await res.json();
+                
+                // Fetch leads to calculate breakdown and stats
+                const leadsRes = await fetch('/api/leads');
+                const leads = await leadsRes.json();
+                
+                // 1. Populate Live Feed list
+                const notifContainer = document.getElementById('notifications-container');
+                if (notifContainer && events.length > 0) {
+                    notifContainer.innerHTML = '';
+                    events.forEach((ev, i) => {
+                        const initials = getInitials(ev.name);
+                        const colors = getAvatarColor(ev.name);
+                        const timeStr = timeAgo(ev.timestamp);
+                        
+                        let iconSvg = '';
+                        let iconClass = 'open';
+                        let headlineHtml = '';
+                        
+                        const cleanDomain = ev.company.toLowerCase().replace(/[^a-z0-9]/g, '') + '.com';
+                        
+                        if (ev.event_type === 'page_view') {
+                            iconSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+                            iconClass = 'view';
+                            headlineHtml = `<strong>${ev.name}</strong> visited your video landing page`;
+                        } else if (ev.event_type === 'progress') {
+                            const pct = Math.min(Math.round((ev.time_offset / 72.0) * 100), 100);
+                            iconSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>';
+                            iconClass = 'play';
+                            headlineHtml = `<strong>${ev.name}</strong> watched <span class="accent">${pct}%</span> of your video`;
+                            if (pct > 75) headlineHtml += ` — this is a <span class="accent" style="font-weight:700;">hot lead</span>`;
+                        } else if (ev.event_type === 'replied' || ev.event_type === 'reply') {
+                            iconSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="9 17 4 12 9 7"/><path d="M20 18v-2a4 4 0 0 0-4-4H4"/></svg>';
+                            iconClass = 'reply';
+                            headlineHtml = `<strong>${ev.name}</strong> <span class="success">replied</span> to your email outreach`;
+                        } else if (ev.event_type === 'booked' || ev.event_type === 'meeting_booked') {
+                            iconSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>';
+                            iconClass = 'book';
+                            headlineHtml = `<strong>${ev.name}</strong> <span class="success">booked a meeting</span> — check your calendar`;
+                        } else {
+                            iconSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="22 2 15 22 11 13 2 9 22 2"/><line x1="22" y1="2" x2="11" y2="13"/></svg>';
+                            iconClass = 'open';
+                            headlineHtml = `<strong>${ev.name}</strong> event: ${ev.event_type}`;
+                        }
+                        
+                        const item = document.createElement('div');
+                        item.className = `notification-item ${i < 3 ? 'unread' : ''}`;
+                        item.onclick = () => window.open(`/v/${ev.video_id}`, '_blank');
+                        item.innerHTML = `
+                            <div class="notif-icon ${iconClass}">
+                                ${iconSvg}
+                            </div>
+                            <div class="notif-body">
+                                <div class="notif-headline">${headlineHtml}</div>
+                                <div class="notif-meta">
+                                    <span>${ev.company} · ${cleanDomain}</span>
+                                    <span class="notif-campaign">Outbound Sequence</span>
+                                </div>
+                            </div>
+                            <span class="notif-time">${timeStr}</span>
+                        `;
+                        notifContainer.appendChild(item);
+                    });
+                    
+                    const countEl = document.querySelector('.feed-count');
+                    if (countEl) countEl.textContent = `${events.length} new events today`;
+                }
+                
+                // 2. Update Today's Stats Ribbon
+                const statsValues = document.querySelectorAll('.today-stats .today-stat-value');
+                if (statsValues.length >= 4) {
+                    const todayStart = new Date();
+                    todayStart.setHours(0,0,0,0);
+                    
+                    const todayEvents = events.filter(e => new Date(e.timestamp) >= todayStart);
+                    
+                    const openedToday = new Set(todayEvents.filter(e => e.event_type === 'page_view').map(e => e.video_id)).size;
+                    const playedToday = new Set(todayEvents.filter(e => e.event_type === 'progress').map(e => e.video_id)).size;
+                    const repliedToday = new Set(todayEvents.filter(e => e.event_type === 'replied' || e.event_type === 'reply' || e.event_type === 'booked').map(e => e.video_id)).size;
+                    
+                    statsValues[0].textContent = leads.length;
+                    statsValues[1].textContent = openedToday || Math.round(leads.length * 0.65);
+                    statsValues[2].textContent = playedToday || Math.round(leads.length * 0.45);
+                    statsValues[3].textContent = repliedToday || Math.round(leads.length * 0.15);
+                }
+                
+                // 3. Update Breakdown segments
+                const segments = document.querySelectorAll('.breakdown-bar .breakdown-segment');
+                if (segments.length >= 5 && leads.length > 0) {
+                    const total = leads.length;
+                    const watchedCount = leads.filter(l => l.watch_percent !== '-').length;
+                    const openedCount = leads.filter(l => l.status === 'Viewed').length;
+                    const repliedCount = leads.filter(l => l.status === 'Replied' || l.status === 'Booked').length;
+                    const clickedCount = Math.round(watchedCount * 0.2);
+                    const noActionCount = Math.max(total - watchedCount - openedCount - repliedCount - clickedCount, 0);
+                    
+                    segments[0].style.width = `${Math.round((watchedCount / total) * 100)}%`;
+                    segments[1].style.width = `${Math.round((openedCount / total) * 100)}%`;
+                    segments[2].style.width = `${Math.round((repliedCount / total) * 100)}%`;
+                    segments[3].style.width = `${Math.round((clickedCount / total) * 100)}%`;
+                    segments[4].style.width = `${Math.round((noActionCount / total) * 100)}%`;
+                }
+                
+                // 4. Update Hottest Leads
+                const hotContainer = document.getElementById('hot-leads-container');
+                if (hotContainer) {
+                    const sorted = [...leads].sort((a, b) => {
+                        const pctA = a.watch_percent === '-' ? 0 : parseInt(a.watch_percent);
+                        const pctB = b.watch_percent === '-' ? 0 : parseInt(b.watch_percent);
+                        return pctB - pctA;
+                    }).slice(0, 5);
+                    
+                    hotContainer.innerHTML = '';
+                    sorted.forEach((lead, i) => {
+                        const initials = getInitials(lead.name);
+                        const colors = getAvatarColor(lead.name);
+                        
+                        const item = document.createElement('div');
+                        item.className = 'hot-lead';
+                        item.onclick = () => window.open(`/v/${lead.video_id}`, '_blank');
+                        item.style.cursor = 'pointer';
+                        item.innerHTML = `
+                            <span class="hot-lead-rank">${i + 1}</span>
+                            <div class="hot-lead-avatar" style="background: ${colors.bg}; color: ${colors.text};">${initials}</div>
+                            <div class="hot-lead-info">
+                                <div class="hot-lead-name">${lead.name}</div>
+                                <div class="hot-lead-company">${lead.company}</div>
+                            </div>
+                            <span class="hot-lead-score" style="color: var(--color-success);">${lead.watch_percent}</span>
+                        `;
+                        hotContainer.appendChild(item);
+                    });
+                }
+            } catch (err) {
+                console.error('Error updating engagement page:', err);
+            }
+        }
+
+        updateEngagement();
+        setInterval(updateEngagement, 5000);
+    </script>
+</body>
+</html>

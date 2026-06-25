@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard — BlitzOutreach by Sherry Automates</title>
+    <meta name="description" content="Video outreach command center. Track campaigns, monitor engagement, and manage your pipeline.">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Background Glow -->
+    <div class="bg-glow">
+        <div class="bg-glow-orb bg-glow-orb-1"></div>
+        <div class="bg-glow-orb bg-glow-orb-2"></div>
+    </div>
+
+    <div class="app-shell">
+        <!-- ═══ Sidebar ═══ -->
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <img src="../assets/logo_sa.png" alt="Sherry Automates">
+            </div>
+
+            <nav class="sidebar-nav">
+                <a href="index.html" class="nav-item active" title="Dashboard">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+                </a>
+                <a href="campaigns.html" class="nav-item" title="Campaigns">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                </a>
+                <a href="leads.html" class="nav-item" title="Leads">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                </a>
+                <a href="videos.html" class="nav-item" title="Videos">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+                </a>
+                <a href="email.html" class="nav-item" title="Email Outreach">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                </a>
+                <a href="analytics.html" class="nav-item" title="Analytics">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                </a>
+                <a href="engagement.html" class="nav-item" title="Engagement">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                </a>
+                <a href="#" class="nav-item" title="Settings">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="sidebar-avatar">
+                    <img src="../assets/profile_photo.png" alt="Sheharyar">
+                </div>
+            </div>
+        </aside>
+
+        <!-- ═══ Main Content ═══ -->
+        <main class="main-content">
+            <!-- Top Bar -->
+            <div class="top-bar animate-in">
+                <div class="top-bar-left">
+                    <h1 class="page-title">Dashboard</h1>
+                    <p class="page-subtitle">Welcome back, Sheharyar. Here's your pipeline at a glance.</p>
+                </div>
+                <div class="top-bar-right">
+                    <div class="search-bar">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                        <input type="text" placeholder="Search leads, campaigns...">
+                    </div>
+                    <button class="btn btn-primary">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="16" height="16" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        New Campaign
+                    </button>
+                </div>
+            </div>
+
+            <!-- Stat Cards -->
+            <div class="stats-grid">
+                <div class="stat-card animate-in">
+                    <div class="stat-label">Videos Sent</div>
+                    <div class="stat-value">2,847</div>
+                    <span class="stat-trend up">
+                        <svg viewBox="0 0 12 12" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 8 4 4 7 6.5 11 2"/></svg>
+                        +12.4%
+                    </span>
+                    <svg class="stat-sparkline" viewBox="0 0 120 50" preserveAspectRatio="none">
+                        <defs><linearGradient id="sparkGrad1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#CC2222" stop-opacity="0.4"/><stop offset="100%" stop-color="#CC2222" stop-opacity="0"/></linearGradient></defs>
+                        <path d="M0,40 Q15,35 30,30 T60,20 T90,15 T120,8 V50 H0 Z" fill="url(#sparkGrad1)"/>
+                        <path d="M0,40 Q15,35 30,30 T60,20 T90,15 T120,8" fill="none" stroke="#CC2222" stroke-width="1.5"/>
+                    </svg>
+                </div>
+
+                <div class="stat-card animate-in">
+                    <div class="stat-label">Open Rate</div>
+                    <div class="stat-value">68.4%</div>
+                    <span class="stat-trend up">
+                        <svg viewBox="0 0 12 12" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 8 4 4 7 6.5 11 2"/></svg>
+                        +3.2%
+                    </span>
+                    <svg class="stat-sparkline" viewBox="0 0 120 50" preserveAspectRatio="none">
+                        <defs><linearGradient id="sparkGrad2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#CC2222" stop-opacity="0.3"/><stop offset="100%" stop-color="#CC2222" stop-opacity="0"/></linearGradient></defs>
+                        <path d="M0,35 Q20,38 40,25 T80,18 T120,12 V50 H0 Z" fill="url(#sparkGrad2)"/>
+                        <path d="M0,35 Q20,38 40,25 T80,18 T120,12" fill="none" stroke="#CC2222" stroke-width="1.5"/>
+                    </svg>
+                </div>
+
+                <div class="stat-card animate-in">
+                    <div class="stat-label">Reply Rate</div>
+                    <div class="stat-value">23.1%</div>
+                    <span class="stat-trend up">
+                        <svg viewBox="0 0 12 12" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 8 4 4 7 6.5 11 2"/></svg>
+                        +5.8%
+                    </span>
+                </div>
+
+                <div class="stat-card animate-in">
+                    <div class="stat-label">Pipeline Generated</div>
+                    <div class="stat-value">$142K</div>
+                    <span class="stat-trend up">
+                        <svg viewBox="0 0 12 12" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 8 4 4 7 6.5 11 2"/></svg>
+                        +18.7%
+                    </span>
+                </div>
+            </div>
+
+            <!-- Performance Chart -->
+            <div class="chart-container animate-in">
+                <div class="chart-area">
+                    <div class="chart-header">
+                        <span class="card-title">Outreach Performance</span>
+                        <div class="tab-nav">
+                            <button class="tab-item">7D</button>
+                            <button class="tab-item active">30D</button>
+                            <button class="tab-item">90D</button>
+                        </div>
+                    </div>
+                    <div class="chart-canvas">
+                        <svg viewBox="0 0 800 140" preserveAspectRatio="none" width="100%" height="100%">
+                            <defs>
+                                <linearGradient id="crimsonGradient" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="0%" stop-color="#CC2222" stop-opacity="0.35"/>
+                                    <stop offset="100%" stop-color="#CC2222" stop-opacity="0"/>
+                                </linearGradient>
+                            </defs>
+                            <!-- Grid lines -->
+                            <line x1="0" y1="35" x2="800" y2="35" class="chart-grid-line"/>
+                            <line x1="0" y1="70" x2="800" y2="70" class="chart-grid-line"/>
+                            <line x1="0" y1="105" x2="800" y2="105" class="chart-grid-line"/>
+                            <!-- Area fill -->
+                            <path class="chart-area-fill" d="M0,110 Q50,100 100,92 T200,78 T300,65 T400,55 T500,42 T600,35 T700,22 T800,18 V140 H0 Z"/>
+                            <!-- Line -->
+                            <path class="chart-line" d="M0,110 Q50,100 100,92 T200,78 T300,65 T400,55 T500,42 T600,35 T700,22 T800,18"/>
+                            <!-- Dots -->
+                            <circle cx="0" cy="110" r="3" class="chart-dot"/>
+                            <circle cx="115" cy="92" r="3" class="chart-dot"/>
+                            <circle cx="230" cy="78" r="3" class="chart-dot"/>
+                            <circle cx="345" cy="65" r="3" class="chart-dot"/>
+                            <circle cx="460" cy="55" r="3" class="chart-dot"/>
+                            <circle cx="575" cy="35" r="3" class="chart-dot"/>
+                            <circle cx="690" cy="22" r="3" class="chart-dot"/>
+                            <circle cx="800" cy="18" r="4" class="chart-dot" style="fill: #E63939; stroke-width:4;"/>
+                            <!-- X-axis labels -->
+                            <text x="0" y="138" class="chart-label">Jun 1</text>
+                            <text x="115" y="138" class="chart-label">Jun 5</text>
+                            <text x="230" y="138" class="chart-label">Jun 9</text>
+                            <text x="345" y="138" class="chart-label">Jun 13</text>
+                            <text x="460" y="138" class="chart-label">Jun 17</text>
+                            <text x="575" y="138" class="chart-label">Jun 21</text>
+                            <text x="690" y="138" class="chart-label">Jun 24</text>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Grid: Campaigns + Activity -->
+            <div class="content-grid">
+                <!-- Active Campaigns -->
+                <div class="card animate-in">
+                    <div class="card-header">
+                        <span class="card-title">Active Campaigns</span>
+                        <a href="campaigns.html" class="btn btn-secondary" style="font-size: 0.6875rem; padding: 4px 12px;">View All</a>
+                    </div>
+                    <div>
+                        <div class="campaign-item">
+                            <div class="campaign-info">
+                                <div class="campaign-name">Q3 Agency Outreach</div>
+                                <div class="campaign-meta">Started Jun 1 · 847 leads</div>
+                            </div>
+                            <div class="campaign-progress">
+                                <div class="progress-bar"><div class="progress-fill" style="width: 72%;"></div></div>
+                                <div class="progress-label">72%</div>
+                            </div>
+                            <span class="status-pill status-active">Active</span>
+                        </div>
+                        <div class="campaign-item">
+                            <div class="campaign-info">
+                                <div class="campaign-name">SaaS Founders Cold Pitch</div>
+                                <div class="campaign-meta">Started Jun 8 · 1,200 leads</div>
+                            </div>
+                            <div class="campaign-progress">
+                                <div class="progress-bar"><div class="progress-fill" style="width: 45%;"></div></div>
+                                <div class="progress-label">45%</div>
+                            </div>
+                            <span class="status-pill status-active">Active</span>
+                        </div>
+                        <div class="campaign-item">
+                            <div class="campaign-info">
+                                <div class="campaign-name">HVAC Lead Gen Blast</div>
+                                <div class="campaign-meta">Started Jun 15 · 600 leads</div>
+                            </div>
+                            <div class="campaign-progress">
+                                <div class="progress-bar"><div class="progress-fill" style="width: 18%;"></div></div>
+                                <div class="progress-label">18%</div>
+                            </div>
+                            <span class="status-pill status-active">Active</span>
+                        </div>
+                        <div class="campaign-item">
+                            <div class="campaign-info">
+                                <div class="campaign-name">Real Estate Follow-up</div>
+                                <div class="campaign-meta">Draft · 0 leads</div>
+                            </div>
+                            <div class="campaign-progress">
+                                <div class="progress-bar"><div class="progress-fill" style="width: 0%;"></div></div>
+                                <div class="progress-label">—</div>
+                            </div>
+                            <span class="status-pill status-draft">Draft</span>
+                        </div>
+                        <div class="campaign-item">
+                            <div class="campaign-info">
+                                <div class="campaign-name">E-com Brands Outbound</div>
+                                <div class="campaign-meta">Paused Jun 20 · 400 leads</div>
+                            </div>
+                            <div class="campaign-progress">
+                                <div class="progress-bar"><div class="progress-fill" style="width: 90%;"></div></div>
+                                <div class="progress-label">90%</div>
+                            </div>
+                            <span class="status-pill status-paused">Paused</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="card animate-in">
+                    <div class="card-header">
+                        <span class="card-title">Recent Activity</span>
+                        <span class="card-badge">Live</span>
+                    </div>
+                    <div id="recent-activity-container">
+                        <div class="activity-item">
+                            <div class="activity-avatar" style="background: #1a3a2a; color: #22C55E;">TD</div>
+                            <div class="activity-content">
+                                <div class="activity-text"><strong>Tyler Dawson</strong> watched <span class="highlight">92%</span> of your video</div>
+                                <div class="activity-time">ADknown · 2 minutes ago</div>
+                            </div>
+                            <span class="activity-badge status-replied">Hot</span>
+                        </div>
+                        <div class="activity-item">
+                            <div class="activity-avatar" style="background: #2a1a1a; color: #E63939;">SR</div>
+                            <div class="activity-content">
+                                <div class="activity-text"><strong>Sarah Rodriguez</strong> booked a meeting</div>
+                                <div class="activity-time">MarketPro · 14 minutes ago</div>
+                            </div>
+                            <span class="activity-badge status-booked">Booked</span>
+                        </div>
+                        <div class="activity-item">
+                            <div class="activity-avatar" style="background: #1a1a2a; color: #8B8BCC;">MK</div>
+                            <div class="activity-content">
+                                <div class="activity-text"><strong>Mike Kowalski</strong> opened your email</div>
+                                <div class="activity-time">ScaleOps · 28 minutes ago</div>
+                            </div>
+                            <span class="activity-badge status-sent">Opened</span>
+                        </div>
+                        <div class="activity-item">
+                            <div class="activity-avatar" style="background: #2a2a1a; color: #F59E0B;">JL</div>
+                            <div class="activity-content">
+                                <div class="activity-text"><strong>Jessica Lin</strong> watched <span class="highlight">45%</span> of your video</div>
+                                <div class="activity-time">GrowthLab · 1 hour ago</div>
+                            </div>
+                            <span class="activity-badge status-viewed">Watched</span>
+                        </div>
+                        <div class="activity-item">
+                            <div class="activity-avatar" style="background: #1a2a1a; color: #22C55E;">CD</div>
+                            <div class="activity-content">
+                                <div class="activity-text"><strong>Chris Dymond</strong> replied to your outreach</div>
+                                <div class="activity-time">Unfolding · 2 hours ago</div>
+                            </div>
+                            <span class="activity-badge status-replied">Replied</span>
+                        </div>
+                        <div class="activity-item">
+                            <div class="activity-avatar" style="background: #2a1a2a; color: #CC88CC;">AH</div>
+                            <div class="activity-content">
+                                <div class="activity-text"><strong>Alex Hernandez</strong> clicked CTA button</div>
+                                <div class="activity-time">NovaTech · 3 hours ago</div>
+                            </div>
+                            <span class="activity-badge status-active">CTA Click</span>
+                        </div>
+                        <div class="activity-item">
+                            <div class="activity-avatar" style="background: #1a1a1a; color: #888;">BP</div>
+                            <div class="activity-content">
+                                <div class="activity-text"><strong>Brian Park</strong> video sent successfully</div>
+                                <div class="activity-time">Zenith Co · 4 hours ago</div>
+                            </div>
+                            <span class="activity-badge status-sent">Sent</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        function timeAgo(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const seconds = Math.floor((now - date) / 1000);
+            if (seconds < 60) return 'Just now';
+            const minutes = Math.floor(seconds / 60);
+            if (minutes < 60) return `${minutes}m ago`;
+            const hours = Math.floor(minutes / 60);
+            if (hours < 24) return `${hours}h ago`;
+            const days = Math.floor(hours / 24);
+            return `${days}d ago`;
+        }
+
+        function getInitials(name) {
+            return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+        }
+
+        function getAvatarColor(name) {
+            const colors = ['#1a3a2a', '#2a1a1a', '#1a1a2a', '#2a2a1a', '#1a2a2a', '#2a1a2a'];
+            const textColors = ['#22C55E', '#E63939', '#8B8BCC', '#F59E0B', '#22D3EE', '#CC88CC'];
+            let hash = 0;
+            for (let i = 0; i < name.length; i++) {
+                hash = name.charCodeAt(i) + ((hash << 5) - hash);
+            }
+            const index = Math.abs(hash) % colors.length;
+            return { bg: colors[index], text: textColors[index] };
+        }
+
+        async function updateDashboard() {
+            try {
+                // Fetch stats
+                const statsRes = await fetch('/api/stats');
+                const stats = await statsRes.json();
+                
+                const statValues = document.querySelectorAll('.stats-grid .stat-value');
+                if (statValues.length >= 4) {
+                    statValues[0].textContent = stats.total_sent.toLocaleString();
+                    statValues[1].textContent = `${stats.open_rate}%`;
+                    statValues[2].textContent = `${stats.response_rate}%`;
+                    
+                    // Calculate pipeline based on booked count
+                    const pipeline = stats.booked_count * 18; // $18K per booking
+                    statValues[3].textContent = `$${pipeline}K`;
+                }
+                
+                // Fetch events
+                const eventsRes = await fetch('/api/events');
+                const events = await eventsRes.json();
+                
+                const activityContainer = document.getElementById('recent-activity-container');
+                if (activityContainer && events.length > 0) {
+                    activityContainer.innerHTML = '';
+                    events.slice(0, 7).forEach(ev => {
+                        const colors = getAvatarColor(ev.name);
+                        const initials = getInitials(ev.name);
+                        const timeStr = timeAgo(ev.timestamp);
+                        
+                        let actionText = '';
+                        let badgeClass = 'status-sent';
+                        let badgeText = 'Sent';
+                        
+                        if (ev.event_type === 'page_view') {
+                            actionText = `watched <span class="highlight">0%</span> of your video (visited landing page)`;
+                            badgeClass = 'status-viewed';
+                            badgeText = 'Viewed';
+                        } else if (ev.event_type === 'progress') {
+                            const pct = Math.min(Math.round((ev.time_offset / 72.0) * 100), 100);
+                            actionText = `watched <span class="highlight">${pct}%</span> of your video`;
+                            badgeClass = pct > 50 ? 'status-replied' : 'status-viewed';
+                            badgeText = pct > 75 ? 'Hot' : 'Watched';
+                        } else if (ev.event_type === 'replied' || ev.event_type === 'reply') {
+                            actionText = `replied to your email outreach`;
+                            badgeClass = 'status-replied';
+                            badgeText = 'Replied';
+                        } else if (ev.event_type === 'booked' || ev.event_type === 'meeting_booked') {
+                            actionText = `booked a meeting with you`;
+                            badgeClass = 'status-booked';
+                            badgeText = 'Booked';
+                        } else {
+                            actionText = `triggered event: ${ev.event_type}`;
+                        }
+                        
+                        const item = document.createElement('div');
+                        item.className = 'activity-item';
+                        item.innerHTML = `
+                            <div class="activity-avatar" style="background: ${colors.bg}; color: ${colors.text};">${initials}</div>
+                            <div class="activity-content">
+                                <div class="activity-text"><strong>${ev.name}</strong> ${actionText}</div>
+                                <div class="activity-time">${ev.company} · ${timeStr}</div>
+                            </div>
+                            <span class="activity-badge ${badgeClass}">${badgeText}</span>
+                        `;
+                        activityContainer.appendChild(item);
+                    });
+                }
+            } catch (err) {
+                console.error('Error updating dashboard:', err);
+            }
+        }
+
+        // Initial update and interval
+        updateDashboard();
+        setInterval(updateDashboard, 5000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics — BlitzOutreach by Sherry Automates</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-lg);
+        }
+        .analytics-full { grid-column: span 2; }
+
+        /* Funnel */
+        .funnel { padding: var(--space-xl); }
+        .funnel-stages {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-md);
+            margin-top: var(--space-lg);
+        }
+        .funnel-stage {
+            display: flex;
+            align-items: center;
+            gap: var(--space-lg);
+        }
+        .funnel-label {
+            width: 120px;
+            font-size: 0.8125rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            flex-shrink: 0;
+        }
+        .funnel-bar-track {
+            flex: 1;
+            height: 32px;
+            background: rgba(255,255,255,0.03);
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            position: relative;
+        }
+        .funnel-bar-fill {
+            height: 100%;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            padding-left: var(--space-md);
+            transition: width 800ms var(--ease-spring);
+        }
+        .funnel-bar-count {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #fff;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+        }
+        .funnel-pct {
+            width: 60px;
+            text-align: right;
+            font-size: 0.875rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            font-family: var(--font-mono);
+            flex-shrink: 0;
+        }
+
+        /* Bar Chart */
+        .bar-chart {
+            display: flex;
+            align-items: flex-end;
+            gap: var(--space-md);
+            height: 180px;
+            padding-top: var(--space-lg);
+        }
+        .bar-col {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: var(--space-sm);
+            height: 100%;
+            justify-content: flex-end;
+        }
+        .bar-value {
+            font-size: 0.6875rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            font-family: var(--font-mono);
+        }
+        .bar-rect {
+            width: 100%;
+            max-width: 40px;
+            border-radius: var(--radius-sm) var(--radius-sm) 2px 2px;
+            background: var(--brand-primary);
+            transition: height 600ms var(--ease-spring);
+            position: relative;
+        }
+        .bar-rect::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            background: linear-gradient(to top, transparent, rgba(255,255,255,0.1));
+        }
+        .bar-day {
+            font-size: 0.6875rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        /* Top Leads Table */
+        .top-leads-row {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+            padding: var(--space-md) 0;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+        .top-leads-row:last-child { border-bottom: none; }
+        .top-lead-rank {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            width: 24px;
+            text-align: center;
+            font-family: var(--font-mono);
+        }
+        .top-lead-av {
+            width: 28px; height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.625rem;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+        .top-lead-name-col { flex: 1; min-width: 0; }
+        .top-lead-n { font-size: 0.8125rem; font-weight: 500; color: var(--text-primary); }
+        .top-lead-c { font-size: 0.6875rem; color: var(--text-muted); }
+        .top-lead-watch {
+            font-size: 0.875rem;
+            font-weight: 700;
+            font-family: var(--font-mono);
+        }
+        .top-lead-dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        /* Heatmap */
+        .heatmap-container {
+            padding: var(--space-xl);
+        }
+        .heatmap-bar {
+            display: flex;
+            height: 40px;
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            margin: var(--space-lg) 0 var(--space-md);
+        }
+        .heatmap-segment {
+            height: 100%;
+            transition: width 600ms var(--ease-spring);
+        }
+        .heatmap-labels {
+            display: flex;
+            justify-content: space-between;
+        }
+        .heatmap-label {
+            font-size: 0.6875rem;
+            color: var(--text-muted);
+            font-family: var(--font-mono);
+        }
+        .heatmap-legend {
+            display: flex;
+            align-items: center;
+            gap: var(--space-lg);
+            margin-top: var(--space-lg);
+            justify-content: center;
+        }
+        .heatmap-legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.6875rem;
+            color: var(--text-muted);
+        }
+        .heatmap-legend-swatch {
+            width: 16px; height: 10px;
+            border-radius: 2px;
+        }
+
+        @media (max-width: 1024px) {
+            .analytics-grid { grid-template-columns: 1fr; }
+            .analytics-full { grid-column: span 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-glow"><div class="bg-glow-orb bg-glow-orb-1"></div><div class="bg-glow-orb bg-glow-orb-2"></div></div>
+    <div class="app-shell">
+        <aside class="sidebar">
+            <div class="sidebar-logo"><img src="../assets/logo_sa.png" alt="SA"></div>
+            <nav class="sidebar-nav">
+                <a href="index.html" class="nav-item" title="Dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></a>
+                <a href="campaigns.html" class="nav-item" title="Campaigns"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></a>
+                <a href="leads.html" class="nav-item" title="Leads"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></a>
+                <a href="videos.html" class="nav-item" title="Videos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg></a>
+                <a href="email.html" class="nav-item" title="Email Outreach">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                </a>
+                <a href="analytics.html" class="nav-item active" title="Analytics"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></a>
+                <a href="engagement.html" class="nav-item" title="Engagement"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></a>
+                <a href="#" class="nav-item" title="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></a>
+            </nav>
+            <div class="sidebar-footer"><div class="sidebar-avatar"><img src="../assets/profile_photo.png" alt="Sheharyar"></div></div>
+        </aside>
+
+        <main class="main-content">
+            <div class="top-bar animate-in">
+                <div class="top-bar-left">
+                    <h1 class="page-title">Analytics</h1>
+                    <p class="page-subtitle">Deep performance insights across all campaigns</p>
+                </div>
+                <div class="top-bar-right">
+                    <button class="btn btn-secondary">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="14" height="14" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                        Jun 1 – Jun 24
+                    </button>
+                    <div class="tab-nav">
+                        <button class="tab-item active">All Campaigns</button>
+                        <button class="tab-item">Q3 Outreach</button>
+                        <button class="tab-item">SaaS Pitch</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="analytics-grid">
+                <!-- Funnel (Full Width) -->
+                <div class="card analytics-full animate-in">
+                    <div class="card-header">
+                        <span class="card-title">Video Engagement Funnel</span>
+                        <span class="card-badge">All time</span>
+                    </div>
+                    <div class="funnel">
+                        <div class="funnel-stages">
+                            <div class="funnel-stage">
+                                <span class="funnel-label">Sent</span>
+                                <div class="funnel-bar-track">
+                                    <div class="funnel-bar-fill" style="width: 100%; background: linear-gradient(90deg, var(--brand-primary), var(--brand-primary-light));">
+                                        <span class="funnel-bar-count">2,847</span>
+                                    </div>
+                                </div>
+                                <span class="funnel-pct">100%</span>
+                            </div>
+                            <div class="funnel-stage">
+                                <span class="funnel-label">Opened</span>
+                                <div class="funnel-bar-track">
+                                    <div class="funnel-bar-fill" style="width: 68%; background: linear-gradient(90deg, var(--brand-primary), #D44444);">
+                                        <span class="funnel-bar-count">1,946</span>
+                                    </div>
+                                </div>
+                                <span class="funnel-pct">68%</span>
+                            </div>
+                            <div class="funnel-stage">
+                                <span class="funnel-label">Played</span>
+                                <div class="funnel-bar-track">
+                                    <div class="funnel-bar-fill" style="width: 50%; background: linear-gradient(90deg, var(--brand-primary-dark), var(--brand-primary));">
+                                        <span class="funnel-bar-count">1,412</span>
+                                    </div>
+                                </div>
+                                <span class="funnel-pct">50%</span>
+                            </div>
+                            <div class="funnel-stage">
+                                <span class="funnel-label">Watched &gt;50%</span>
+                                <div class="funnel-bar-track">
+                                    <div class="funnel-bar-fill" style="width: 31%; background: linear-gradient(90deg, #6B1515, var(--brand-primary-dark));">
+                                        <span class="funnel-bar-count">891</span>
+                                    </div>
+                                </div>
+                                <span class="funnel-pct">31%</span>
+                            </div>
+                            <div class="funnel-stage">
+                                <span class="funnel-label">Replied</span>
+                                <div class="funnel-bar-track">
+                                    <div class="funnel-bar-fill" style="width: 23%; background: linear-gradient(90deg, #4A0E0E, #6B1515);">
+                                        <span class="funnel-bar-count">658</span>
+                                    </div>
+                                </div>
+                                <span class="funnel-pct" style="color: var(--color-success);">23%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reply Rate by Day -->
+                <div class="card animate-in">
+                    <div class="card-header">
+                        <span class="card-title">Reply Rate by Day</span>
+                        <span class="card-badge">This week</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="bar-chart">
+                            <div class="bar-col"><span class="bar-value">18%</span><div class="bar-rect" style="height: 56%;"></div><span class="bar-day">Mon</span></div>
+                            <div class="bar-col"><span class="bar-value">32%</span><div class="bar-rect" style="height: 100%; background: var(--brand-primary-light);"></div><span class="bar-day">Tue</span></div>
+                            <div class="bar-col"><span class="bar-value">24%</span><div class="bar-rect" style="height: 75%;"></div><span class="bar-day">Wed</span></div>
+                            <div class="bar-col"><span class="bar-value">20%</span><div class="bar-rect" style="height: 62%;"></div><span class="bar-day">Thu</span></div>
+                            <div class="bar-col"><span class="bar-value">16%</span><div class="bar-rect" style="height: 50%;"></div><span class="bar-day">Fri</span></div>
+                            <div class="bar-col"><span class="bar-value">8%</span><div class="bar-rect" style="height: 25%; background: var(--brand-primary-dark);"></div><span class="bar-day">Sat</span></div>
+                            <div class="bar-col"><span class="bar-value">12%</span><div class="bar-rect" style="height: 37%; background: var(--brand-primary-dark);"></div><span class="bar-day">Sun</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Top Performing Leads -->
+                <div class="card animate-in">
+                    <div class="card-header">
+                        <span class="card-title">Top Performing Leads</span>
+                        <a href="leads.html" class="btn btn-secondary" style="font-size: 0.6875rem; padding: 4px 12px;">View All</a>
+                    </div>
+                    <div class="card-body" id="top-leads-container">
+                        <div class="top-leads-row">
+                            <span class="top-lead-rank">1</span>
+                            <div class="top-lead-av" style="background: #2a1a1a; color: #E63939;">SR</div>
+                            <div class="top-lead-name-col"><div class="top-lead-n">Sarah Rodriguez</div><div class="top-lead-c">MarketPro</div></div>
+                            <span class="top-lead-watch" style="color: var(--color-success);">100%</span>
+                            <div class="top-lead-dot" style="background: var(--color-success);" title="Booked"></div>
+                        </div>
+                        <div class="top-leads-row">
+                            <span class="top-lead-rank">2</span>
+                            <div class="top-lead-av" style="background: #1a2a1a; color: #22C55E;">TD</div>
+                            <div class="top-lead-name-col"><div class="top-lead-n">Tyler Dawson</div><div class="top-lead-c">ADknown</div></div>
+                            <span class="top-lead-watch" style="color: var(--color-success);">92%</span>
+                            <div class="top-lead-dot" style="background: var(--color-warning);" title="Viewed"></div>
+                        </div>
+                        <div class="top-leads-row">
+                            <span class="top-lead-rank">3</span>
+                            <div class="top-lead-av" style="background: #1a2a1a; color: #22C55E;">CD</div>
+                            <div class="top-lead-name-col"><div class="top-lead-n">Chris Dymond</div><div class="top-lead-c">Unfolding</div></div>
+                            <span class="top-lead-watch" style="color: var(--color-warning);">78%</span>
+                            <div class="top-lead-dot" style="background: var(--color-success);" title="Replied"></div>
+                        </div>
+                        <div class="top-leads-row">
+                            <span class="top-lead-rank">4</span>
+                            <div class="top-lead-av" style="background: #1a1a2a; color: #7788CC;">BP</div>
+                            <div class="top-lead-name-col"><div class="top-lead-n">Brian Park</div><div class="top-lead-c">Zenith Co</div></div>
+                            <span class="top-lead-watch" style="color: var(--text-muted);">67%</span>
+                            <div class="top-lead-dot" style="background: var(--text-muted);" title="No reply"></div>
+                        </div>
+                        <div class="top-leads-row">
+                            <span class="top-lead-rank">5</span>
+                            <div class="top-lead-av" style="background: #2a1a2a; color: #CC88CC;">PS</div>
+                            <div class="top-lead-name-col"><div class="top-lead-n">Priya Sharma</div><div class="top-lead-c">DataVault</div></div>
+                            <span class="top-lead-watch" style="color: var(--color-warning);">55%</span>
+                            <div class="top-lead-dot" style="background: var(--color-warning);" title="Viewed"></div>
+                        </div>
+                    </div>
+                </div>
+ 
+                <!-- Watch Heatmap (Full Width) -->
+                <div class="card analytics-full animate-in">
+                    <div class="card-header">
+                        <span class="card-title">Watch Heatmap — Video Timeline</span>
+                        <span class="card-badge">Q3 Agency Pitch · 1:12</span>
+                    </div>
+                    <div class="heatmap-container">
+                        <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: var(--space-sm);">Where prospects engage most in your video — brighter = more views at that moment</p>
+                        <div class="heatmap-bar">
+                            <div class="heatmap-segment" style="width: 8%; background: #E63939;"></div>
+                            <div class="heatmap-segment" style="width: 6%; background: #CC2222;"></div>
+                            <div class="heatmap-segment" style="width: 8%; background: #B01E1E;"></div>
+                            <div class="heatmap-segment" style="width: 10%; background: #8B1A1A;"></div>
+                            <div class="heatmap-segment" style="width: 12%; background: #6B1515;"></div>
+                            <div class="heatmap-segment" style="width: 10%; background: #4A0E0E;"></div>
+                            <div class="heatmap-segment" style="width: 8%; background: #3A0B0B;"></div>
+                            <div class="heatmap-segment" style="width: 10%; background: #4A0E0E;"></div>
+                            <div class="heatmap-segment" style="width: 8%; background: #8B1A1A;"></div>
+                            <div class="heatmap-segment" style="width: 6%; background: #CC2222;"></div>
+                            <div class="heatmap-segment" style="width: 8%; background: #6B1515;"></div>
+                            <div class="heatmap-segment" style="width: 6%; background: #3A0B0B;"></div>
+                        </div>
+                        <div class="heatmap-labels">
+                            <span class="heatmap-label">0:00</span>
+                            <span class="heatmap-label">0:10</span>
+                            <span class="heatmap-label">0:20</span>
+                            <span class="heatmap-label">0:30</span>
+                            <span class="heatmap-label">0:40</span>
+                            <span class="heatmap-label">0:50</span>
+                            <span class="heatmap-label">1:00</span>
+                            <span class="heatmap-label">1:12</span>
+                        </div>
+                        <div class="heatmap-legend">
+                            <div class="heatmap-legend-item"><div class="heatmap-legend-swatch" style="background: #E63939;"></div>High engagement</div>
+                            <div class="heatmap-legend-item"><div class="heatmap-legend-swatch" style="background: #8B1A1A;"></div>Medium</div>
+                            <div class="heatmap-legend-item"><div class="heatmap-legend-swatch" style="background: #3A0B0B;"></div>Low / drop-off</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        function getInitials(name) {
+            return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+        }
+
+        function getAvatarColor(name) {
+            const colors = ['#1a3a2a', '#2a1a1a', '#1a1a2a', '#2a2a1a', '#1a2a2a', '#2a1a2a'];
+            const textColors = ['#22C55E', '#E63939', '#8B8BCC', '#F59E0B', '#22D3EE', '#CC88CC'];
+            let hash = 0;
+            for (let i = 0; i < name.length; i++) {
+                hash = name.charCodeAt(i) + ((hash << 5) - hash);
+            }
+            const index = Math.abs(hash) % colors.length;
+            return { bg: colors[index], text: textColors[index] };
+        }
+
+        async function updateAnalytics() {
+            try {
+                // Fetch leads list
+                const res = await fetch('/api/leads');
+                const leads = await res.json();
+                
+                // Fetch events
+                const eventsRes = await fetch('/api/events');
+                const events = await eventsRes.json();
+                
+                // 1. Calculate funnel metrics
+                const totalSent = leads.length;
+                const opened = leads.filter(l => l.status === 'Viewed' || l.status === 'Replied' || l.status === 'Booked').length;
+                const played = leads.filter(l => l.watch_percent !== '-').length;
+                const watched50 = leads.filter(l => {
+                    if (l.watch_percent === '-') return false;
+                    const pct = parseInt(l.watch_percent);
+                    return pct > 50;
+                }).length;
+                const replied = leads.filter(l => l.status === 'Replied' || l.status === 'Booked').length;
+                
+                // Update Funnel stages HTML
+                const stages = document.querySelectorAll('.funnel-stage');
+                if (stages.length >= 5 && totalSent > 0) {
+                    stages[0].querySelector('.funnel-bar-fill').style.width = '100%';
+                    stages[0].querySelector('.funnel-bar-count').textContent = totalSent;
+                    stages[0].querySelector('.funnel-pct').textContent = '100%';
+                    
+                    const openPct = Math.round((opened / totalSent) * 100);
+                    stages[1].querySelector('.funnel-bar-fill').style.width = `${openPct}%`;
+                    stages[1].querySelector('.funnel-bar-count').textContent = opened;
+                    stages[1].querySelector('.funnel-pct').textContent = `${openPct}%`;
+                    
+                    const playPct = Math.round((played / totalSent) * 100);
+                    stages[2].querySelector('.funnel-bar-fill').style.width = `${playPct}%`;
+                    stages[2].querySelector('.funnel-bar-count').textContent = played;
+                    stages[2].querySelector('.funnel-pct').textContent = `${playPct}%`;
+                    
+                    const watchPctVal = Math.round((watched50 / totalSent) * 100);
+                    stages[3].querySelector('.funnel-bar-fill').style.width = `${watchPctVal}%`;
+                    stages[3].querySelector('.funnel-bar-count').textContent = watched50;
+                    stages[3].querySelector('.funnel-pct').textContent = `${watchPctVal}%`;
+                    
+                    const replyPctVal = Math.round((replied / totalSent) * 100);
+                    stages[4].querySelector('.funnel-bar-fill').style.width = `${replyPctVal}%`;
+                    stages[4].querySelector('.funnel-bar-count').textContent = replied;
+                    stages[4].querySelector('.funnel-pct').textContent = `${replyPctVal}%`;
+                }
+                
+                // 2. Populate Top Performing Leads
+                const topLeadsContainer = document.getElementById('top-leads-container');
+                if (topLeadsContainer) {
+                    const sorted = [...leads].sort((a, b) => {
+                        const pctA = a.watch_percent === '-' ? 0 : parseInt(a.watch_percent);
+                        const pctB = b.watch_percent === '-' ? 0 : parseInt(b.watch_percent);
+                        return pctB - pctA;
+                    }).slice(0, 5);
+                    
+                    topLeadsContainer.innerHTML = '';
+                    sorted.forEach((lead, index) => {
+                        const colors = getAvatarColor(lead.name);
+                        const initials = getInitials(lead.name);
+                        
+                        let dotColor = 'var(--text-muted)';
+                        if (lead.status === 'Booked') dotColor = 'var(--color-success)';
+                        else if (lead.status === 'Replied') dotColor = 'var(--color-success)';
+                        else if (lead.status === 'Viewed') dotColor = 'var(--color-warning)';
+                        
+                        const row = document.createElement('div');
+                        row.className = 'top-leads-row';
+                        row.innerHTML = `
+                            <span class="top-lead-rank">${index + 1}</span>
+                            <div class="top-lead-av" style="background: ${colors.bg}; color: ${colors.text};">${initials}</div>
+                            <div class="top-lead-name-col">
+                                <div class="top-lead-n">${lead.name}</div>
+                                <div class="top-lead-c">${lead.company}</div>
+                            </div>
+                            <span class="top-lead-watch" style="color: var(--color-success);">${lead.watch_percent}</span>
+                            <div class="top-lead-dot" style="background: ${dotColor};" title="${lead.status}"></div>
+                        `;
+                        topLeadsContainer.appendChild(row);
+                    });
+                }
+                
+                // 3. Compute Reply Rate by Day
+                const dayCounts = [0, 0, 0, 0, 0, 0, 0]; // Sun-Sat
+                let totalReplies = 0;
+                events.forEach(ev => {
+                    if (ev.event_type === 'replied' || ev.event_type === 'reply' || ev.event_type === 'booked') {
+                        const dayIndex = new Date(ev.timestamp).getDay();
+                        dayCounts[dayIndex]++;
+                        totalReplies++;
+                    }
+                });
+                
+                const cols = document.querySelectorAll('.bar-chart .bar-col');
+                if (cols.length === 7) {
+                    const displayIndices = [1, 2, 3, 4, 5, 6, 0];
+                    let maxCount = Math.max(...dayCounts, 1);
+                    
+                    displayIndices.forEach((dayIdx, i) => {
+                        const count = dayCounts[dayIdx];
+                        const pct = totalReplies > 0 ? Math.round((count / totalReplies) * 100) : 0;
+                        const height = Math.max(Math.round((count / maxCount) * 80) + 20, 15);
+                        
+                        cols[i].querySelector('.bar-value').textContent = `${pct}%`;
+                        cols[i].querySelector('.bar-rect').style.height = `${height}%`;
+                    });
+                }
+            } catch (err) {
+                console.error('Error updating analytics:', err);
+            }
+        }
+        
+        updateAnalytics();
+        setInterval(updateAnalytics, 5000);
+    </script>
+</body>
+</html>

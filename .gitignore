@@ -1,0 +1,18 @@
+# Environments
+.env
+.env.*
+
+# Python Cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+
+# Local Output/Temp Folders
+output/
+.tmp/
+
+# OS specific files
+.DS_Store
+Thumbs.db

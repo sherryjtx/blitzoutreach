@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leads — BlitzOutreach by Sherry Automates</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* ── Leads Table ── */
+        .table-controls {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+            margin-bottom: var(--space-xl);
+            flex-wrap: wrap;
+        }
+        .table-header-row {
+            display: grid;
+            grid-template-columns: 36px 2fr 1.2fr 1.2fr 100px 80px 120px 60px;
+            gap: var(--space-md);
+            align-items: center;
+            padding: var(--space-md) var(--space-xl);
+            border-bottom: 1px solid var(--border-subtle);
+        }
+        .table-header-row span {
+            font-size: 0.6875rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+        .lead-row {
+            display: grid;
+            grid-template-columns: 36px 2fr 1.2fr 1.2fr 100px 80px 120px 60px;
+            gap: var(--space-md);
+            align-items: center;
+            padding: var(--space-md) var(--space-xl);
+            border-bottom: 1px solid var(--border-subtle);
+            transition: background 150ms var(--ease-out-expo);
+            cursor: pointer;
+        }
+        .lead-row:last-child { border-bottom: none; }
+        .lead-row:hover { background: var(--bg-surface-hover); }
+
+        .checkbox {
+            width: 16px; height: 16px;
+            border-radius: 4px;
+            border: 1px solid var(--border-default);
+            background: transparent;
+            cursor: pointer;
+            appearance: none;
+            -webkit-appearance: none;
+            transition: all 150ms;
+            position: relative;
+        }
+        .checkbox:checked {
+            background: var(--brand-primary);
+            border-color: var(--brand-primary);
+        }
+        .checkbox:checked::after {
+            content: '✓';
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 10px;
+            font-weight: 700;
+        }
+
+        .lead-identity {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+            min-width: 0;
+        }
+        .lead-avatar {
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.6875rem;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+        .lead-name-block { min-width: 0; }
+        .lead-name {
+            font-size: 0.8125rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .lead-email {
+            font-size: 0.6875rem;
+            color: var(--text-muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .lead-company {
+            font-size: 0.8125rem;
+            color: var(--text-secondary);
+        }
+        .lead-website {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: color 150ms;
+        }
+        .lead-website:hover { color: var(--brand-primary-light); }
+        .lead-watch {
+            font-size: 0.8125rem;
+            font-weight: 600;
+            font-family: var(--font-mono);
+            color: var(--text-secondary);
+        }
+        .lead-time {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+        .lead-actions {
+            display: flex;
+            gap: 2px;
+            opacity: 0;
+            transition: opacity 150ms;
+        }
+        .lead-row:hover .lead-actions { opacity: 1; }
+        .lead-action-btn {
+            width: 28px; height: 28px;
+            border-radius: 50%;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 150ms;
+        }
+        .lead-action-btn:hover {
+            background: var(--bg-surface-active);
+            color: var(--text-primary);
+        }
+        .lead-action-btn svg { width: 14px; height: 14px; }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: var(--space-lg) var(--space-xl);
+            border-top: 1px solid var(--border-subtle);
+        }
+        .pagination-info {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+        .pagination-pages {
+            display: flex;
+            gap: 4px;
+        }
+        .page-btn {
+            width: 32px; height: 32px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-subtle);
+            background: transparent;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            font-family: var(--font-sans);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 150ms;
+        }
+        .page-btn:hover { background: var(--bg-surface-hover); color: var(--text-primary); }
+        .page-btn.active {
+            background: var(--brand-primary);
+            border-color: var(--brand-primary);
+            color: #fff;
+        }
+
+        @media (max-width: 1024px) {
+            .table-header-row, .lead-row {
+                grid-template-columns: 36px 2fr 1fr 100px 80px 60px;
+            }
+            .lead-row > :nth-child(4), .table-header-row > :nth-child(4) { display: none; }
+            .lead-row > :nth-child(7), .table-header-row > :nth-child(7) { display: none; }
+        }
+        @media (max-width: 768px) {
+            .table-header-row, .lead-row {
+                grid-template-columns: 36px 1fr 100px 60px;
+            }
+            .lead-row > :nth-child(3), .table-header-row > :nth-child(3) { display: none; }
+            .lead-row > :nth-child(6), .table-header-row > :nth-child(6) { display: none; }
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(10, 10, 14, 0.85);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+        }
+        .modal-content {
+            width: 440px;
+            padding: var(--space-xl);
+            position: relative;
+            animation: modalIn 300ms var(--ease-out-expo);
+        }
+        @keyframes modalIn {
+            from { opacity: 0; transform: translateY(12px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .modal-close {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            transition: all 150ms;
+        }
+        .modal-close:hover {
+            background: var(--bg-surface-hover);
+            color: var(--text-primary);
+        }
+        .modal-field {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: var(--space-md);
+        }
+        .modal-field label {
+            font-size: 0.6875rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .modal-field input {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid var(--border-subtle);
+            color: #fff;
+            padding: var(--space-md);
+            border-radius: var(--radius-md);
+            font-size: 0.875rem;
+            font-family: var(--font-sans);
+            transition: all 150ms;
+        }
+        .modal-field input:focus {
+            outline: none;
+            border-color: var(--brand-primary);
+            box-shadow: 0 0 12px var(--brand-primary-glow);
+            background: rgba(255,255,255,0.04);
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-glow"><div class="bg-glow-orb bg-glow-orb-1"></div><div class="bg-glow-orb bg-glow-orb-2"></div></div>
+    <div class="app-shell">
+        <aside class="sidebar">
+            <div class="sidebar-logo"><img src="../assets/logo_sa.png" alt="SA"></div>
+            <nav class="sidebar-nav">
+                <a href="index.html" class="nav-item" title="Dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></a>
+                <a href="campaigns.html" class="nav-item" title="Campaigns"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></a>
+                <a href="leads.html" class="nav-item active" title="Leads"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></a>
+                <a href="videos.html" class="nav-item" title="Videos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg></a>
+                <a href="email.html" class="nav-item" title="Email Outreach">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                </a>
+                <a href="analytics.html" class="nav-item" title="Analytics"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></a>
+                <a href="engagement.html" class="nav-item" title="Engagement"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></a>
+                <a href="#" class="nav-item" title="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></a>
+            </nav>
+            <div class="sidebar-footer"><div class="sidebar-avatar"><img src="../assets/profile_photo.png" alt="Sheharyar"></div></div>
+        </aside>
+
+        <main class="main-content">
+            <div class="top-bar animate-in">
+                <div class="top-bar-left">
+                    <h1 class="page-title">Leads</h1>
+                    <p class="page-subtitle">Manage and track your outreach prospects</p>
+                </div>
+                <div class="top-bar-right">
+                    <div class="search-bar" style="width: 220px;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                        <input type="text" id="search-input" placeholder="Search leads...">
+                    </div>
+                    <button class="btn btn-secondary">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="14" height="14" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+                        Import
+                    </button>
+                    <button class="btn btn-primary" id="add-lead-btn">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="14" height="14" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        Add Lead
+                    </button>
+                </div>
+            </div>
+
+            <div class="table-controls animate-in">
+                <div class="tab-nav">
+                    <button class="tab-item active" data-filter="all">All</button>
+                    <button class="tab-item" data-filter="contacted">Contacted</button>
+                    <button class="tab-item" data-filter="replied">Replied</button>
+                    <button class="tab-item" data-filter="booked">Booked</button>
+                </div>
+                <span id="leads-count-label" style="font-size: 0.75rem; color: var(--text-muted); margin-left: auto;">0 leads total</span>
+            </div>
+
+            <div class="card animate-in">
+                <div class="table-header-row">
+                    <input type="checkbox" class="checkbox">
+                    <span>Name</span>
+                    <span>Company</span>
+                    <span>Website</span>
+                    <span>Status</span>
+                    <span>Watch</span>
+                    <span>Last Activity</span>
+                    <span></span>
+                </div>
+
+                <div id="leads-container">
+                    <!-- Dynamic lead rows rendered here -->
+                </div>
+
+                <div class="pagination">
+                    <span class="pagination-info">Showing 0 of 0 leads</span>
+                    <div class="pagination-pages">
+                        <button class="page-btn active">1</button>
+                        <button class="page-btn">2</button>
+                        <button class="page-btn">3</button>
+                        <button class="page-btn">...</button>
+                        <button class="page-btn">57</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Add Lead Modal -->
+    <div id="add-lead-modal" class="modal">
+        <div class="modal-content card" style="background: var(--bg-surface); border: 1px solid var(--border-default);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-lg);">
+                <h3 style="font-size: 1.125rem; font-weight: 600; color: #fff;">Add Outbound Lead</h3>
+                <button id="close-modal-btn" class="modal-close">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="16" height="16" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+            <form id="add-lead-form">
+                <div class="modal-field">
+                    <label>Lead Name</label>
+                    <input type="text" id="lead-name" required placeholder="e.g. John Doe">
+                </div>
+                <div class="modal-field">
+                    <label>Company Name</label>
+                    <input type="text" id="lead-company" required placeholder="e.g. Acme Corp">
+                </div>
+                <button type="submit" class="btn btn-primary" style="margin-top: var(--space-md); padding: 12px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 600;">
+                    Add Outreach Prospect
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let allLeads = [];
+        let currentFilter = 'all';
+        let searchPattern = '';
+
+        async function fetchLeads() {
+            try {
+                const res = await fetch('/api/leads');
+                allLeads = await res.json();
+                renderLeads();
+            } catch (err) {
+                console.error('Error fetching leads:', err);
+            }
+        }
+
+        function timeAgo(dateString) {
+            if (!dateString) return 'Just now';
+            const date = new Date(dateString);
+            const now = new Date();
+            const seconds = Math.floor((now - date) / 1000);
+            if (seconds < 60) return 'Just now';
+            const minutes = Math.floor(seconds / 60);
+            if (minutes < 60) return `${minutes}m ago`;
+            const hours = Math.floor(minutes / 60);
+            if (hours < 24) return `${hours}h ago`;
+            const days = Math.floor(hours / 24);
+            return `${days}d ago`;
+        }
+
+        function getInitials(name) {
+            return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+        }
+
+        function getAvatarColor(name) {
+            const colors = ['#1a3a2a', '#2a1a1a', '#1a1a2a', '#2a2a1a', '#1a2a2a', '#2a1a2a'];
+            const textColors = ['#22C55E', '#E63939', '#8B8BCC', '#F59E0B', '#22D3EE', '#CC88CC'];
+            let hash = 0;
+            for (let i = 0; i < name.length; i++) {
+                hash = name.charCodeAt(i) + ((hash << 5) - hash);
+            }
+            const index = Math.abs(hash) % colors.length;
+            return { bg: colors[index], text: textColors[index] };
+        }
+
+        function renderLeads() {
+            const container = document.getElementById('leads-container');
+            if (!container) return;
+            
+            // Filter and search
+            let filtered = allLeads.filter(lead => {
+                let matchesFilter = true;
+                if (currentFilter === 'contacted') {
+                    matchesFilter = lead.status === 'Sent' || lead.status === 'Viewed';
+                } else if (currentFilter === 'replied') {
+                    matchesFilter = lead.status === 'Replied';
+                } else if (currentFilter === 'booked') {
+                    matchesFilter = lead.status === 'Booked';
+                }
+                
+                let matchesSearch = true;
+                if (searchPattern) {
+                    const query = searchPattern.toLowerCase();
+                    matchesSearch = lead.name.toLowerCase().includes(query) || 
+                                    lead.company.toLowerCase().includes(query);
+                }
+                
+                return matchesFilter && matchesSearch;
+            });
+            
+            // Update labels
+            document.getElementById('leads-count-label').textContent = `${allLeads.length} leads total`;
+            document.querySelector('.pagination-info').textContent = `Showing 1–${filtered.length} of ${allLeads.length} leads`;
+            
+            container.innerHTML = '';
+            
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div style="padding: var(--space-xl); text-align: center; color: var(--text-muted); font-size: 0.875rem;">
+                        No prospects match the filter criteria.
+                    </div>
+                `;
+                return;
+            }
+            
+            filtered.forEach(lead => {
+                const colors = getAvatarColor(lead.name);
+                const initials = getInitials(lead.name);
+                const timeStr = timeAgo(lead.created_at);
+                
+                let statusClass = 'status-sent';
+                if (lead.status === 'Viewed') statusClass = 'status-viewed';
+                else if (lead.status === 'Replied') statusClass = 'status-replied';
+                else if (lead.status === 'Booked') statusClass = 'status-booked';
+                
+                const cleanDomain = lead.company.toLowerCase().replace(/[^a-z0-9]/g, '') + '.com';
+                const email = `${lead.name.split(' ')[0].toLowerCase()}@${cleanDomain}`;
+                
+                const row = document.createElement('div');
+                row.className = 'lead-row';
+                row.innerHTML = `
+                    <input type="checkbox" class="checkbox">
+                    <div class="lead-identity" onclick="window.open('/v/${lead.video_id}', '_blank')">
+                        <div class="lead-avatar" style="background: ${colors.bg}; color: ${colors.text};">${initials}</div>
+                        <div class="lead-name-block">
+                            <div class="lead-name">${lead.name}</div>
+                            <div class="lead-email">${email}</div>
+                        </div>
+                    </div>
+                    <span class="lead-company">${lead.company}</span>
+                    <a href="https://${cleanDomain}" target="_blank" class="lead-website">${cleanDomain}</a>
+                    <span class="status-pill ${statusClass}">${lead.status}</span>
+                    <span class="lead-watch" style="color: ${lead.watch_percent !== '-' ? 'var(--color-success)' : 'var(--text-muted)'};">${lead.watch_percent}</span>
+                    <span class="lead-time">${timeStr}</span>
+                    <div class="lead-actions">
+                        <button class="lead-action-btn" title="View Portal" onclick="window.open('/v/${lead.video_id}', '_blank'); event.stopPropagation();"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+                        <button class="lead-action-btn" title="Delete Lead" onclick="deleteLead('${lead.video_id}'); event.stopPropagation();"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+                    </div>
+                `;
+                container.appendChild(row);
+            });
+        }
+
+        // Wire modal controls
+        const modal = document.getElementById('add-lead-modal');
+        const openBtn = document.getElementById('add-lead-btn');
+        const closeBtn = document.getElementById('close-modal-btn');
+        const form = document.getElementById('add-lead-form');
+
+        if (openBtn) openBtn.onclick = () => { modal.style.display = 'flex'; };
+        if (closeBtn) closeBtn.onclick = () => { modal.style.display = 'none'; };
+        window.onclick = (e) => { if (e.target === modal) modal.style.display = 'none'; };
+
+        if (form) {
+            form.onsubmit = async (e) => {
+                e.preventDefault();
+                const submitBtn = form.querySelector('button[type="submit"]');
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Registering Lead...';
+                
+                try {
+                    const payload = {
+                        name: document.getElementById('lead-name').value,
+                        company: document.getElementById('lead-company').value
+                    };
+                    
+                    const res = await fetch('/api/leads/create', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    
+                    if (res.ok) {
+                        form.reset();
+                        modal.style.display = 'none';
+                        fetchLeads();
+                    }
+                } catch (err) {
+                    console.error('Error creating lead:', err);
+                } finally {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Add Outreach Prospect';
+                }
+            };
+        }
+
+        async function deleteLead(videoId) {
+            if (!confirm('Are you sure you want to delete this lead?')) return;
+            try {
+                const res = await fetch(`/api/leads/${videoId}`, { method: 'DELETE' });
+                if (res.ok) {
+                    fetchLeads();
+                }
+            } catch (err) {
+                console.error('Error deleting lead:', err);
+            }
+        }
+
+        // Search listener
+        document.getElementById('search-input').addEventListener('input', (e) => {
+            searchPattern = e.target.value;
+            renderLeads();
+        });
+
+        // Filter pills listeners
+        document.querySelectorAll('.tab-item').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.tab-item').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                currentFilter = e.target.getAttribute('data-filter');
+                renderLeads();
+            });
+        });
+
+        // Initial fetch
+        fetchLeads();
+        setInterval(fetchLeads, 5000);
+    </script>
+</body>
+</html>

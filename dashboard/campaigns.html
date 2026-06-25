@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Campaigns — BlitzOutreach by Sherry Automates</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* ── Campaigns Custom Styles ── */
+        .campaigns-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: var(--space-xl);
+            margin-bottom: var(--space-2xl);
+        }
+
+        .campaign-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            padding: var(--space-xl);
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-lg);
+            position: relative;
+            overflow: hidden;
+            transition: all 250ms var(--ease-out-expo);
+        }
+
+        .campaign-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
+        }
+
+        .campaign-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--border-strong);
+            background: var(--bg-surface-hover);
+            box-shadow: 0 12px 30px -10px rgba(0,0,0,0.5), 
+                        0 0 40px -15px var(--brand-primary-glow);
+        }
+
+        .campaign-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .campaign-title-block {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .campaign-name {
+            font-size: 0.9375rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            letter-spacing: -0.01em;
+        }
+
+        .campaign-template {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .campaign-template svg {
+            width: 12px;
+            height: 12px;
+            stroke-width: 2;
+        }
+
+        /* Status Pills */
+        .status-badge {
+            font-size: 0.625rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 4px 8px;
+            border-radius: var(--radius-sm);
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .status-active {
+            background: var(--color-success-subtle);
+            color: var(--color-success);
+            border: 1px solid rgba(34, 197, 94, 0.15);
+        }
+
+        .status-active::before {
+            content: '';
+            width: 5px; height: 5px;
+            background: var(--color-success);
+            border-radius: 50%;
+            display: inline-block;
+            box-shadow: 0 0 8px var(--color-success);
+            animation: pulse 1.5s infinite;
+        }
+
+        .status-paused {
+            background: var(--color-warning-subtle);
+            color: var(--color-warning);
+            border: 1px solid rgba(245, 158, 11, 0.15);
+        }
+
+        .status-draft {
+            background: rgba(255,255,255,0.03);
+            color: var(--text-muted);
+            border: 1px solid var(--border-subtle);
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.4; }
+            50% { opacity: 1; }
+            100% { opacity: 0.4; }
+        }
+
+        /* Campaign Stats */
+        .campaign-stats-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: var(--space-md);
+            padding: var(--space-md) 0;
+            border-top: 1px solid var(--border-subtle);
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .campaign-stat-item {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .campaign-stat-val {
+            font-size: 0.875rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .campaign-stat-lbl {
+            font-size: 0.625rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        /* Progress Bar */
+        .campaign-progress-block {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .progress-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.6875rem;
+            color: var(--text-muted);
+        }
+
+        .progress-track {
+            height: 4px;
+            background: rgba(255,255,255,0.04);
+            border-radius: var(--radius-pill);
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--brand-primary);
+            border-radius: var(--radius-pill);
+            box-shadow: 0 0 8px var(--brand-primary-glow);
+        }
+
+        /* Campaign Actions */
+        .campaign-actions-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: auto;
+        }
+
+        .campaign-leads-preview {
+            display: flex;
+            align-items: center;
+        }
+
+        .lead-avatar-stack {
+            display: flex;
+            align-items: center;
+            margin-left: 4px;
+        }
+
+        .stack-avatar {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 1.5px solid var(--bg-base);
+            margin-left: -6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 8px;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .stack-avatar:first-child {
+            margin-left: 0;
+        }
+
+        .campaign-card-btns {
+            display: flex;
+            gap: 6px;
+        }
+
+        .card-btn {
+            width: 32px; height: 32px;
+            border-radius: var(--radius-sm);
+            background: rgba(255,255,255,0.02);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 150ms;
+            text-decoration: none;
+        }
+
+        .card-btn:hover {
+            background: var(--bg-surface-active);
+            color: var(--text-primary);
+            border-color: var(--border-strong);
+        }
+
+        .card-btn-primary {
+            padding: 0 12px;
+            width: auto;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        /* Modal styling */
+        .modal {
+            position: fixed;
+            inset: 0;
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: var(--space-xl);
+            background: rgba(3,3,5,0.8);
+            backdrop-filter: blur(8px);
+            animation: fadeIn 200ms ease-out both;
+        }
+
+        .modal-content {
+            background: var(--bg-base);
+            border: 1px solid var(--border-strong);
+            border-radius: var(--radius-xl);
+            width: 100%;
+            max-width: 500px;
+            padding: var(--space-2xl);
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-xl);
+            box-shadow: 0 24px 80px rgba(0,0,0,0.8),
+                        0 0 60px -20px var(--brand-primary-glow);
+            animation: scaleIn 250ms cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: -0.02em;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: color 150ms;
+        }
+
+        .modal-close:hover {
+            color: var(--text-primary);
+        }
+
+        .modal-close svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .modal-body {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-lg);
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: var(--space-md);
+            margin-top: var(--space-md);
+        }
+
+        @keyframes scaleIn {
+            from { opacity: 0; transform: scale(0.96); }
+            to { opacity: 1; transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Background Glow -->
+    <div class="bg-glow">
+        <div class="bg-glow-orb bg-glow-orb-1"></div>
+        <div class="bg-glow-orb bg-glow-orb-2"></div>
+    </div>
+
+    <div class="app-shell">
+        <!-- ═══ Sidebar ═══ -->
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <img src="../assets/logo_sa.png" alt="Sherry Automates">
+            </div>
+
+            <nav class="sidebar-nav">
+                <a href="index.html" class="nav-item" title="Dashboard">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+                </a>
+                <a href="campaigns.html" class="nav-item active" title="Campaigns">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                </a>
+                <a href="leads.html" class="nav-item" title="Leads">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                </a>
+                <a href="videos.html" class="nav-item" title="Videos">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+                </a>
+                <a href="email.html" class="nav-item" title="Email Outreach">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                </a>
+                <a href="analytics.html" class="nav-item" title="Analytics">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                </a>
+                <a href="engagement.html" class="nav-item" title="Engagement">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                </a>
+                <a href="#" class="nav-item" title="Settings">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="sidebar-avatar">
+                    <img src="../assets/profile_photo.png" alt="Sheharyar">
+                </div>
+            </div>
+        </aside>
+
+        <!-- ═══ Main Content ═══ -->
+        <main class="main-content">
+            <!-- Top Bar -->
+            <div class="top-bar animate-in">
+                <div class="top-bar-left">
+                    <h1 class="page-title">Campaigns</h1>
+                    <p class="page-subtitle">Create, monitor, and scale your video outreach campaigns</p>
+                </div>
+                <div class="top-bar-right">
+                    <div class="search-bar" style="width: 220px;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                        <input type="text" placeholder="Search campaigns...">
+                    </div>
+                    <button class="btn btn-primary" id="openModalBtn">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="14" height="14" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        New Campaign
+                    </button>
+                </div>
+            </div>
+
+            <!-- Grid -->
+            <div class="campaigns-grid">
+                <!-- Card 1 -->
+                <div class="campaign-card">
+                    <div class="campaign-header">
+                        <div class="campaign-title-block">
+                            <span class="status-badge status-active">Active</span>
+                            <h3 class="campaign-name" style="margin-top: var(--space-xs);">SaaS Founder Outbound</h3>
+                        </div>
+                    </div>
+                    <div class="campaign-template">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+                        <span>Template: SaaS Growth Audit V2</span>
+                    </div>
+                    <div class="campaign-stats-row">
+                        <div class="campaign-stat-item">
+                            <span class="campaign-stat-val">1,240</span>
+                            <span class="campaign-stat-lbl">Sent</span>
+                        </div>
+                        <div class="campaign-stat-item">
+                            <span class="campaign-stat-val" style="color: var(--brand-primary-light);">72.5%</span>
+                            <span class="campaign-stat-lbl">Opens</span>
+                        </div>
+                        <div class="campaign-stat-item">
+                            <span class="campaign-stat-val" style="color: var(--color-success);">24.8%</span>
+                            <span class="campaign-stat-lbl">Replies</span>
+                        </div>
+                        <div class="campaign-stat-item">
+                            <span class="campaign-stat-val" style="color: #22C55E; text-shadow: 0 0 8px rgba(34,197,94,0.2);">12</span>
+                            <span class="campaign-stat-lbl">Booked</span>
+                        </div>
+                    </div>
+                    <div class="campaign-progress-block">
+                        <div class="progress-meta">
+                            <span>Leads Processed</span>
+                            <span>1,240 / 2,000 (62%)</span>
+                        </div>
+                        <div class="progress-track">
+                            <div class="progress-fill" style="width: 62%;"></div>
+                        </div>
+                    </div>
+                    <div class="campaign-actions-footer">
+                        <div class="campaign-leads-preview">
+                            <span style="font-size: 0.6875rem; color: var(--text-muted);">Recent:</span>
+                            <div class="lead-avatar-stack">
+                                <div class="stack-avatar" style="background: #CC5555;">TD</div>
+                                <div class="stack-avatar" style="background: #55CC55;">SR</div>
+                                <div class="stack-avatar" style="background: #5555CC;">MK</div>
+                                <div class="stack-avatar" style="background: var(--bg-elevated); border-color: var(--border-subtle); color: var(--text-muted);">+85</div>
+                            </div>
+                        </div>
+                        <div class="campaign-card-btns">
+                            <a href="leads.html" class="card-btn" title="View Campaign Leads">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                            </a>
+                            <a href="analytics.html" class="card-btn" title="Detailed Analytics">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="campaign-card">
+                    <div class="campaign-header">
+                        <div class="campaign-title-block">
+                            <span class="status-badge status-active">Active</span>
+                            <h3 class="campaign-name" style="margin-top: var(--space-xs);">Enterprise Operations Pitch</h3>
+                        </div>
+                    </div>
+                    <div class="campaign-template">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+                        <span>Template: AI Operations Audit</span>
+                    </div>
+                    <div class="campaign-stats-row">
+                        <div class="campaign-stat-item">
+                            <span class="campaign-stat-val">980</span>
+                            <span class="campaign-stat-lbl">Sent</span>
+                        </div>
+                        <div class="campaign-stat-item">
+                            <span class="campaign-stat-val" style="color: var(--brand-primary-light);">65.1%</span>
+                            <span class="campaign-stat-lbl">Opens</span>
+                        </div>
+                        <div class="campaign-stat-item">
+                            <span class="campaign-stat-val" style="color: var(--color-success);">21.4%</span>
+                            <span class="campaign-stat-lbl">Replies</span>
+                        </div>
+                        <div class="campaign-stat-item">
+                            <span class="campaign-stat-val" style="color: #22C55E; text-shadow: 0 0 8px rgba(34,197,94,0.2);">8</span>
+                            <span class="campaign-stat-lbl">Booked</span>
+                        </div>
+                    </div>
+                    <div class="campaign-progress-block">
+                        <div class="progress-meta">
+                            <span>Leads Processed</span>
+                            <span>980 / 1,000 (98%)</span>
+                        </div>
+                        <div class="progress-track">
+                            <div class="progress-fill" style="width: 98%;"></div>
+                        </div>
+                    </div>
+                    <div class="campaign-actions-footer">
+                        <div class="campaign-leads-preview">
+                            <span style="font-size: 0.6875rem; color: var(--text-muted);">Recent:</span>
+                            <div class="lead-avatar-stack">
+                                <div class="stack-avatar" style="background: #CC9955;">JL</div>
+                                <div class="stack-avatar" style="background: #55CC99;">CD</div>
+                                <div class="stack-avatar" style="background: #9955CC;">AH</div>
+                                <div class="stack-avatar" style="background: var(--bg-elevated); border-color: var(--border-subtle); color: var(--text-muted);">+12</div>
+                            </div>
+                        </div>
+                        <div class="campaign-card-btns">
+                            <a href="leads.html" class="card-btn" title="View Campaign Leads">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                            </a>
+                            <a href="analytics.html" class="card-btn" title="Detailed Analytics">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="campaign-card">
+                    <div class="campaign-header">
+                        <div class="campaign-title-block">
+                            <span class="status-badge status-paused">Paused</span>
+                            <h3 class="campaign-name" style="margin-top: var(--space-xs);">E-Commerce Scaling</h3>
+                        </div>
+                    </div>
+                    <div class="campaign-template">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+                        <span>Template: Brand CRO Breakdown</span>
+                    </div>
+                    <div class="campaign-stats-row">
+                        <div class="campaign-stat-item">
+                            <span class="campaign-stat-val">412</span>
+                            <span class="campaign-stat-lbl">Sent</span>
+                        </div>
+                        <div class="campaign-stat-item">
+                            <span class="campaign-stat-val" style="color: var(--brand-primary-light);">59.2%</span>
+                            <span class="campaign-stat-lbl">Opens</span>
+                        </div>
+                        <div class="campaign-stat-item">
+                            <span class="campaign-stat-val" style="color: var(--color-warning);">15.7%</span>
+                            <span class="campaign-stat-lbl">Replies</span>
+                        </div>
+                        <div class="campaign-stat-item">
+                            <span class="campaign-stat-val" style="color: var(--text-muted);">2</span>
+                            <span class="campaign-stat-lbl">Booked</span>
+                        </div>
+                    </div>
+                    <div class="campaign-progress-block">
+                        <div class="progress-meta">
+                            <span>Leads Processed</span>
+                            <span>412 / 1,500 (27%)</span>
+                        </div>
+                        <div class="progress-track">
+                            <div class="progress-fill" style="width: 27%; background: var(--color-warning);"></div>
+                        </div>
+                    </div>
+                    <div class="campaign-actions-footer">
+                        <div class="campaign-leads-preview">
+                            <span style="font-size: 0.6875rem; color: var(--text-muted);">Recent:</span>
+                            <div class="lead-avatar-stack">
+                                <div class="stack-avatar" style="background: #5599CC;">BP</div>
+                                <div class="stack-avatar" style="background: #CC5599;">PS</div>
+                                <div class="stack-avatar" style="background: var(--bg-elevated); border-color: var(--border-subtle); color: var(--text-muted);">+3</div>
+                            </div>
+                        </div>
+                        <div class="campaign-card-btns">
+                            <a href="leads.html" class="card-btn" title="View Campaign Leads">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                            </a>
+                            <a href="analytics.html" class="card-btn" title="Detailed Analytics">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 4 (Draft) -->
+                <div class="campaign-card">
+                    <div class="campaign-header">
+                        <div class="campaign-title-block">
+                            <span class="status-badge status-draft">Draft</span>
+                            <h3 class="campaign-name" style="margin-top: var(--space-xs);">Y Combinator Outbound</h3>
+                        </div>
+                    </div>
+                    <div class="campaign-template">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+                        <span>Template: Seed Pitch Audit</span>
+                    </div>
+                    <div class="campaign-stats-row" style="opacity: 0.5;">
+                        <div class="campaign-stat-item">
+                            <span class="campaign-stat-val">—</span>
+                            <span class="campaign-stat-lbl">Sent</span>
+                        </div>
+                        <div class="campaign-stat-item">
+                            <span class="campaign-stat-val">—</span>
+                            <span class="campaign-stat-lbl">Opens</span>
+                        </div>
+                        <div class="campaign-stat-item">
+                            <span class="campaign-stat-val">—</span>
+                            <span class="campaign-stat-lbl">Replies</span>
+                        </div>
+                        <div class="campaign-stat-item">
+                            <span class="campaign-stat-val">—</span>
+                            <span class="campaign-stat-lbl">Booked</span>
+                        </div>
+                    </div>
+                    <div class="campaign-progress-block">
+                        <div class="progress-meta" style="color: var(--text-dim);">
+                            <span>Leads Processed</span>
+                            <span>0 / 500 (0%)</span>
+                        </div>
+                        <div class="progress-track">
+                            <div class="progress-fill" style="width: 0%;"></div>
+                        </div>
+                    </div>
+                    <div class="campaign-actions-footer">
+                        <div class="campaign-leads-preview">
+                            <span style="font-size: 0.6875rem; color: var(--text-dim);">No leads added</span>
+                        </div>
+                        <div class="campaign-card-btns">
+                            <button class="card-btn card-btn-primary btn-primary" onclick="alert('Open Lead Importer')">Add Leads</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- ═══ Create Campaign Modal ═══ -->
+    <div class="modal" id="campaignModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Create New Campaign</h3>
+                <button class="modal-close" id="closeModalBtn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label style="font-size: 0.75rem; font-weight: 600; color: var(--text-secondary);">Campaign Name</label>
+                    <input type="text" placeholder="e.g. SaaS Outreach Summer 2026" style="padding: 10px 12px; background: rgba(255,255,255,0.02); border: 1px solid var(--border-default); border-radius: var(--radius-sm); color: var(--text-primary);">
+                </div>
+                <div class="form-group">
+                    <label style="font-size: 0.75rem; font-weight: 600; color: var(--text-secondary);">Video Template</label>
+                    <select style="padding: 10px 12px; background: var(--bg-base); border: 1px solid var(--border-default); border-radius: var(--radius-sm); color: var(--text-primary); outline: none;">
+                        <option>Select a template...</option>
+                        <option>SaaS Growth Audit V2</option>
+                        <option>AI Operations Audit</option>
+                        <option>Brand CRO Breakdown</option>
+                        <option>Custom Video Upload...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label style="font-size: 0.75rem; font-weight: 600; color: var(--text-secondary);">Select Leads List</label>
+                    <select style="padding: 10px 12px; background: var(--bg-base); border: 1px solid var(--border-default); border-radius: var(--radius-sm); color: var(--text-primary); outline: none;">
+                        <option>Select list...</option>
+                        <option>All Active Leads (2,847 leads)</option>
+                        <option>Imported Google Sheet List</option>
+                        <option>Create new empty list...</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancelModalBtn" style="padding: 8px 16px;">Cancel</button>
+                <button class="btn btn-primary" style="padding: 8px 16px;" onclick="alert('Campaign created successfully! Generating outreach queue.'); document.getElementById('campaignModal').style.display = 'none';">Create Campaign</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Trigger Script -->
+    <script>
+        const modal = document.getElementById('campaignModal');
+        const openBtn = document.getElementById('openModalBtn');
+        const closeBtn = document.getElementById('closeModalBtn');
+        const cancelBtn = document.getElementById('cancelModalBtn');
+
+        openBtn.addEventListener('click', () => {
+            modal.style.display = 'flex';
+        });
+
+        const hideModal = () => {
+            modal.style.display = 'none';
+        };
+
+        closeBtn.addEventListener('click', hideModal);
+        cancelBtn.addEventListener('click', hideModal);
+
+        window.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                hideModal();
+            }
+        });
+    </script>
+</body>
+</html>
