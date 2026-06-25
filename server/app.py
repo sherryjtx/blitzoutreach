@@ -144,11 +144,10 @@ elif os.path.exists(server_templates_dir):
 else:
     templates = Jinja2Templates(directory=server_templates_dir)
 
-# Only mount static directories locally. On Vercel, static files are served directly by the Vercel CDN.
-if not os.getenv("VERCEL"):
-    app.mount("/static", StaticFiles(directory=os.path.join(BASE_DIR, "static")), name="static")
-    app.mount("/dashboard", StaticFiles(directory=os.path.join(PROJECT_DIR, "dashboard")), name="dashboard")
-    app.mount("/assets", StaticFiles(directory=os.path.join(PROJECT_DIR, "assets")), name="assets")
+# Mount static directories
+app.mount("/static", StaticFiles(directory=os.path.join(BASE_DIR, "static")), name="static")
+app.mount("/dashboard", StaticFiles(directory=os.path.join(PROJECT_DIR, "dashboard")), name="dashboard")
+app.mount("/assets", StaticFiles(directory=os.path.join(PROJECT_DIR, "assets")), name="assets")
 
 # Models for tracking payload
 class TrackingPayload(BaseModel):
