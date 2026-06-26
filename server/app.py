@@ -600,10 +600,14 @@ def run_sheets_import_and_video_generation(campaign_id: str, batch_name: str, st
         logger.info(f"Background Sheets Sync: Registered {len(leads_to_process)} leads in database. Starting background video generation...")
         
         if leads_to_process:
-            if PROJECT_DIR not in sys.path:
-                sys.path.insert(0, PROJECT_DIR)
-            from execution.factory import run_factory_for_leads
-            run_factory_for_leads(leads_to_process)
+            if os.getenv("RUN_WORKER_LOCALLY", "false").lower() == "true":
+                logger.info("RUN_WORKER_LOCALLY is enabled. Running video generation locally...")
+                if PROJECT_DIR not in sys.path:
+                    sys.path.insert(0, PROJECT_DIR)
+                from execution.factory import run_factory_for_leads
+                run_factory_for_leads(leads_to_process)
+            else:
+                logger.info("RUN_WORKER_LOCALLY is disabled. Leaving tasks as 'pending' for remote VM worker.")
             
     except Exception as e:
         logger.error(f"Error in background sheets sync and generation: {e}")
@@ -675,10 +679,14 @@ def run_csv_import_and_video_generation(campaign_id: str, batch_name: str, csv_d
         logger.info(f"Background CSV Sync: Registered {len(leads_to_process)} leads in database. Starting background video generation...")
         
         if leads_to_process:
-            if PROJECT_DIR not in sys.path:
-                sys.path.insert(0, PROJECT_DIR)
-            from execution.factory import run_factory_for_leads
-            run_factory_for_leads(leads_to_process)
+            if os.getenv("RUN_WORKER_LOCALLY", "false").lower() == "true":
+                logger.info("RUN_WORKER_LOCALLY is enabled. Running video generation locally...")
+                if PROJECT_DIR not in sys.path:
+                    sys.path.insert(0, PROJECT_DIR)
+                from execution.factory import run_factory_for_leads
+                run_factory_for_leads(leads_to_process)
+            else:
+                logger.info("RUN_WORKER_LOCALLY is disabled. Leaving tasks as 'pending' for remote VM worker.")
             
     except Exception as e:
         logger.error(f"Error in background CSV sync and generation: {e}")
