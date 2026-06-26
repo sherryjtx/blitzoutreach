@@ -561,6 +561,8 @@ def run_sheets_import_and_video_generation(campaign_id: str, batch_name: str, st
             clean_company = company.lower().replace(" ", "")
             video_id = f"{clean_name}_{clean_company}_{random.randint(100, 999)}"
             video_id = "".join(c for c in video_id if c.isalnum() or c == "_")
+            if len(video_id) > 80:
+                video_id = video_id[:80]
             
             clean_domain = website if website else (company.lower().replace(" ", "").replace("ltd", "").replace("inc", "") + ".com")
             if not clean_domain.startswith("http"):
@@ -642,6 +644,8 @@ def run_csv_import_and_video_generation(campaign_id: str, batch_name: str, csv_d
             clean_company = company.lower().replace(" ", "")
             video_id = f"{clean_name}_{clean_company}_{random.randint(100, 999)}"
             video_id = "".join(c for c in video_id if c.isalnum() or c == "_")
+            if len(video_id) > 80:
+                video_id = video_id[:80]
             
             clean_domain = website if website else (company.lower().replace(" ", "").replace("ltd", "").replace("inc", "") + ".com")
             if not clean_domain.startswith("http"):
@@ -977,6 +981,8 @@ async def sync_leads(payload: SyncPayload):
             video_id = f"{clean_name}_{clean_company}"
             video_id = "".join(c for c in video_id if c.isalnum() or c == "_")
             video_id += f"_{random.randint(100, 999)}"
+            if len(video_id) > 80:
+                video_id = video_id[:80]
             
             # Find logo fallback
             clean_domain = website if website else (company.lower().replace(" ", "").replace("ltd", "").replace("inc", "") + ".com")
@@ -1028,6 +1034,8 @@ async def create_lead(payload: LeadCreatePayload):
         video_id = f"{clean_name}_{clean_company}"
         video_id = "".join(c for c in video_id if c.isalnum() or c == "_")
         video_id += f"_{random.randint(100, 999)}"
+        if len(video_id) > 80:
+            video_id = video_id[:80]
         
         company_logo = payload.company_logo
         if not company_logo:

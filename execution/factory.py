@@ -123,8 +123,8 @@ def process_lead(lead: dict, paths: dict, today: str, mock: bool):
     video_id = lead.get("video_id")
     if not video_id:
         video_id = f"{clean_fname.lower()}_{clean_lname.lower()}_{clean_company.lower()}"
-        if len(video_id) > 80:
-            video_id = video_id[:80]
+    if len(video_id) > 80:
+        video_id = video_id[:80]
     
     # Path settings
     ss_path = os.path.join(paths["ss"], f"{safe_name}.webm")
