@@ -53,7 +53,7 @@ def fetch_leads_batch(start_row: int, end_row: int, sheet_id: str = None, sheet_
     max_col_letter = col_letter(max_col_idx)
     
     range_str = f"{tab_name}!A{start_row}:{max_col_letter}{end_row}"
-    print(f"📋 Fetching leads from Google Sheet: {range_str}...")
+    print(f"Fetching leads from Google Sheet: {range_str}...")
     
     try:
         result = service.spreadsheets().values().get(
@@ -91,7 +91,7 @@ def fetch_leads_batch(start_row: int, end_row: int, sheet_id: str = None, sheet_
             "status": get_val(COL_STATUS)
         })
         
-    print(f"✅ Fetched {len(leads)} leads from Google Sheet.")
+    print(f"Fetched {len(leads)} leads from Google Sheet.")
     return leads
 
 def update_lead_urls(row_num: int, landing_page_url: str, gif_url: str, status_msg: str = "Stitched", sheet_id: str = None, sheet_tab: str = None):
@@ -128,7 +128,7 @@ def update_lead_urls(row_num: int, landing_page_url: str, gif_url: str, status_m
                     'data': batch_data
                 }
             ).execute()
-            print(f"✅ Stamped row {row_num} with URLs and status.")
+            print(f"Stamped row {row_num} with URLs and status.")
             return True
         except Exception as e:
             if attempt < 2:
