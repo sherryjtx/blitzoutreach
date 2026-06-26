@@ -235,7 +235,14 @@ def process_lead(lead: dict, paths: dict, today: str, mock: bool):
         if mock:
             print(f"   [MOCK] Would write to Sheet: Landing Page: {landing_page_url}, GIF: {gif_url}")
         else:
-            sheet_sync.update_lead_urls(row_num, landing_page_url, gif_url, "Stitched")
+            sheet_sync.update_lead_urls(
+                row_num, 
+                landing_page_url, 
+                gif_url, 
+                "Stitched",
+                sheet_id=lead.get("sheet_id"),
+                sheet_tab=lead.get("sheet_tab")
+            )
             
         print(f"Row {row_num}: Finished processing '{fname}' successfully!")
         return True
@@ -246,7 +253,14 @@ def process_lead(lead: dict, paths: dict, today: str, mock: bool):
         # Mark as failed in sheet
         if not mock:
             try:
-                sheet_sync.update_lead_urls(row_num, "", "", f"ERROR: {str(e)[:30]}")
+                sheet_sync.update_lead_urls(
+                    row_num, 
+                    "", 
+                    "", 
+                    f"ERROR: {str(e)[:30]}",
+                    sheet_id=lead.get("sheet_id"),
+                    sheet_tab=lead.get("sheet_tab")
+                )
             except:
                 pass
         return False

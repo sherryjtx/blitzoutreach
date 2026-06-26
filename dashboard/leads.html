@@ -401,6 +401,18 @@
             <div id="sheet-sync-panel">
                 <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: var(--space-lg);">Import prospects from your connected Google Sheet. Make sure rows are populated and credentials exist in `.env`.</p>
                 <div class="modal-field">
+                    <label>Google Spreadsheet ID</label>
+                    <input type="text" id="sync-sheet-id" value="1R8RzxgXbsjAGO6aEvm1ZNWm1c0dH2pSD6ZWDC-OdS2Y" required style="padding: 10px;">
+                </div>
+                <div class="modal-field">
+                    <label>Sheet Tab Name</label>
+                    <input type="text" id="sync-sheet-tab" value="New LEADS" required style="padding: 10px;">
+                </div>
+                <div style="font-size: 0.6875rem; margin-bottom: var(--space-md);">
+                    <span style="color: var(--text-muted);">Connected Sheet: </span>
+                    <a href="https://docs.google.com/spreadsheets/d/1R8RzxgXbsjAGO6aEvm1ZNWm1c0dH2pSD6ZWDC-OdS2Y" target="_blank" style="color: var(--brand-primary-light); text-decoration: underline;">Open Default Google Sheet</a>
+                </div>
+                <div class="modal-field">
                     <label>Start Row (Headers on Row 1)</label>
                     <input type="number" id="sync-start-row" value="2" min="2" required style="padding: 10px;">
                 </div>
@@ -420,6 +432,10 @@
                 <div class="modal-field">
                     <label>CSV Records</label>
                     <textarea id="csv-records-data" placeholder="John Doe, Acme Inc&#10;Sarah Connor, Cyberdyne Systems" style="min-height: 120px; background: rgba(255,255,255,0.02); border: 1px solid var(--border-subtle); color: #fff; padding: var(--space-md); border-radius: var(--radius-md); font-size: 0.8125rem; font-family: var(--font-mono); resize: vertical; outline: none;"></textarea>
+                </div>
+                <div class="modal-field" style="margin-top: var(--space-sm); border-top: 1px dashed var(--border-subtle); padding-top: var(--space-sm);">
+                    <label style="font-size: 0.6875rem; font-weight: 600; color: var(--text-secondary);">Or Upload CSV File</label>
+                    <input type="file" id="csv-file-input" accept=".csv" style="font-size: 0.75rem; color: var(--text-muted); background: transparent; border: none; padding: 4px 0;">
                 </div>
                 <button id="btn-run-csv" class="btn btn-primary" style="margin-top: var(--space-md); padding: 12px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 600;">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="16" height="16" stroke-width="2" style="margin-right:4px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -611,7 +627,7 @@
             };
         }
 
-                // Wire Sheets Sync execution
+        // Wire Sheets Sync execution
         const btnRunSync = document.getElementById('btn-run-sync');
         if (btnRunSync) {
             btnRunSync.onclick = async () => {
@@ -619,6 +635,9 @@
                 const endRow = parseInt(document.getElementById('sync-end-row').value);
                 const campaignId = document.getElementById('import-campaign-select').value;
                 const batchId = campaignId; // Map batch_id to campaignId for one campaign = one batch
+                
+                const sheetId = document.getElementById('sync-sheet-id').value.trim();
+                const sheetTab = document.getElementById('sync-sheet-tab').value.trim();
                 
                 if (isNaN(startRow) || isNaN(endRow) || startRow < 2 || endRow < startRow) {
                     alert('Please enter valid row numbers (Start Row must be 2 or higher, and End Row must be equal or greater).');
@@ -636,7 +655,9 @@
                             start_row: startRow,
                             end_row: endRow,
                             campaign_id: campaignId || undefined,
-                            batch_id: batchId || undefined
+                            batch_id: batchId || undefined,
+                            sheet_id: sheetId || undefined,
+                            sheet_tab: sheetTab || undefined
                         })
                     });
                     const data = await res.json();
@@ -655,6 +676,20 @@
                     btnRunSync.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="16" height="16" stroke-width="2" style="margin-right:4px;"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg> Sync Google Sheet';
                 }
             };
+        }
+
+        // CSV File Upload Reader
+        const csvFileInput = document.getElementById('csv-file-input');
+        if (csvFileInput) {
+            csvFileInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    document.getElementById('csv-records-data').value = evt.target.result;
+                };
+                reader.readAsText(file);
+            });
         }
 
 

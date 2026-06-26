@@ -531,13 +531,15 @@ class CampaignCreatePayload(BaseModel):
     end_row: int = None
     csv_data: str = None
     batch_name: str = None
+    sheet_id: str = None
+    sheet_tab: str = None
 
 # Background processing handlers
-def run_sheets_import_and_video_generation(campaign_id: str, batch_name: str, start_row: int, end_row: int):
+def run_sheets_import_and_video_generation(campaign_id: str, batch_name: str, start_row: int, end_row: int, sheet_id: str = None, sheet_tab: str = None):
     try:
         from execution import sheet_sync
         logger.info(f"Background Sheets Sync: Fetching rows {start_row} to {end_row}")
-        leads = sheet_sync.fetch_leads_batch(start_row, end_row)
+        leads = sheet_sync.fetch_leads_batch(start_row, end_row, sheet_id=sheet_id, sheet_tab=sheet_tab)
         if not leads:
             logger.info("Background Sheets Sync: No leads found in this range.")
             return
@@ -589,7 +591,9 @@ def run_sheets_import_and_video_generation(campaign_id: str, batch_name: str, st
                 "campaign_id": campaign_id,
                 "batch_id": batch_name,
                 "video_id": video_id,
-                "company_logo": company_logo
+                "company_logo": company_logo,
+                "sheet_id": sheet_id,
+                "sheet_tab": sheet_tab
             }
             leads_to_process.append(lead_dict)
             
@@ -900,7 +904,9 @@ async def create_campaign(payload: CampaignCreatePayload, background_tasks: Back
                 campaign_id,
                 batch_name,
                 payload.start_row,
-                payload.end_row
+                payload.end_row,
+                payload.sheet_id,
+                payload.sheet_tab
             )
             return {"status": "success", "campaign_id": campaign_id, "message": "Campaign created! Importing leads and generating videos in background."}
             
@@ -927,6 +933,8 @@ class SyncPayload(BaseModel):
     end_row: int
     campaign_id: str = None
     batch_id: str = None
+    sheet_id: str = None
+    sheet_tab: str = None
 
 @app.post("/api/leads/sync")
 async def sync_leads(payload: SyncPayload):
@@ -935,7 +943,7 @@ async def sync_leads(payload: SyncPayload):
             sys.path.insert(0, PROJECT_DIR)
         from execution import sheet_sync
         
-        leads = sheet_sync.fetch_leads_batch(payload.start_row, payload.end_row)
+        leads = sheet_sync.fetch_leads_batch(payload.start_row, payload.end_row, sheet_id=payload.sheet_id, sheet_tab=payload.sheet_tab)
         if not leads:
             return {"status": "success", "imported": 0, "message": "No leads found in range."}
             

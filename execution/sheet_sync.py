@@ -38,23 +38,26 @@ def get_sheets_service():
     creds = get_creds()
     return build('sheets', 'v4', credentials=creds)
 
-def fetch_leads_batch(start_row: int, end_row: int):
+def fetch_leads_batch(start_row: int, end_row: int, sheet_id: str = None, sheet_tab: str = None):
     """
     Fetches lead rows from Google Sheet for the specified row range.
     Returns a list of dictionaries with mapped lead details.
     """
     service = get_sheets_service()
     
+    spreadsheet_id = sheet_id or SHEET_ID
+    tab_name = sheet_tab or TAB_NAME
+    
     # Calculate the max column letter we need to fetch
     max_col_idx = max(COL_FIRST_NAME, COL_LAST_NAME, COL_EMAIL, COL_COMPANY, COL_WEBSITE, COL_LANDING_PAGE, COL_GIF_THUMBNAIL, COL_STATUS)
     max_col_letter = col_letter(max_col_idx)
     
-    range_str = f"{TAB_NAME}!A{start_row}:{max_col_letter}{end_row}"
+    range_str = f"{tab_name}!A{start_row}:{max_col_letter}{end_row}"
     print(f"📋 Fetching leads from Google Sheet: {range_str}...")
     
     try:
         result = service.spreadsheets().values().get(
-            spreadsheetId=SHEET_ID,
+            spreadsheetId=spreadsheet_id,
             range=range_str
         ).execute()
         
@@ -91,24 +94,27 @@ def fetch_leads_batch(start_row: int, end_row: int):
     print(f"✅ Fetched {len(leads)} leads from Google Sheet.")
     return leads
 
-def update_lead_urls(row_num: int, landing_page_url: str, gif_url: str, status_msg: str = "Stitched"):
+def update_lead_urls(row_num: int, landing_page_url: str, gif_url: str, status_msg: str = "Stitched", sheet_id: str = None, sheet_tab: str = None):
     """
     Updates a single lead row with the generated landing page and GIF URLs, and marks status.
     """
     service = get_sheets_service()
     
+    spreadsheet_id = sheet_id or SHEET_ID
+    tab_name = sheet_tab or TAB_NAME
+    
     # Build batch data list to update specific cells
     batch_data = [
         {
-            'range': f"{TAB_NAME}!{col_letter(COL_LANDING_PAGE)}{row_num}",
+            'range': f"{tab_name}!{col_letter(COL_LANDING_PAGE)}{row_num}",
             'values': [[landing_page_url]]
         },
         {
-            'range': f"{TAB_NAME}!{col_letter(COL_GIF_THUMBNAIL)}{row_num}",
+            'range': f"{tab_name}!{col_letter(COL_GIF_THUMBNAIL)}{row_num}",
             'values': [[gif_url]]
         },
         {
-            'range': f"{TAB_NAME}!{col_letter(COL_STATUS)}{row_num}",
+            'range': f"{tab_name}!{col_letter(COL_STATUS)}{row_num}",
             'values': [[status_msg]]
         }
     ]
@@ -116,7 +122,7 @@ def update_lead_urls(row_num: int, landing_page_url: str, gif_url: str, status_m
     for attempt in range(3):
         try:
             service.spreadsheets().values().batchUpdate(
-                spreadsheetId=SHEET_ID,
+                spreadsheetId=spreadsheet_id,
                 body={
                     'valueInputOption': 'USER_ENTERED',
                     'data': batch_data
