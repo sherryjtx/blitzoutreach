@@ -209,10 +209,26 @@ async def watch_video(video_id: str, request: Request):
             
         logger.info(f"👀 Page view on video '{video_id}' from IP: {ip}")
         
-        # Get clearbit logo fallback if no custom logo provided
-        if not company_logo and company:
-            clean_company = company.lower().replace(" ", "").replace("ltd", "").replace("inc", "")
-            company_logo = f"https://logo.clearbit.com/{clean_company}.com"
+        # Resolve company logos (wordmark & sign icon)
+        company_lower = company.lower().strip()
+        company_logo_sign = None
+        company_logo_wordmark = None
+        
+        if "github" in company_lower:
+            company_logo_sign = "/static/github_icon.svg"
+            company_logo_wordmark = "/static/github_wordmark.svg"
+        elif "vimeo" in company_lower:
+            company_logo_sign = "/static/vimeo_icon.svg"
+            company_logo_wordmark = "/static/vimeo_wordmark.svg"
+        elif "nike" in company_lower:
+            company_logo_sign = "/static/nike_icon.svg"
+            company_logo_wordmark = "/static/nike_wordmark.svg"
+        else:
+            # Fallback to Clearbit logo for general companies
+            if not company_logo and company:
+                clean_company = company.lower().replace(" ", "").replace("ltd", "").replace("inc", "")
+                company_logo = f"https://logo.clearbit.com/{clean_company}.com"
+            company_logo_sign = company_logo
             
         return templates.TemplateResponse(
             request=request,
@@ -221,7 +237,8 @@ async def watch_video(video_id: str, request: Request):
                 "name": name,
                 "company": company,
                 "video_url": video_url,
-                "company_logo": company_logo,
+                "company_logo": company_logo_sign,
+                "company_wordmark": company_logo_wordmark,
                 "video_id": video_id,
                 "calendly_url": CALENDLY_URL
             }

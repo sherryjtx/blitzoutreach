@@ -78,7 +78,7 @@ body {
 }
 
 
-/* --- Co-Branding Header (center-top) --- */
+/* --- Prospect Header Logo (center-top) --- */
 .co-brand-header {
     width: 100%;
     display: flex;
@@ -92,28 +92,42 @@ body {
 .logo-area {
     display: flex;
     align-items: center;
-    gap: 20px;
+    justify-content: center;
 }
 
-.company-logo {
-    height: 38px;
+.company-logo-wordmark {
+    height: 48px;
     object-fit: contain;
     opacity: 0.95;
-}
-
-.logo-divider {
-    color: var(--ink-muted);
-    font-size: 24px;
-    font-weight: 300;
-    user-select: none;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
 }
 
 .client-name {
     font-family: 'Outfit', sans-serif;
-    font-size: 20px;
-    font-weight: 600;
-    color: rgba(255, 255, 255, 0.9);
-    letter-spacing: -0.01em;
+    font-size: 28px;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.95);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    user-select: none;
+    filter: drop-shadow(0 2px 6px rgba(0,0,0,0.3));
+}
+
+/* --- Left Column: Sign Logos (above title) --- */
+.sign-logos-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 28px;
+}
+
+.sign-logo {
+    height: 38px;
+    max-width: 52px;
+    object-fit: contain;
+    border-radius: 8px;
+    opacity: 0.95;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
 }
 
 

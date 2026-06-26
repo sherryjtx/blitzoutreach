@@ -13,15 +13,14 @@
 <body>
     <div class="watch-card">
 
-        <!-- Co-branding Header — center-top, full wordmark logos -->
+        <!-- Prospect Name Logo Header — center-top -->
         <header class="co-brand-header">
             <div class="logo-area">
-                <img src="/static/logo_wordmark.png" alt="Sherry Automates" class="company-logo">
-                {% if company_logo %}
-                    <span class="logo-divider">×</span>
-                    <img src="{{ company_logo }}" alt="{{ company }}" class="company-logo">
+                {% if company_wordmark %}
+                    <img src="{{ company_wordmark }}" alt="{{ company }}" class="company-logo-wordmark">
+                {% elif company_logo %}
+                    <img src="{{ company_logo }}" alt="{{ company }}" class="company-logo-wordmark">
                 {% else %}
-                    <span class="logo-divider">×</span>
                     <span class="client-name">{{ company }}</span>
                 {% endif %}
             </div>
@@ -32,9 +31,16 @@
 
             <!-- Left Column: Greeting + CTA -->
             <div class="hero-text">
+                <!-- Co-branding Sign Logos -->
+                <div class="sign-logos-wrapper">
+                    <img src="/static/logo_sa_square.png" alt="Sherry Automates" class="sign-logo">
+                    {% if company_logo %}
+                        <img src="{{ company_logo }}" alt="{{ company }}" class="sign-logo">
+                    {% endif %}
+                </div>
                 <h1 class="personalized-title">{{ name.split(' ')[0] }}, I've recorded you a quick video...</h1>
-                <p class="personalized-subtitle">I noticed your team might benefit from a personalized outreach strategy — wanted to share this with you.</p>
-                <a href="#booking" class="chat-btn" id="chatBtn">Let's chat {{ name.split(' ')[0] }}</a>
+                <p class="personalized-subtitle">I noticed your agency might benefit from a speed-to-lead AI system to instantly contact and qualify inbound leads. I recorded a quick video breakdown for {{ company }} showing how we automate this.</p>
+                <a href="#booking" class="chat-btn" id="chatBtn">Lets chat {{ name.split(' ')[0] }}</a>
             </div>
 
             <!-- Right Column: Video + Reactions + Comments -->
