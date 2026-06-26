@@ -205,8 +205,10 @@ def process_lead(lead: dict, paths: dict, today: str, mock: bool):
             
         # Step 5: Upload Files & Get URLs
         if mock:
-            video_url = f"file:///{video_path.replace('\\', '/')}"
-            gif_url = f"file:///{gif_path.replace('\\', '/')}"
+            video_path_clean = video_path.replace('\\', '/')
+            gif_path_clean = gif_path.replace('\\', '/')
+            video_url = f"file:///{video_path_clean}"
+            gif_url = f"file:///{gif_path_clean}"
             print(f"   [MOCK] Storage URLs generated: Video: {video_url}, GIF: {gif_url}")
         else:
             # Upload to Oracle Object Storage
