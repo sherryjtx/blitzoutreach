@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Geist:wght@400;500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/static/style.css?v=3.0">
+    <link rel="stylesheet" href="/static/style.css?v=4.0">
 </head>
 <body>
     <div class="watch-card">
@@ -16,10 +16,10 @@
         <!-- Co-branding Header — center-top, full wordmark logos -->
         <header class="co-brand-header">
             <div class="logo-area">
-                <img src="/static/logo_wordmark.png" alt="Sherry Automates" class="company-logo" style="height: 18px; width: auto;">
+                <img src="/static/logo_wordmark.png" alt="Sherry Automates" class="company-logo">
                 {% if company_logo %}
                     <span class="logo-divider">×</span>
-                    <img src="{{ company_logo }}" alt="{{ company }}" class="company-logo" style="height: 18px; width: auto;">
+                    <img src="{{ company_logo }}" alt="{{ company }}" class="company-logo">
                 {% else %}
                     <span class="logo-divider">×</span>
                     <span class="client-name">{{ company }}</span>

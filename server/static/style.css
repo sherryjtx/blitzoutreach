@@ -64,16 +64,16 @@ body {
 /* --- Card Container --- */
 .watch-card {
     width: 100%;
-    max-width: 900px;
+    max-width: 1280px;
     background: var(--bg-card);
     border: 1px solid var(--border-subtle);
-    border-radius: 20px;
-    padding: 48px 52px 56px;
+    border-radius: 24px;
+    padding: 56px 64px 64px;
     position: relative;
     z-index: 10;
     box-shadow:
-        0 30px 80px -12px rgba(0, 0, 0, 0.5),
-        0 12px 24px -8px rgba(0, 0, 0, 0.3);
+        0 30px 80px -12px rgba(0, 0, 0, 0.6),
+        0 12px 24px -8px rgba(0, 0, 0, 0.4);
     overflow: hidden;
 }
 
@@ -84,7 +84,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 48px;
+    margin-bottom: 56px;
     position: relative;
     z-index: 5;
 }
@@ -92,27 +92,27 @@ body {
 .logo-area {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 20px;
 }
 
 .company-logo {
-    height: 18px;
+    height: 38px;
     object-fit: contain;
-    opacity: 0.9;
+    opacity: 0.95;
 }
 
 .logo-divider {
     color: var(--ink-muted);
-    font-size: 13px;
+    font-size: 24px;
     font-weight: 300;
     user-select: none;
 }
 
 .client-name {
     font-family: 'Outfit', sans-serif;
-    font-size: 14px;
+    font-size: 20px;
     font-weight: 600;
-    color: rgba(255, 255, 255, 0.85);
+    color: rgba(255, 255, 255, 0.9);
     letter-spacing: -0.01em;
 }
 
@@ -120,12 +120,12 @@ body {
 /* --- Hero Split Layout --- */
 .hero-split {
     display: grid;
-    grid-template-columns: 1fr 1.35fr;
-    gap: 40px;
-    align-items: start;
+    grid-template-columns: 1fr 1.25fr;
+    gap: 64px;
+    align-items: center;
     position: relative;
     z-index: 5;
-    margin-bottom: 56px;
+    margin-bottom: 64px;
 }
 
 
@@ -134,27 +134,27 @@ body {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    padding-top: 12px;
+    padding-top: 0;
 }
 
 .personalized-title {
     font-family: 'Outfit', sans-serif;
-    font-size: 2rem;
+    font-size: 2.8rem;
     font-weight: 700;
     letter-spacing: -0.03em;
-    line-height: 1.18;
-    margin-bottom: 12px;
+    line-height: 1.15;
+    margin-bottom: 16px;
     color: var(--red-500);
     text-wrap: balance;
 }
 
 .personalized-subtitle {
-    font-size: 0.95rem;
+    font-size: 1.1rem;
     color: var(--ink-secondary);
     font-weight: 400;
     line-height: 1.6;
-    margin-bottom: 28px;
-    max-width: 32ch;
+    margin-bottom: 36px;
+    max-width: 44ch;
 }
 
 .chat-btn {
@@ -165,9 +165,9 @@ body {
     background: var(--red-600);
     color: #fff;
     font-family: 'Outfit', sans-serif;
-    font-size: 14px;
+    font-size: 16px;
     font-weight: 600;
-    padding: 12px 28px;
+    padding: 14px 36px;
     border-radius: var(--radius-pill);
     border: none;
     cursor: pointer;
@@ -205,8 +205,8 @@ body {
     position: absolute;
     top: 50%;
     left: 50%;
-    width: 120%;
-    height: 140%;
+    width: 130%;
+    height: 150%;
     background: radial-gradient(
         ellipse at center,
         var(--red-glow) 0%,
@@ -214,7 +214,7 @@ body {
         transparent 70%
     );
     transform: translate(-50%, -50%);
-    filter: blur(50px);
+    filter: blur(60px);
     z-index: 0;
     pointer-events: none;
 }
