@@ -13,15 +13,17 @@
 <body>
     <div class="watch-card">
 
-        <!-- Prospect Name Logo Header — center-top -->
+        <!-- Co-branded Header: Sherry Automates × Client -->
         <header class="co-brand-header">
             <div class="logo-area">
+                <img src="/static/logo_wordmark_tight.png" alt="Sherry Automates" class="co-brand-logo-sa">
+                <span class="co-brand-x">×</span>
                 {% if company_wordmark %}
-                    <img src="{{ company_wordmark }}" alt="{{ company }}" class="company-logo-wordmark">
+                    <img src="{{ company_wordmark }}" alt="{{ company }}" class="co-brand-logo-company">
                 {% elif company_logo %}
-                    <img src="{{ company_logo }}" alt="{{ company }}" class="company-logo-wordmark">
+                    <img src="{{ company_logo }}" alt="{{ company }}" class="co-brand-logo-company">
                 {% else %}
-                    <span class="client-name">{{ company }}</span>
+                    <span class="co-brand-text-company">{{ company }}</span>
                 {% endif %}
             </div>
         </header>

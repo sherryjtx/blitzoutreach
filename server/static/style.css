@@ -109,7 +109,7 @@ body::after {
 }
 
 
-/* --- Prospect Header Logo (center-top) --- */
+/* --- Co-branded Header (center-top) --- */
 .co-brand-header {
     width: 100%;
     display: flex;
@@ -125,24 +125,42 @@ body::after {
     display: flex;
     align-items: center;
     justify-content: center;
+    gap: 16px;
 }
 
-.company-logo-wordmark {
-    height: 48px;
+.co-brand-logo-sa {
+    height: 26px;
+    width: auto;
     object-fit: contain;
     opacity: 0.95;
     filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
 }
 
-.client-name {
+.co-brand-logo-company {
+    height: 26px;
+    width: auto;
+    object-fit: contain;
+    opacity: 0.95;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
+}
+
+.co-brand-x {
+    font-family: 'Geist', sans-serif;
+    font-size: 20px;
+    color: rgba(255, 255, 255, 0.35);
+    user-select: none;
+    font-weight: 400;
+    margin-top: -2px;
+}
+
+.co-brand-text-company {
     font-family: 'Outfit', sans-serif;
-    font-size: 28px;
+    font-size: 20px;
     font-weight: 700;
     color: rgba(255, 255, 255, 0.95);
-    text-transform: uppercase;
-    letter-spacing: 0.15em;
+    letter-spacing: 0.05em;
     user-select: none;
-    filter: drop-shadow(0 2px 6px rgba(0,0,0,0.3));
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
 }
 
 /* --- Left Column: Sign Logos (above title) --- */
@@ -275,30 +293,26 @@ body::after {
     width: 100%;
 }
 
-/* Extremely high luminous red glow behind the video (cinematic mix-blend mode) */
+/* Soft background red glow halo behind the video placeholder */
 .video-glow {
     position: absolute;
     top: 50%;
     left: 50%;
-    width: 180%;
-    height: 195%;
+    width: 140%;
+    height: 160%;
     background: radial-gradient(
         circle at center,
-        rgba(239, 68, 68, 0.95) 0%,
-        rgba(239, 68, 68, 0.85) 45%,
-        rgba(239, 68, 68, 0.6) 65%,
-        rgba(239, 68, 68, 0.25) 85%,
-        transparent 100%
+        rgba(220, 38, 38, 0.55) 0%,
+        rgba(220, 38, 38, 0.18) 45%,
+        transparent 75%
     );
     transform: translate(-50%, -50%);
-    filter: blur(100px);
+    filter: blur(80px);
     z-index: 0;
     pointer-events: none;
-    opacity: 0.98;
-    mix-blend-mode: screen;
 }
 
-/* Glassmorphic Browser frame with outer red drop glow */
+/* Glassmorphic Browser frame */
 .video-browser-frame {
     position: relative;
     width: 100%;
@@ -307,9 +321,7 @@ body::after {
     -webkit-backdrop-filter: blur(20px);
     border-radius: var(--radius-md);
     border: 1px solid rgba(255, 255, 255, 0.08);
-    box-shadow: 
-        0 30px 70px rgba(0, 0, 0, 0.7),
-        0 0 50px rgba(239, 68, 68, 0.35); /* Vibrant outer light leak */
+    box-shadow: 0 30px 70px rgba(0, 0, 0, 0.65);
     overflow: hidden;
     z-index: 2;
 }
