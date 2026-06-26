@@ -160,11 +160,24 @@ body::after {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 9px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+    padding: 8px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
     border: 1px solid rgba(255, 255, 255, 0.08);
     background-color: #111113;
     transition: transform 200ms var(--ease-out);
+}
+
+.sign-logo-badge:nth-child(1) {
+    transform: rotate(-6deg);
+    position: relative;
+    z-index: 1;
+}
+
+.sign-logo-badge:nth-child(2) {
+    transform: rotate(8deg);
+    margin-left: -8px;
+    position: relative;
+    z-index: 2;
 }
 
 .sign-logo-badge.badge-sa {
@@ -262,23 +275,26 @@ body::after {
     width: 100%;
 }
 
-/* Stronger, premium red glow behind the video */
+/* Extremely high luminous red glow behind the video (cinematic mix-blend mode) */
 .video-glow {
     position: absolute;
     top: 50%;
     left: 50%;
-    width: 140%;
-    height: 160%;
+    width: 155%;
+    height: 175%;
     background: radial-gradient(
         circle at center,
-        rgba(220, 38, 38, 0.5) 0%,
-        rgba(220, 38, 38, 0.15) 45%,
-        transparent 75%
+        rgba(220, 38, 38, 0.85) 0%,
+        rgba(220, 38, 38, 0.45) 35%,
+        rgba(220, 38, 38, 0.15) 60%,
+        transparent 80%
     );
     transform: translate(-50%, -50%);
-    filter: blur(80px);
+    filter: blur(90px);
     z-index: 0;
     pointer-events: none;
+    opacity: 0.95;
+    mix-blend-mode: screen;
 }
 
 /* Glassmorphic Browser frame */
@@ -605,11 +621,11 @@ body::after {
 
 .booking-title {
     font-family: 'Outfit', sans-serif;
-    font-size: 1.5rem;
+    font-size: 2.2rem;
     font-weight: 700;
-    color: var(--ink-primary);
+    color: var(--red-500);
     letter-spacing: -0.02em;
-    margin-bottom: 6px;
+    margin-bottom: 8px;
 }
 
 .booking-subtitle {
