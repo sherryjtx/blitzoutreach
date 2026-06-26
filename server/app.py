@@ -213,16 +213,20 @@ async def watch_video(video_id: str, request: Request):
         company_lower = company.lower().strip()
         company_logo_sign = None
         company_logo_wordmark = None
+        company_badge_bg = "#111113"
         
         if "github" in company_lower:
             company_logo_sign = "/static/github_icon.svg"
             company_logo_wordmark = "/static/github_wordmark.svg"
+            company_badge_bg = "#24292e"
         elif "vimeo" in company_lower:
             company_logo_sign = "/static/vimeo_icon.svg"
             company_logo_wordmark = "/static/vimeo_wordmark.svg"
+            company_badge_bg = "#00adef"
         elif "nike" in company_lower:
             company_logo_sign = "/static/nike_icon.svg"
             company_logo_wordmark = "/static/nike_wordmark.svg"
+            company_badge_bg = "#000000"
         else:
             # Fallback to Clearbit logo for general companies
             if not company_logo and company:
@@ -239,6 +243,7 @@ async def watch_video(video_id: str, request: Request):
                 "video_url": video_url,
                 "company_logo": company_logo_sign,
                 "company_wordmark": company_logo_wordmark,
+                "company_badge_bg": company_badge_bg,
                 "video_id": video_id,
                 "calendly_url": CALENDLY_URL
             }

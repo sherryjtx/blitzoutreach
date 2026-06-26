@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Geist:wght@400;500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/static/style.css?v=4.0">
+    <link rel="stylesheet" href="/static/style.css?v=5.0">
 </head>
 <body>
     <div class="watch-card">
@@ -33,9 +33,13 @@
             <div class="hero-text">
                 <!-- Co-branding Sign Logos -->
                 <div class="sign-logos-wrapper">
-                    <img src="/static/logo_sa_square.png" alt="Sherry Automates" class="sign-logo">
+                    <div class="sign-logo-badge badge-sa">
+                        <img src="/static/logo_sa_square.png" alt="Sherry Automates">
+                    </div>
                     {% if company_logo %}
-                        <img src="{{ company_logo }}" alt="{{ company }}" class="sign-logo">
+                        <div class="sign-logo-badge badge-company" style="background-color: {{ company_badge_bg }};">
+                            <img src="{{ company_logo }}" alt="{{ company }}">
+                        </div>
                     {% endif %}
                 </div>
                 <h1 class="personalized-title">{{ name.split(' ')[0] }}, I've recorded you a quick video...</h1>
@@ -57,8 +61,8 @@
                             <span class="dot dot-green"></span>
                         </div>
                     </div>
-                    <div class="video-wrapper">
-                        <video id="outreachVideo" controls poster="/static/poster_placeholder.png" playsinline>
+                    <div class="video-wrapper" id="videoWrapper">
+                        <video id="outreachVideo" poster="/static/poster_placeholder.png" playsinline>
                             <source src="{{ video_url }}" type="video/mp4">
                             Your browser does not support the video tag.
                         </video>
@@ -68,21 +72,24 @@
                                 <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
                             </div>
                         </div>
+
+                        <!-- Floating actions (Reactions pill & Comment bubble button) -->
+                        <div class="video-floating-actions" id="videoFloatingActions">
+                            <div class="floating-reaction-pill">
+                                <button class="floating-emoji-btn" data-emoji="heart_eyes" title="Love it">😍</button>
+                                <button class="floating-emoji-btn" data-emoji="thinking" title="Thinking">🤔</button>
+                                <button class="floating-emoji-btn" data-emoji="thumbsup" title="Thumbs up">👍</button>
+                                <button class="floating-emoji-btn" data-emoji="fire" title="Fire">🔥</button>
+                            </div>
+                            <button class="floating-comment-trigger" id="commentTriggerBtn" title="Comment">
+                                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                            </button>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Emoji Reactions -->
-                <div class="reactions-bar">
-                    <div class="reaction-pill">
-                        <button class="reaction-btn" data-emoji="thumbsup" title="Thumbs up">👍</button>
-                        <button class="reaction-btn" data-emoji="fire" title="Fire">🔥</button>
-                        <button class="reaction-btn" data-emoji="heart_eyes" title="Love it">😍</button>
-                        <button class="reaction-btn" data-emoji="star_struck" title="Amazing">🤩</button>
-                    </div>
-                </div>
-
-                <!-- Comment Input -->
-                <div class="comment-section">
+                <!-- Comment Input Drawer (Toggled by the floating comment button) -->
+                <div class="comment-drawer" id="commentDrawer">
                     <div class="comment-input-wrapper">
                         <input type="text" class="comment-input" id="commentInput" placeholder="Leave a comment..." maxlength="500" autocomplete="off">
                         <button class="comment-send-btn" id="commentSendBtn" title="Send comment">
@@ -116,11 +123,14 @@
     <script>
         const video = document.getElementById('outreachVideo');
         const playOverlay = document.getElementById('playOverlay');
-        const videoWrapper = video ? video.parentElement : null;
+        const videoWrapper = document.getElementById('videoWrapper');
         const chatBtn = document.getElementById('chatBtn');
         const commentInput = document.getElementById('commentInput');
         const commentSendBtn = document.getElementById('commentSendBtn');
         const commentSentMsg = document.getElementById('commentSentMsg');
+        const commentTriggerBtn = document.getElementById('commentTriggerBtn');
+        const commentDrawer = document.getElementById('commentDrawer');
+        const videoFloatingActions = document.getElementById('videoFloatingActions');
 
         const videoId = "{{ video_id }}";
         let watched25 = false, watched50 = false, watched75 = false, watched100 = false;
@@ -131,11 +141,42 @@
                 video.paused ? video.play() : video.pause();
             });
         }
+        
+        if (video) {
+            video.addEventListener('click', () => {
+                video.paused ? video.play() : video.pause();
+            });
+        }
 
         if (video && videoWrapper) {
-            video.addEventListener('play', () => videoWrapper.classList.add('playing'));
-            video.addEventListener('pause', () => videoWrapper.classList.remove('playing'));
-            video.addEventListener('ended', () => videoWrapper.classList.remove('playing'));
+            video.addEventListener('play', () => {
+                videoWrapper.classList.add('playing');
+                // Hide floating actions during playback
+                videoFloatingActions.classList.add('hidden');
+            });
+            video.addEventListener('pause', () => {
+                videoWrapper.classList.remove('playing');
+                // Show floating actions when paused
+                videoFloatingActions.classList.remove('hidden');
+            });
+            video.addEventListener('ended', () => {
+                videoWrapper.classList.remove('playing');
+                // Show floating actions at the end
+                videoFloatingActions.classList.remove('hidden');
+                // Auto open comment drawer at the end to prompt response
+                commentDrawer.classList.add('open');
+            });
+        }
+
+        /* --- Toggle Comment Drawer --- */
+        if (commentTriggerBtn && commentDrawer) {
+            commentTriggerBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                commentDrawer.classList.toggle('open');
+                if (commentDrawer.classList.contains('open') && commentInput) {
+                    commentInput.focus();
+                }
+            });
         }
 
         /* --- Smooth Scroll to Booking --- */
@@ -181,16 +222,31 @@
         }
 
         /* --- Emoji Reactions --- */
-        document.querySelectorAll('.reaction-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
+        document.querySelectorAll('.floating-emoji-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
                 const emoji = btn.dataset.emoji;
-                btn.classList.toggle('reacted');
-
-                // Tactile bounce
-                btn.style.transform = 'scale(1.3)';
+                
+                // Tactile scale animation
+                btn.style.transform = 'scale(1.4)';
                 setTimeout(() => { btn.style.transform = ''; }, 180);
 
                 logEvent('reaction', { emoji: emoji });
+                
+                // Temporary floating effect animation
+                const bubble = document.createElement('div');
+                bubble.innerText = btn.innerText;
+                bubble.className = 'floating-bubble-emoji';
+                bubble.style.left = `${btn.offsetLeft + btn.offsetWidth / 2 - 12}px`;
+                videoWrapper.appendChild(bubble);
+                
+                setTimeout(() => {
+                    bubble.classList.add('animate');
+                }, 10);
+                
+                setTimeout(() => {
+                    bubble.remove();
+                }, 850);
             });
         });
 
@@ -205,14 +261,19 @@
             commentSentMsg.classList.add('visible');
             setTimeout(() => {
                 commentSentMsg.classList.remove('visible');
+                commentDrawer.classList.remove('open');
             }, 3000);
         }
 
         if (commentSendBtn) {
-            commentSendBtn.addEventListener('click', submitComment);
+            commentSendBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                submitComment();
+            });
         }
 
         if (commentInput) {
+            commentInput.addEventListener('click', (e) => e.stopPropagation());
             commentInput.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter') {
                     e.preventDefault();
