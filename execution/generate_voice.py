@@ -15,7 +15,14 @@ def generate_voice(name: str, output_path: str):
     Calls the ElevenLabs Text-to-Speech API to generate the personalized voice greeting.
     """
     if not ELEVENLABS_API_KEY or ELEVENLABS_API_KEY == "your_elevenlabs_api_key_here":
-        raise ValueError("Missing ELEVENLABS_API_KEY in .env file")
+        print("⚠️ ElevenLabs API Key missing or default. Skipping voice greeting generation (will use original Becca video audio).")
+        if os.path.exists(output_path):
+            try:
+                os.remove(output_path)
+            except:
+                pass
+        return
+        
     if not ELEVENLABS_VOICE_ID or ELEVENLABS_VOICE_ID == "your_elevenlabs_voice_id_here":
         raise ValueError("Missing ELEVENLABS_VOICE_ID in .env file")
         

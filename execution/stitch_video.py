@@ -19,7 +19,7 @@ def stitch_video(background_video_path: str, voice_path: str, output_path: str):
     circle_mask = os.path.join(ASSETS_DIR, "circle_mask_1024.png")
     
     # Validation checks
-    for path, label in [(intro_wave, "Intro Waving Clip"), (pitch_body, "Pitch Body Video"), (circle_mask, "Circle Mask Image"), (background_video_path, "Website Scroll Video"), (voice_path, "Personalized Voice")]:
+    for path, label in [(intro_wave, "Intro Waving Clip"), (pitch_body, "Pitch Body Video"), (circle_mask, "Circle Mask Image"), (background_video_path, "Website Scroll Video")]:
         if not os.path.exists(path):
             raise FileNotFoundError(f"Missing {label} file at: {path}")
             
@@ -41,20 +41,24 @@ def stitch_video(background_video_path: str, voice_path: str, output_path: str):
             print("INFO: intro_wave and pitch_body are identical. Bypassing voice merge and concatenation.")
             shutil.copy2(intro_wave, full_webcam)
         else:
-            # Step 1: Swap the audio of the 2.5s waving intro clip with the ElevenLabs voice audio
-            print("Step 1: Merging voice greeting onto waving intro...")
-            cmd_voice = [
-                "ffmpeg", "-y",
-                "-i", intro_wave,
-                "-i", voice_path,
-                "-map", "0:v:0",
-                "-map", "1:a:0",
-                "-c:v", "copy",
-                "-c:a", "aac",
-                "-t", "2.5",
-                voiced_intro
-            ]
-            subprocess.run(cmd_voice, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
+            if not voice_path or not os.path.exists(voice_path) or os.path.getsize(voice_path) == 0:
+                print("INFO: Voice path missing or empty. Using original intro_wave audio.")
+                shutil.copy2(intro_wave, voiced_intro)
+            else:
+                # Step 1: Swap the audio of the 2.5s waving intro clip with the ElevenLabs voice audio
+                print("Step 1: Merging voice greeting onto waving intro...")
+                cmd_voice = [
+                    "ffmpeg", "-y",
+                    "-i", intro_wave,
+                    "-i", voice_path,
+                    "-map", "0:v:0",
+                    "-map", "1:a:0",
+                    "-c:v", "copy",
+                    "-c:a", "aac",
+                    "-t", "2.5",
+                    voiced_intro
+                ]
+                subprocess.run(cmd_voice, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
             
             # Step 2: Concatenate the voiced intro and the generic pitch body video by transcoding/resampling
             # This aligns their audio layouts, sample rates, and video properties to prevent sync/pitch shifts.

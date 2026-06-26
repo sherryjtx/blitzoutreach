@@ -39,9 +39,7 @@ OCI_NAMESPACE = os.getenv("OCI_NAMESPACE")
 def is_mock_mode():
     """Returns True if local configurations are using default templates (mock mode)."""
     return (
-        not ELEVENLABS_API_KEY 
-        or ELEVENLABS_API_KEY == "your_elevenlabs_api_key_here"
-        or not OCI_NAMESPACE
+        not OCI_NAMESPACE
         or OCI_NAMESPACE == "your_oci_object_storage_namespace_here"
     )
 
