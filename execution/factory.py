@@ -83,12 +83,21 @@ def process_lead(lead: dict, paths: dict, today: str, mock: bool):
         print(f"⏩ Row {row_num}: Skipping (already stitched: {lead['existing_landing_page']})")
         return True
         
-    safe_name = f"{fname}_{lname}".replace(" ", "_").replace("/", "")
-    video_id = f"{fname.lower()}_{lname.lower()}_{company.lower().replace(' ', '').replace('ltd', '').replace('inc', '')}"
-    video_id = "".join(c for c in video_id if c.isalnum() or c == "_")
+    # Sanitize and truncate filename and ID to prevent Windows long path limits
+    clean_fname = "".join(c for c in fname if c.isalnum())
+    clean_lname = "".join(c for c in lname if c.isalnum())
+    clean_company = "".join(c for c in company if c.isalnum())
+    
+    safe_name = f"{clean_fname}_{clean_lname}"
+    if len(safe_name) > 60:
+        safe_name = safe_name[:60]
+        
+    video_id = f"{clean_fname.lower()}_{clean_lname.lower()}_{clean_company.lower()}"
+    if len(video_id) > 80:
+        video_id = video_id[:80]
     
     # Path settings
-    ss_path = os.path.join(paths["ss"], f"{safe_name}.png")
+    ss_path = os.path.join(paths["ss"], f"{safe_name}.webm")
     voice_path = os.path.join(paths["voice"], f"{safe_name}_voice.mp3")
     video_path = os.path.join(paths["video"], f"{safe_name}_outreach.mp4")
     gif_path = os.path.join(paths["gif"], f"{safe_name}_preview.gif")
@@ -99,12 +108,17 @@ def process_lead(lead: dict, paths: dict, today: str, mock: bool):
     print(f"\n🚀 Row {row_num}: Processing '{fname} {lname}' from '{company}'...")
     
     try:
-        # Step 1: Capture Website Screenshot
+        # Step 1: Capture Website Video Scroll
         if mock:
-            # Create a mock screenshot file
-            with open(ss_path, "w") as f:
-                f.write("mock screenshot")
-            print(f"   [MOCK] Created mock screenshot: {ss_path}")
+            # Create a mock video background file
+            intro_wave = os.path.join(paths["assets"], "intro_wave.mp4")
+            if os.path.exists(intro_wave):
+                import shutil
+                shutil.copy(intro_wave, ss_path)
+            else:
+                with open(ss_path, "w") as f:
+                    f.write("mock video background")
+            print(f"   [MOCK] Created mock video background: {ss_path}")
         else:
             capture_website(target_url, ss_path)
             
@@ -118,7 +132,7 @@ def process_lead(lead: dict, paths: dict, today: str, mock: bool):
         else:
             generate_voice(fname, voice_path)
             
-        # Step 3: FFmpeg Stitching (Voice + Intro + Body + Screenshot Overlay)
+        # Step 3: FFmpeg Stitching (Voice + Intro + Body + Video Background Overlay)
         if mock:
             # Create a mock video file by copying assets/intro_wave.mp4 if it exists, or a dummy file
             intro_wave = os.path.join(paths["assets"], "intro_wave.mp4")
@@ -236,6 +250,14 @@ def run_factory(start_row: int, end_row: int):
     print(f"{'='*50}\n")
 
 if __name__ == "__main__":
+    # Reconfigure console streams to UTF-8 on Windows to prevent encoding crashes with emojis
+    if sys.platform.startswith("win"):
+        try:
+            sys.stdout.reconfigure(encoding='utf-8')
+            sys.stderr.reconfigure(encoding='utf-8')
+        except AttributeError:
+            pass # Older Python versions
+            
     parser = argparse.ArgumentParser(description="BlitzOutreach Video Generation Factory.")
     parser.add_argument("start_row", type=int, help="Starting row in Google Sheet (inclusive)")
     parser.add_argument("end_row", type=int, help="Ending row in Google Sheet (inclusive)")

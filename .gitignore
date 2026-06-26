@@ -25,3 +25,4 @@ server/static/output_screenshots/
 server/static/output_thumbnails/
 server/static/output_videos/
 0
+assets/*.mp4

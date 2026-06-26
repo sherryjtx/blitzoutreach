@@ -7,19 +7,19 @@ import subprocess
 PROJECT_DIR = os.path.dirname(os.path.dirname(__file__))
 ASSETS_DIR = os.path.join(PROJECT_DIR, "assets")
 
-def stitch_video(screenshot_path: str, voice_path: str, output_path: str):
+def stitch_video(background_video_path: str, voice_path: str, output_path: str):
     """
     Stitches a personalized outreach video:
     1. Overlays ElevenLabs voice greeting onto the waving intro clip.
     2. Concatenates the voiced intro with the generic pitch body video.
-    3. Overlays the resulting webcam video as a bubble on top of the website screenshot background.
+    3. Overlays the resulting webcam video as a bubble on top of the scrolling background video.
     """
     intro_wave = os.path.join(ASSETS_DIR, "intro_wave.mp4")
     pitch_body = os.path.join(ASSETS_DIR, "pitch_body.mp4")
     circle_mask = os.path.join(ASSETS_DIR, "circle_mask_1024.png")
     
     # Validation checks
-    for path, label in [(intro_wave, "Intro Waving Clip"), (pitch_body, "Pitch Body Video"), (circle_mask, "Circle Mask Image"), (screenshot_path, "Website Screenshot"), (voice_path, "Personalized Voice")]:
+    for path, label in [(intro_wave, "Intro Waving Clip"), (pitch_body, "Pitch Body Video"), (circle_mask, "Circle Mask Image"), (background_video_path, "Website Scroll Video"), (voice_path, "Personalized Voice")]:
         if not os.path.exists(path):
             raise FileNotFoundError(f"Missing {label} file at: {path}")
             
@@ -36,7 +36,6 @@ def stitch_video(screenshot_path: str, voice_path: str, output_path: str):
     
     try:
         # Step 1: Swap the audio of the 2.5s waving intro clip with the ElevenLabs voice audio
-        # Forces a fixed 2.5s duration and transcodes audio to aac
         print("🔗 Step 1: Merging voice greeting onto waving intro...")
         cmd_voice = [
             "ffmpeg", "-y",
@@ -67,17 +66,16 @@ def stitch_video(screenshot_path: str, voice_path: str, output_path: str):
         ]
         subprocess.run(cmd_concat, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
         
-        # Step 3: Overlay the full webcam bubble video onto the website screenshot background
-        print("🔗 Step 3: Rendering webcam bubble overlay onto screenshot background...")
-        # Note: Using crf=26 and preset=ultrafast for optimized file size and speed.
-        # Background is scaled to 1080p, and webcam is cropped to square, scaled to 280x280, masked, and overlaid.
+        # Step 3: Overlay the full webcam bubble video onto the website scrolling video background
+        print("🔗 Step 3: Rendering webcam bubble overlay onto scrolling video background...")
+        # Note: Using stream_loop -1 to repeat background if needed, and shortest=1 to end when webcam ends.
         cmd_overlay = [
             "ffmpeg", "-y",
-            "-loop", "1", "-i", screenshot_path,
+            "-stream_loop", "-1", "-i", background_video_path,
             "-i", full_webcam,
             "-i", circle_mask,
             "-filter_complex", (
-                "[0:v]scale=trunc(iw/2)*2:trunc(ih/2)*2:in_range=full:out_range=tv:out_color_matrix=bt709,setsar=1[bg]; "
+                "[0:v]scale=1920:1080:force_original_aspect_ratio=increase,crop=1920:1080,setsar=1[bg]; "
                 "[1:v]crop='min(iw,ih)':'min(iw,ih)',scale=280:280:flags=lanczos,format=yuva420p[bub]; "
                 "[2:v]scale=280:280:flags=bicubic,format=gray[mask]; "
                 "[bub][mask]alphamerge[bub_m]; "
@@ -86,7 +84,7 @@ def stitch_video(screenshot_path: str, voice_path: str, output_path: str):
             "-map", "[outv]", "-map", "1:a?",
             "-c:v", "libx264", "-crf", "26", "-pix_fmt", "yuv420p", "-preset", "ultrafast",
             "-color_range", "tv", "-colorspace", "bt709", "-color_primaries", "bt709", "-color_trc", "bt709",
-            "-c:a", "copy",
+            "-c:a", "aac",
             output_path
         ]
         subprocess.run(cmd_overlay, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
@@ -103,14 +101,14 @@ def stitch_video(screenshot_path: str, voice_path: str, output_path: str):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Stitch personalized outreach video using FFmpeg.")
-    parser.add_argument("screenshot_path", help="Path to the website screenshot")
+    parser.add_argument("background_video_path", help="Path to the website scrolling video")
     parser.add_argument("voice_path", help="Path to the personalized voice greeting")
     parser.add_argument("output_path", help="Destination path for the final MP4 video")
     
     args = parser.parse_args()
     
     try:
-        stitch_video(args.screenshot_path, args.voice_path, args.output_path)
+        stitch_video(args.background_video_path, args.voice_path, args.output_path)
     except Exception as e:
         print(f"❌ Failed to stitch video: {e}")
         sys.exit(1)
