@@ -70,25 +70,44 @@ def capture_website(url: str, output_path: str):
             page.evaluate("""
                 async () => {
                     const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
-                    const totalHeight = document.body.scrollHeight - window.innerHeight;
-                    const duration = 12000; // 12 seconds scroll
-                    const startTime = performance.now();
-                    
-                    async function scrollStep(timestamp) {
-                        const elapsed = timestamp - startTime;
-                        const progress = Math.min(elapsed / duration, 1);
-                        // easeInOutQuad curves
-                        const ease = progress < 0.5 ? 2 * progress * progress : -1 + (4 - 2 * progress) * progress;
-                        
-                        if (totalHeight > 0) {
-                            window.scrollTo(0, ease * totalHeight);
-                        }
-                        if (progress < 1) {
-                            requestAnimationFrame(scrollStep);
-                        }
-                    }
-                    requestAnimationFrame(scrollStep);
-                    await delay(duration + 1000); // Let scroll finish and record extra second
+                    const smoothScrollTo = (targetY, duration) => {
+                        return new Promise((resolve) => {
+                            const startY = window.scrollY;
+                            const difference = targetY - startY;
+                            const startTime = performance.now();
+                            
+                            function step(timestamp) {
+                                const elapsed = timestamp - startTime;
+                                const progress = Math.min(elapsed / duration, 1);
+                                // easeInOutQuad curve
+                                const ease = progress < 0.5 ? 2 * progress * progress : -1 + (4 - 2 * progress) * progress;
+                                window.scrollTo(0, startY + ease * difference);
+                                if (progress < 1) {
+                                    requestAnimationFrame(step);
+                                } else {
+                                    resolve();
+                                }
+                            }
+                            requestAnimationFrame(step);
+                        });
+                    };
+
+                    // 1. Fully loaded settle time (1.5 seconds)
+                    await delay(1500);
+
+                    // 2. 4 micro-scrolls down (each 180px smoothly over 600ms, then pause 800ms)
+                    await smoothScrollTo(180, 600);
+                    await delay(800);
+                    await smoothScrollTo(360, 600);
+                    await delay(800);
+                    await smoothScrollTo(540, 600);
+                    await delay(800);
+                    await smoothScrollTo(720, 600);
+                    await delay(1200);
+
+                    // 3. One smooth scroll back to top (scroll to 0 over 1200ms)
+                    await smoothScrollTo(0, 1200);
+                    await delay(1500); // end settle
                 }
             """)
         except Exception as scroll_err:

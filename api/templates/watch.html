@@ -64,7 +64,7 @@
                         </div>
                     </div>
                     <div class="video-wrapper" id="videoWrapper">
-                        <video id="outreachVideo" poster="/static/poster_placeholder.png" playsinline>
+                        <video id="outreachVideo" playsinline controls preload="metadata">
                             <source src="{{ video_url }}" type="video/mp4">
                             Your browser does not support the video tag.
                         </video>
@@ -144,11 +144,8 @@
             });
         }
         
-        if (video) {
-            video.addEventListener('click', () => {
-                video.paused ? video.play() : video.pause();
-            });
-        }
+        // Native controls handle standard play/pause toggling natively
+
 
         if (video && videoWrapper) {
             video.addEventListener('play', () => {
