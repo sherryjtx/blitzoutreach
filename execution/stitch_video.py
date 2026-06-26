@@ -35,41 +35,47 @@ def stitch_video(background_video_path: str, voice_path: str, output_path: str):
     print(f"🎬 Starting video stitching pipeline for {base_name}...")
     
     try:
-        # Step 1: Swap the audio of the 2.5s waving intro clip with the ElevenLabs voice audio
-        print("🔗 Step 1: Merging voice greeting onto waving intro...")
-        cmd_voice = [
-            "ffmpeg", "-y",
-            "-i", intro_wave,
-            "-i", voice_path,
-            "-map", "0:v:0",
-            "-map", "1:a:0",
-            "-c:v", "copy",
-            "-c:a", "aac",
-            "-t", "2.5",
-            voiced_intro
-        ]
-        subprocess.run(cmd_voice, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
-        
-        # Step 2: Concatenate the voiced intro and the generic pitch body video by transcoding/resampling
-        # This aligns their audio layouts, sample rates, and video properties to prevent sync/pitch shifts.
-        print("🔗 Step 2: Concatenating intro and pitch body by transcoding...")
-        cmd_concat = [
-            "ffmpeg", "-y",
-            "-i", voiced_intro,
-            "-i", pitch_body,
-            "-filter_complex", (
-                "[0:v]scale=1920:1080:force_original_aspect_ratio=increase,crop=1920:1080,fps=30[v0]; "
-                "[1:v]scale=1920:1080:force_original_aspect_ratio=increase,crop=1920:1080,fps=30[v1]; "
-                "[0:a]aresample=44100,aformat=sample_rates=44100:channel_layouts=stereo[a0]; "
-                "[1:a]aresample=44100,aformat=sample_rates=44100:channel_layouts=stereo[a1]; "
-                "[v0][a0][v1][a1]concat=n=2:v=1:a=1[outv][outa]"
-            ),
-            "-map", "[outv]", "-map", "[outa]",
-            "-c:v", "libx264", "-preset", "ultrafast", "-crf", "23",
-            "-c:a", "aac", "-ar", "44100",
-            full_webcam
-        ]
-        subprocess.run(cmd_concat, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
+        import shutil
+        # If the intro and pitch body are the same file, bypass the voice merge and concatenation steps
+        if os.path.exists(intro_wave) and os.path.exists(pitch_body) and os.path.getsize(intro_wave) == os.path.getsize(pitch_body):
+            print("ℹ️ intro_wave and pitch_body are identical. Bypassing voice merge and concatenation.")
+            shutil.copy2(intro_wave, full_webcam)
+        else:
+            # Step 1: Swap the audio of the 2.5s waving intro clip with the ElevenLabs voice audio
+            print("🔗 Step 1: Merging voice greeting onto waving intro...")
+            cmd_voice = [
+                "ffmpeg", "-y",
+                "-i", intro_wave,
+                "-i", voice_path,
+                "-map", "0:v:0",
+                "-map", "1:a:0",
+                "-c:v", "copy",
+                "-c:a", "aac",
+                "-t", "2.5",
+                voiced_intro
+            ]
+            subprocess.run(cmd_voice, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
+            
+            # Step 2: Concatenate the voiced intro and the generic pitch body video by transcoding/resampling
+            # This aligns their audio layouts, sample rates, and video properties to prevent sync/pitch shifts.
+            print("🔗 Step 2: Concatenating intro and pitch body by transcoding...")
+            cmd_concat = [
+                "ffmpeg", "-y",
+                "-i", voiced_intro,
+                "-i", pitch_body,
+                "-filter_complex", (
+                    "[0:v]scale=1920:1080:force_original_aspect_ratio=increase,crop=1920:1080,fps=30[v0]; "
+                    "[1:v]scale=1920:1080:force_original_aspect_ratio=increase,crop=1920:1080,fps=30[v1]; "
+                    "[0:a]aresample=44100,aformat=sample_rates=44100:channel_layouts=stereo[a0]; "
+                    "[1:a]aresample=44100,aformat=sample_rates=44100:channel_layouts=stereo[a1]; "
+                    "[v0][a0][v1][a1]concat=n=2:v=1:a=1[outv][outa]"
+                ),
+                "-map", "[outv]", "-map", "[outa]",
+                "-c:v", "libx264", "-preset", "ultrafast", "-crf", "23",
+                "-c:a", "aac", "-ar", "44100",
+                full_webcam
+            ]
+            subprocess.run(cmd_concat, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
         
         # Step 3: Overlay the full webcam bubble video onto the website scrolling video background
         print("🔗 Step 3: Rendering webcam bubble overlay onto scrolling video background...")

@@ -29,7 +29,8 @@ def capture_website(url: str, output_path: str, screenshot_path: str = None):
             args=[
                 "--disable-web-security",
                 "--disable-features=IsolateOrigins,site-per-process",
-                "--font-render-hinting=none"
+                "--font-render-hinting=none",
+                "--autoplay-policy=no-user-gesture-required"
             ]
         )
         
@@ -68,6 +69,21 @@ def capture_website(url: str, output_path: str, screenshot_path: str = None):
             page.goto(url, wait_until="domcontentloaded", timeout=30000)
             print("   Page HTML loaded.")
             page.wait_for_timeout(3000) # Settle time
+            
+            # Force autoplay all videos on the page (e.g. background videos)
+            try:
+                page.evaluate("""
+                    document.querySelectorAll('video').forEach(v => {
+                        v.muted = true;
+                        v.setAttribute('autoplay', 'true');
+                        v.setAttribute('playsinline', 'true');
+                        v.play().catch(e => {});
+                    });
+                """)
+                print("   Forced background video autoplay.")
+            except Exception as vid_err:
+                print(f"   Failed to force video autoplay: {vid_err}")
+                
             load_duration = time.time() - start_time
             print(f"   Website fully settled in {load_duration:.2f} seconds.")
         except Exception as e:
