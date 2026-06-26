@@ -31,7 +31,7 @@ def generate_thumbnail(video_path: str, output_path: str):
     if has_play_button:
         # Scale to 480px width, set to 10 FPS, overlay play button in center, and apply optimized GIF palette.
         filter_str = (
-            "[0:v]ssim=0,fps=10,scale=480:-1:flags=lanczos[v]; "
+            "[0:v]fps=10,scale=480:-1:flags=lanczos[v]; "
             "[v][1:v]overlay=(W-w)/2:(H-h)/2:shortest=1,split[a][b]; "
             "[a]palettegen=stats_mode=single[p]; "
             "[b][p]paletteuse=new=1"
@@ -48,7 +48,7 @@ def generate_thumbnail(video_path: str, output_path: str):
     else:
         print("⚠️ Warning: play_button.png not found in assets. Generating GIF without play button overlay.")
         filter_str = (
-            "[0:v]ssim=0,fps=10,scale=480:-1:flags=lanczos,split[a][b]; "
+            "[0:v]fps=10,scale=480:-1:flags=lanczos,split[a][b]; "
             "[a]palettegen=stats_mode=single[p]; "
             "[b][p]paletteuse=new=1"
         )

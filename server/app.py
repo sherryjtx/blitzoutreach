@@ -1,6 +1,15 @@
 import os
 import sys
 import logging
+
+# Ensure UTF-8 stdout on Windows to support emojis
+if sys.platform == 'win32':
+    try:
+        sys.stdout.reconfigure(encoding='utf-8')
+        sys.stderr.reconfigure(encoding='utf-8')
+    except Exception:
+        pass
+
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
@@ -74,7 +83,7 @@ else:
         logger.error(f"❌ Failed to initialize Supabase client: {e}")
 
 # Calendly Configuration
-CALENDLY_URL = os.getenv("CALENDLY_URL", "https://calendly.com/sherryjtx9")
+CALENDLY_URL = os.getenv("CALENDLY_URL", "https://calendly.com/sherryjtx9/30min")
 
 def seed_database_if_empty():
     try:
@@ -460,6 +469,67 @@ async def create_campaign(payload: CampaignPayload):
     except Exception as e:
         logger.error(f"Failed to create campaign: {e}")
         return JSONResponse(content={"status": "error", "message": str(e)}, status_code=500)
+
+class SyncPayload(BaseModel):
+    start_row: int
+    end_row: int
+
+@app.post("/api/leads/sync")
+async def sync_leads(payload: SyncPayload):
+    try:
+        if PROJECT_DIR not in sys.path:
+            sys.path.insert(0, PROJECT_DIR)
+        from execution import sheet_sync
+        
+        leads = sheet_sync.fetch_leads_batch(payload.start_row, payload.end_row)
+        if not leads:
+            return {"status": "success", "imported": 0, "message": "No leads found in range."}
+            
+        import random
+        imported_count = 0
+        for l in leads:
+            fname = l.get("first_name", "").strip()
+            lname = l.get("last_name", "").strip()
+            email = l.get("email", "").strip()
+            company = l.get("company", "").strip()
+            website = l.get("website", "").strip()
+            row_val = l.get("row", 9999)
+            
+            if not fname or not email:
+                continue
+                
+            # Create a unique video_id
+            clean_name = f"{fname.lower()}{lname.lower()}".replace(" ", "")
+            clean_company = company.lower().replace(" ", "")
+            video_id = f"{clean_name}_{clean_company}"
+            video_id = "".join(c for c in video_id if c.isalnum() or c == "_")
+            video_id += f"_{random.randint(100, 999)}"
+            
+            # Find logo fallback
+            clean_domain = website if website else (company.lower().replace(" ", "").replace("ltd", "").replace("inc", "") + ".com")
+            if not clean_domain.startswith("http"):
+                clean_domain = clean_domain.replace("https://", "").replace("http://", "")
+            
+            company_logo = f"https://logo.clearbit.com/{clean_domain}"
+            
+            lead_data = {
+                "video_id": video_id,
+                "name": f"{fname} {lname}".strip(),
+                "company": company,
+                "video_url": "https://www.w3schools.com/html/mov_bbb.mp4",
+                "company_logo": company_logo,
+                "row_num": row_val
+            }
+            
+            # Upsert in Supabase
+            supabase.table("leads").upsert(lead_data, on_conflict="video_id").execute()
+            imported_count += 1
+            
+        return {"status": "success", "imported": imported_count, "message": f"Successfully synced {imported_count} leads."}
+    except Exception as e:
+        logger.error(f"Failed to sync leads: {e}")
+        return JSONResponse(content={"status": "error", "message": str(e)}, status_code=500)
+
 
 class LeadCreatePayload(BaseModel):
     name: str

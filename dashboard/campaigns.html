@@ -354,9 +354,6 @@
                 <a href="videos.html" class="nav-item" title="Videos">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
                 </a>
-                <a href="email.html" class="nav-item" title="Email Outreach">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-                </a>
                 <a href="analytics.html" class="nav-item" title="Analytics">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
                 </a>
@@ -386,7 +383,7 @@
                 <div class="top-bar-right">
                     <div class="search-bar" style="width: 220px;">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                        <input type="text" placeholder="Search campaigns...">
+                        <input type="text" id="campaign-search" placeholder="Search campaigns...">
                     </div>
                     <button class="btn btn-primary" id="openModalBtn">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="14" height="14" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -620,7 +617,7 @@
                             <span style="font-size: 0.6875rem; color: var(--text-dim);">No leads added</span>
                         </div>
                         <div class="campaign-card-btns">
-                            <button class="card-btn card-btn-primary btn-primary" onclick="alert('Open Lead Importer')">Add Leads</button>
+                            <button class="card-btn card-btn-primary btn-primary" onclick="window.location.href='leads.html?open=import'">Add Leads</button>
                         </div>
                     </div>
                 </div>
@@ -692,6 +689,29 @@
                 hideModal();
             }
         });
+
+        // Auto open modal from URL parameter
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('open') === 'modal') {
+            modal.style.display = 'flex';
+        }
+
+        // Live filtering search
+        const campaignSearch = document.getElementById('campaign-search');
+        if (campaignSearch) {
+            campaignSearch.addEventListener('input', (e) => {
+                const query = e.target.value.toLowerCase();
+                const cards = document.querySelectorAll('.campaigns-grid .campaign-card');
+                cards.forEach(card => {
+                    const name = card.querySelector('.campaign-name').textContent.toLowerCase();
+                    if (name.includes(query)) {
+                        card.style.display = 'flex';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            });
+        }
     </script>
 </body>
 </html>

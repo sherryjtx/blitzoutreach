@@ -16,3 +16,12 @@ output/
 # OS specific files
 .DS_Store
 Thumbs.db
+
+# Credentials & Scratch files
+token.json
+credentials.json
+scratch/
+server/static/output_screenshots/
+server/static/output_thumbnails/
+server/static/output_videos/
+0

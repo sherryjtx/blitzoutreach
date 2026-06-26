@@ -289,9 +289,6 @@
                 <a href="videos.html" class="nav-item active" title="Videos">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
                 </a>
-                <a href="email.html" class="nav-item" title="Email Outreach">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-                </a>
                 <a href="analytics.html" class="nav-item" title="Analytics">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
                 </a>
@@ -318,16 +315,16 @@
                     <p class="page-subtitle">Browse, preview, and manage all your outreach videos</p>
                 </div>
                 <div class="top-bar-right">
-                    <div class="tab-nav">
-                        <button class="tab-item active">All Videos</button>
-                        <button class="tab-item">Templates</button>
-                        <button class="tab-item">Generated</button>
+                    <div class="tab-nav" id="video-tabs">
+                        <button class="tab-item active" data-filter="all">All Videos</button>
+                        <button class="tab-item" data-filter="templates">Templates</button>
+                        <button class="tab-item" data-filter="generated">Generated</button>
                     </div>
                     <div class="search-bar" style="width: 200px;">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                        <input type="text" placeholder="Search videos...">
+                        <input type="text" id="video-search" placeholder="Search videos...">
                     </div>
-                    <button class="btn btn-primary">
+                    <button class="btn btn-primary" id="record-btn">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="16" height="16" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
                         Record New
                     </button>
@@ -400,79 +397,171 @@
         </main>
     </div>
 
-    <script>
+    <!-- Record Video Info Modal -->
+    <div id="record-modal" class="modal" style="display:none; position:fixed; inset:0; z-index:1000; align-items:center; justify-content:center; background:rgba(3,3,5,0.85); backdrop-filter:blur(8px);">
+        <div class="modal-content card" style="background:var(--bg-surface); border:1px solid var(--border-default); width:400px; padding:var(--space-xl);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--space-md);">
+                <h3 style="font-size:1rem; font-weight:600; color:#fff;">Record Video Template</h3>
+                <button id="close-record-btn" class="modal-close" style="background:none; border:none; color:var(--text-muted); cursor:pointer;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="16" height="16" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+            <p style="font-size:0.8125rem; color:var(--text-muted); line-height:1.5; margin-bottom:var(--space-md);">To record new master templates with camera overlay:</p>
+            <ol style="font-size:0.8125rem; color:var(--text-secondary); padding-left:16px; line-height:1.6; margin-bottom:var(--space-md);">
+                <li>Open your BlitzOutreach Desktop Recorder Agent.</li>
+                <li>Position your camera bubble on screen.</li>
+                <li>Perform your outreach walkthrough video.</li>
+                <li>Click <strong>Save Template</strong> to auto-sync the master file here.</li>
+            </ol>
+            <button class="btn btn-primary" onclick="document.getElementById('record-modal').style.display='none';" style="width:100%; padding:10px;">Got it</button>
+        </div>
+    </div>
+
+        let allVideosList = [];
+        let currentVideoFilter = 'all';
+        let videoSearchQuery = '';
+
+        // Record video instruction modal
+        const recordBtn = document.getElementById('record-btn');
+        const recordModal = document.getElementById('record-modal');
+        const closeRecordBtn = document.getElementById('close-record-btn');
+
+        if (recordBtn && recordModal) {
+            recordBtn.onclick = () => { recordModal.style.display = 'flex'; };
+            if (closeRecordBtn) closeRecordBtn.onclick = () => { recordModal.style.display = 'none'; };
+            window.onclick = (e) => {
+                if (e.target === recordModal) recordModal.style.display = 'none';
+            };
+        }
+
         async function fetchVideos() {
             try {
                 const res = await fetch('/api/leads');
-                const leads = await res.json();
-                
-                const grid = document.querySelector('.video-grid');
-                if (grid) {
-                    const cards = grid.querySelectorAll('.video-card');
-                    cards.forEach((card, index) => {
-                        if (index > 0) card.remove();
-                    });
-                    
-                    leads.forEach(lead => {
-                        const cleanDomain = lead.company.toLowerCase().replace(/[^a-z0-9]/g, '') + '.com';
-                        let statusText = 'Sent';
-                        let statusClass = 'status-sent';
-                        if (lead.status === 'Viewed') {
-                            statusText = `Viewed ${lead.watch_percent}`;
-                            statusClass = 'status-viewed';
-                        } else if (lead.status === 'Replied') {
-                            statusText = 'Replied ✓';
-                            statusClass = 'status-replied';
-                        } else if (lead.status === 'Booked') {
-                            statusText = 'Booked ✓';
-                            statusClass = 'status-booked';
-                        }
-                        
-                        const card = document.createElement('div');
-                        card.className = 'video-card animate-in';
-                        card.onclick = () => window.open(`/v/${lead.video_id}`, '_blank');
-                        
-                        const gradients = [
-                            'linear-gradient(135deg, #0F1118 0%, #141420 100%)',
-                            'linear-gradient(135deg, #0F1118 0%, #1A1A0E 100%)',
-                            'linear-gradient(135deg, #0F1118 0%, #0E1A14 100%)',
-                            'linear-gradient(135deg, #0F1118 0%, #1A0F18 100%)',
-                            'linear-gradient(135deg, #0F1118 0%, #181810 100%)'
-                        ];
-                        let hash = 0;
-                        for (let i = 0; i < lead.name.length; i++) {
-                            hash = lead.name.charCodeAt(i) + ((hash << 5) - hash);
-                        }
-                        const gradient = gradients[Math.abs(hash) % gradients.length];
-                        
-                        card.innerHTML = `
-                            <div class="video-thumb">
-                                <div style="width:100%;height:100%;background:${gradient};"></div>
-                                <div class="video-thumb-overlay">
-                                    <div class="video-play-icon"><svg viewBox="0 0 24 24"><polygon points="8,5 20,12 8,19"/></svg></div>
-                                </div>
-                                <div class="video-webcam-bubble"><img src="../assets/profile_photo.png" alt=""></div>
-                                <span class="video-duration">1:10</span>
-                            </div>
-                            <div class="video-card-info">
-                                <div class="video-card-name">Hey ${lead.name.split(' ')[0]} — ${cleanDomain}</div>
-                                <div class="video-card-meta">Generated for campaign</div>
-                                <div class="video-card-footer">
-                                    <span class="status-pill ${statusClass}" style="font-size: 0.625rem;">${statusText}</span>
-                                    <div class="video-card-actions">
-                                        <button class="video-action-btn" title="Preview" onclick="window.open('/v/${lead.video_id}', '_blank'); event.stopPropagation();"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
-                                        <button class="video-action-btn" title="More"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg></button>
-                                    </div>
-                                </div>
-                            </div>
-                        `;
-                        grid.appendChild(card);
-                    });
-                }
+                allVideosList = await res.json();
+                renderVideosGrid();
             } catch (err) {
                 console.error('Error fetching videos:', err);
             }
         }
+
+        function renderVideosGrid() {
+            const grid = document.querySelector('.video-grid');
+            if (!grid) return;
+            
+            // Clear all dynamic ones (keep the first card which is the featured template)
+            const cards = grid.querySelectorAll('.video-card');
+            cards.forEach((card, index) => {
+                if (index > 0) card.remove();
+            });
+
+            // If template filter is active, featured template card stays visible; else hides
+            const featuredCard = cards[0];
+            if (featuredCard) {
+                const matchesFeaturedSearch = featuredCard.querySelector('.video-card-name').textContent.toLowerCase().includes(videoSearchQuery);
+                if (matchesFeaturedSearch && (currentVideoFilter === 'all' || currentVideoFilter === 'templates')) {
+                    featuredCard.style.display = 'block';
+                } else {
+                    featuredCard.style.display = 'none';
+                }
+            }
+
+            let filtered = allVideosList.filter(lead => {
+                // Filter by type
+                if (currentVideoFilter === 'generated') {
+                    // Only show rows that are generated dynamic ones
+                    return true; 
+                }
+                if (currentVideoFilter === 'templates') {
+                    // Templates category only shows featured (which is handled separately above)
+                    return false;
+                }
+                return true; // 'all' shows both
+            });
+
+            // Filter by search query
+            if (videoSearchQuery) {
+                filtered = filtered.filter(lead => {
+                    return lead.name.toLowerCase().includes(videoSearchQuery) || 
+                           lead.company.toLowerCase().includes(videoSearchQuery);
+                });
+            }
+
+            filtered.forEach(lead => {
+                const cleanDomain = lead.company.toLowerCase().replace(/[^a-z0-9]/g, '') + '.com';
+                let statusText = 'Sent';
+                let statusClass = 'status-sent';
+                if (lead.status === 'Viewed') {
+                    statusText = `Viewed ${lead.watch_percent}`;
+                    statusClass = 'status-viewed';
+                } else if (lead.status === 'Replied') {
+                    statusText = 'Replied ✓';
+                    statusClass = 'status-replied';
+                } else if (lead.status === 'Booked') {
+                    statusText = 'Booked ✓';
+                    statusClass = 'status-booked';
+                }
+                
+                const card = document.createElement('div');
+                card.className = 'video-card animate-in';
+                card.onclick = () => window.open(`/v/${lead.video_id}`, '_blank');
+                
+                const gradients = [
+                    'linear-gradient(135deg, #0F1118 0%, #141420 100%)',
+                    'linear-gradient(135deg, #0F1118 0%, #1A1A0E 100%)',
+                    'linear-gradient(135deg, #0F1118 0%, #0E1A14 100%)',
+                    'linear-gradient(135deg, #0F1118 0%, #1A0F18 100%)',
+                    'linear-gradient(135deg, #0F1118 0%, #181810 100%)'
+                ];
+                let hash = 0;
+                for (let i = 0; i < lead.name.length; i++) {
+                    hash = lead.name.charCodeAt(i) + ((hash << 5) - hash);
+                }
+                const gradient = gradients[Math.abs(hash) % gradients.length];
+                
+                card.innerHTML = `
+                    <div class="video-thumb">
+                        <div style="width:100%;height:100%;background:${gradient};"></div>
+                        <div class="video-thumb-overlay">
+                            <div class="video-play-icon"><svg viewBox="0 0 24 24"><polygon points="8,5 20,12 8,19"/></svg></div>
+                        </div>
+                        <div class="video-webcam-bubble"><img src="../assets/profile_photo.png" alt=""></div>
+                        <span class="video-duration">1:10</span>
+                    </div>
+                    <div class="video-card-info">
+                        <div class="video-card-name">Hey ${lead.name.split(' ')[0]} — ${cleanDomain}</div>
+                        <div class="video-card-meta">Generated for campaign</div>
+                        <div class="video-card-footer">
+                            <span class="status-pill ${statusClass}" style="font-size: 0.625rem;">${statusText}</span>
+                            <div class="video-card-actions">
+                                <button class="video-action-btn" title="Preview" onclick="window.open('/v/${lead.video_id}', '_blank'); event.stopPropagation();"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+                                <button class="video-action-btn" title="More"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg></button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // Search listener
+        const videoSearch = document.getElementById('video-search');
+        if (videoSearch) {
+            videoSearch.addEventListener('input', (e) => {
+                videoSearchQuery = e.target.value.toLowerCase();
+                renderVideosGrid();
+            });
+        }
+
+        // Tab filter listeners
+        document.querySelectorAll('#video-tabs .tab-item').forEach(tab => {
+            tab.addEventListener('click', (e) => {
+                document.querySelectorAll('#video-tabs .tab-item').forEach(btn => btn.classList.remove('active'));
+                e.target.classList.add('active');
+                currentVideoFilter = e.target.getAttribute('data-filter');
+                renderVideosGrid();
+            });
+        });
+
         fetchVideos();
         setInterval(fetchVideos, 5000);
     </script>

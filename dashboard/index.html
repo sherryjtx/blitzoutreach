@@ -34,9 +34,6 @@
                 <a href="videos.html" class="nav-item" title="Videos">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
                 </a>
-                <a href="email.html" class="nav-item" title="Email Outreach">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-                </a>
                 <a href="analytics.html" class="nav-item" title="Analytics">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
                 </a>
@@ -66,12 +63,12 @@
                 <div class="top-bar-right">
                     <div class="search-bar">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                        <input type="text" placeholder="Search leads, campaigns...">
+                        <input type="text" id="global-search" placeholder="Search leads, campaigns...">
                     </div>
-                    <button class="btn btn-primary">
+                    <a href="campaigns.html?open=modal" class="btn btn-primary" style="text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="16" height="16" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                         New Campaign
-                    </button>
+                    </a>
                 </div>
             </div>
 
@@ -394,6 +391,8 @@
                         
                         const item = document.createElement('div');
                         item.className = 'activity-item';
+                        item.style.cursor = 'pointer';
+                        item.onclick = () => window.open(`/v/${ev.video_id}`, '_blank');
                         item.innerHTML = `
                             <div class="activity-avatar" style="background: ${colors.bg}; color: ${colors.text};">${initials}</div>
                             <div class="activity-content">
@@ -408,6 +407,16 @@
             } catch (err) {
                 console.error('Error updating dashboard:', err);
             }
+        }
+
+        // Global Search input handler
+        const globalSearch = document.getElementById('global-search');
+        if (globalSearch) {
+            globalSearch.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter' && e.target.value.trim()) {
+                    window.location.href = `leads.html?q=${encodeURIComponent(e.target.value.trim())}`;
+                }
+            });
         }
 
         // Initial update and interval
