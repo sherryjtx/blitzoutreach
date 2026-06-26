@@ -227,6 +227,14 @@ async def watch_video(video_id: str, request: Request):
             company_logo_sign = "/static/nike_icon.svg"
             company_logo_wordmark = "/static/nike_wordmark.svg"
             company_badge_bg = "#000000"
+        elif "adknown" in company_lower:
+            company_logo_sign = "/static/adknown_logo.svg"
+            company_logo_wordmark = "/static/adknown_logo.svg"
+            company_badge_bg = "#3da9d7"
+        elif "lemieux" in company_lower:
+            company_logo_sign = "/static/lemieux_leaf.png"
+            company_logo_wordmark = "/static/lemieux_logo_main.svg"
+            company_badge_bg = "#58652d"
         else:
             # Fallback to Clearbit logo for general companies
             if not company_logo and company:
