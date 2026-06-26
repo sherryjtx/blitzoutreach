@@ -168,14 +168,14 @@ body::after {
 }
 
 .sign-logo-badge:nth-child(1) {
-    transform: rotate(-6deg);
+    transform: rotate(-10deg);
     position: relative;
     z-index: 1;
 }
 
 .sign-logo-badge:nth-child(2) {
-    transform: rotate(8deg);
-    margin-left: -8px;
+    transform: rotate(12deg);
+    margin-left: -12px;
     position: relative;
     z-index: 2;
 }
@@ -280,24 +280,25 @@ body::after {
     position: absolute;
     top: 50%;
     left: 50%;
-    width: 155%;
-    height: 175%;
+    width: 180%;
+    height: 195%;
     background: radial-gradient(
         circle at center,
-        rgba(220, 38, 38, 0.85) 0%,
-        rgba(220, 38, 38, 0.45) 35%,
-        rgba(220, 38, 38, 0.15) 60%,
-        transparent 80%
+        rgba(239, 68, 68, 0.95) 0%,
+        rgba(239, 68, 68, 0.85) 45%,
+        rgba(239, 68, 68, 0.6) 65%,
+        rgba(239, 68, 68, 0.25) 85%,
+        transparent 100%
     );
     transform: translate(-50%, -50%);
-    filter: blur(90px);
+    filter: blur(100px);
     z-index: 0;
     pointer-events: none;
-    opacity: 0.95;
+    opacity: 0.98;
     mix-blend-mode: screen;
 }
 
-/* Glassmorphic Browser frame */
+/* Glassmorphic Browser frame with outer red drop glow */
 .video-browser-frame {
     position: relative;
     width: 100%;
@@ -306,7 +307,9 @@ body::after {
     -webkit-backdrop-filter: blur(20px);
     border-radius: var(--radius-md);
     border: 1px solid rgba(255, 255, 255, 0.08);
-    box-shadow: 0 30px 70px rgba(0, 0, 0, 0.65);
+    box-shadow: 
+        0 30px 70px rgba(0, 0, 0, 0.7),
+        0 0 50px rgba(239, 68, 68, 0.35); /* Vibrant outer light leak */
     overflow: hidden;
     z-index: 2;
 }
@@ -621,11 +624,12 @@ body::after {
 
 .booking-title {
     font-family: 'Outfit', sans-serif;
-    font-size: 2.2rem;
-    font-weight: 700;
+    font-size: 2.9rem;
+    font-weight: 800;
     color: var(--red-500);
-    letter-spacing: -0.02em;
+    letter-spacing: -0.025em;
     margin-bottom: 8px;
+    text-shadow: 0 0 25px rgba(239, 68, 68, 0.25);
 }
 
 .booking-subtitle {
