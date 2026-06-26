@@ -148,8 +148,21 @@ def process_lead(lead: dict, paths: dict, today: str, mock: bool):
                 with open(video_path, "w") as f:
                     f.write("mock video")
             print(f"   [MOCK] Created mock video: {video_path}")
-        else:
             stitch_video(ss_path, voice_path, video_path)
+            # Extract first frame as cover screenshot with webcam bubble
+            try:
+                import subprocess
+                cmd_thumb = [
+                    "ffmpeg", "-y",
+                    "-i", video_path,
+                    "-vframes", "1",
+                    "-f", "image2",
+                    screenshot_path
+                ]
+                subprocess.run(cmd_thumb, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
+                print(f"   Generated cover screenshot with bubble at {screenshot_path}")
+            except Exception as thumb_err:
+                print(f"⚠️ Failed to extract cover screenshot: {thumb_err}")
             
         # Step 4: Generate GIF Thumbnail for Email
         if mock:

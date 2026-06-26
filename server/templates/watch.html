@@ -64,7 +64,7 @@
                         </div>
                     </div>
                     <div class="video-wrapper" id="videoWrapper">
-                        <video id="outreachVideo" playsinline controls preload="metadata" poster="/static/output_screenshots/{{ video_id }}.png">
+                        <video id="outreachVideo" playsinline controls preload="metadata" poster="/static/output_screenshots/{{ video_id }}.png" disablepictureinpicture="true" disableremoteplayback="true" controlslist="nodownload" disable-smart-video="true" ext-disable-smart-video="true">
                             <source src="{{ video_url }}" type="video/mp4">
                             Your browser does not support the video tag.
                         </video>
@@ -286,13 +286,24 @@
             return e.origin === "https://calendly.com" && e.data.event && e.data.event.indexOf("calendly.") === 0;
         }
 
-        window.addEventListener("message", function(e) {
-            if (isCalendlyEvent(e)) {
-                if (e.data.event === "calendly.event_scheduled") {
-                    logEvent('booked', {
-                        invitee_uri: e.data.payload.invitee.uri,
-                        event_uri: e.data.payload.event.uri
-                    });
+        /* --- Spacebar to Play/Pause --- */
+        window.addEventListener('keydown', (e) => {
+            if (e.key === ' ' || e.code === 'Space') {
+                // Ignore if user is currently typing in an input or contenteditable element
+                const active = document.activeElement;
+                if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.isContentEditable)) {
+                    return;
+                }
+                
+                // Prevent standard browser scroll-down
+                e.preventDefault();
+                
+                if (video) {
+                    if (video.paused) {
+                        video.play();
+                    } else {
+                        video.pause();
+                    }
                 }
             }
         });
