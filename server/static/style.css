@@ -378,6 +378,7 @@ body::after {
     justify-content: center;
     transition: opacity 250ms var(--ease-out);
     z-index: 5;
+    pointer-events: none; /* Let clicks pass through to native controls */
 }
 
 .play-button-circle {
@@ -397,6 +398,7 @@ body::after {
         background-color 200ms ease,
         border-color 200ms ease;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    pointer-events: auto; /* Only capture clicks on the play button itself */
 }
 
 .play-button-circle svg {

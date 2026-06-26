@@ -109,6 +109,7 @@ def process_lead(lead: dict, paths: dict, today: str, mock: bool):
     
     try:
         # Step 1: Capture Website Video Scroll
+        screenshot_path = os.path.join(PROJECT_DIR, "server/static/output_screenshots", f"{video_id}.png")
         if mock:
             # Create a mock video background file
             intro_wave = os.path.join(paths["assets"], "intro_wave.mp4")
@@ -118,9 +119,13 @@ def process_lead(lead: dict, paths: dict, today: str, mock: bool):
             else:
                 with open(ss_path, "w") as f:
                     f.write("mock video background")
-            print(f"   [MOCK] Created mock video background: {ss_path}")
+            # Create mock screenshot file
+            os.makedirs(os.path.dirname(screenshot_path), exist_ok=True)
+            with open(screenshot_path, "w") as f:
+                f.write("mock screenshot")
+            print(f"   [MOCK] Created mock video background and cover screenshot")
         else:
-            capture_website(target_url, ss_path)
+            capture_website(target_url, ss_path, screenshot_path)
             
         # Step 2: Generate Voice Greeting (ElevenLabs)
         if mock:
