@@ -178,6 +178,8 @@ def process_lead(lead: dict, paths: dict, today: str, mock: bool):
                     f.write("mock video")
             print(f"   [MOCK] Created mock video: {video_path}")
             stitch_video(ss_path, voice_path, video_path)
+        else:
+            stitch_video(ss_path, voice_path, video_path)
             # Extract first frame as cover screenshot with webcam bubble
             try:
                 import subprocess
