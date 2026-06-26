@@ -32,17 +32,17 @@ def stitch_video(background_video_path: str, voice_path: str, output_path: str):
     full_webcam = os.path.join(temp_dir, f"{base_name}_full_webcam.mp4")
     concat_list_file = os.path.join(temp_dir, f"{base_name}_concat_list.txt")
     
-    print(f"🎬 Starting video stitching pipeline for {base_name}...")
+    print(f"Starting video stitching pipeline for {base_name}...")
     
     try:
         import shutil
         # If the intro and pitch body are the same file, bypass the voice merge and concatenation steps
         if os.path.exists(intro_wave) and os.path.exists(pitch_body) and os.path.getsize(intro_wave) == os.path.getsize(pitch_body):
-            print("ℹ️ intro_wave and pitch_body are identical. Bypassing voice merge and concatenation.")
+            print("INFO: intro_wave and pitch_body are identical. Bypassing voice merge and concatenation.")
             shutil.copy2(intro_wave, full_webcam)
         else:
             # Step 1: Swap the audio of the 2.5s waving intro clip with the ElevenLabs voice audio
-            print("🔗 Step 1: Merging voice greeting onto waving intro...")
+            print("Step 1: Merging voice greeting onto waving intro...")
             cmd_voice = [
                 "ffmpeg", "-y",
                 "-i", intro_wave,
@@ -58,7 +58,7 @@ def stitch_video(background_video_path: str, voice_path: str, output_path: str):
             
             # Step 2: Concatenate the voiced intro and the generic pitch body video by transcoding/resampling
             # This aligns their audio layouts, sample rates, and video properties to prevent sync/pitch shifts.
-            print("🔗 Step 2: Concatenating intro and pitch body by transcoding...")
+            print("Step 2: Concatenating intro and pitch body by transcoding...")
             cmd_concat = [
                 "ffmpeg", "-y",
                 "-i", voiced_intro,
@@ -78,7 +78,7 @@ def stitch_video(background_video_path: str, voice_path: str, output_path: str):
             subprocess.run(cmd_concat, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
         
         # Step 3: Overlay the full webcam bubble video onto the website scrolling video background
-        print("🔗 Step 3: Rendering webcam bubble overlay onto scrolling video background...")
+        print("Step 3: Rendering webcam bubble overlay onto scrolling video background...")
         # Note: Using stream_loop -1 to repeat background if needed, and shortest=1 to end when webcam ends.
         cmd_overlay = [
             "ffmpeg", "-y",
@@ -99,7 +99,7 @@ def stitch_video(background_video_path: str, voice_path: str, output_path: str):
             output_path
         ]
         subprocess.run(cmd_overlay, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
-        print(f"✅ Stitched video successfully created: {output_path}")
+        print(f"Stitched video successfully created: {output_path}")
         
     finally:
         # Cleanup intermediate temp files
@@ -121,5 +121,5 @@ if __name__ == "__main__":
     try:
         stitch_video(args.background_video_path, args.voice_path, args.output_path)
     except Exception as e:
-        print(f"❌ Failed to stitch video: {e}")
+        print(f"Failed to stitch video: {e}")
         sys.exit(1)

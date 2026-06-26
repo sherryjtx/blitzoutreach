@@ -379,6 +379,19 @@
                 </button>
             </div>
             
+            <div class="modal-field" style="margin-bottom: var(--space-md);">
+                <label>Select Campaign</label>
+                <select id="import-campaign-select" style="padding: 10px; background: var(--bg-base); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); color: var(--text-primary); outline: none; width: 100%; font-size: 0.8125rem;">
+                    <option value="">No Campaign (Standalone Leads)</option>
+                    <!-- Populated dynamically -->
+                </select>
+            </div>
+            
+            <div class="modal-field" style="margin-bottom: var(--space-md); display: none;">
+                <label>Batch Name</label>
+                <input type="text" id="import-batch-input" placeholder="e.g. Batch 1" style="padding: 10px; background: rgba(255,255,255,0.02); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); color: var(--text-primary); outline: none; font-size: 0.8125rem;">
+            </div>
+
             <div class="tab-nav" style="margin-bottom: var(--space-lg); display: flex; gap: 8px; width: 100%;">
                 <button class="tab-item active" id="btn-sheet-tab" style="font-size: 0.75rem; padding: 6px 12px; flex: 1;">Google Sheet Sync</button>
                 <button class="tab-item" id="btn-csv-tab" style="font-size: 0.75rem; padding: 6px 12px; flex: 1;">Paste CSV</button>
@@ -551,7 +564,25 @@
         if (openAddBtn) openAddBtn.onclick = () => { addModal.style.display = 'flex'; };
         if (closeAddBtn) closeAddBtn.onclick = () => { addModal.style.display = 'none'; };
         
-        if (openImportBtn) openImportBtn.onclick = () => { importModal.style.display = 'flex'; };
+        if (openImportBtn) {
+            openImportBtn.onclick = async () => {
+                importModal.style.display = 'flex';
+                try {
+                    const res = await fetch('/api/campaigns');
+                    const campaigns = await res.json();
+                    const select = document.getElementById('import-campaign-select');
+                    select.innerHTML = '<option value="">No Campaign (Standalone Leads)</option>';
+                    campaigns.forEach(c => {
+                        const opt = document.createElement('option');
+                        opt.value = c.id;
+                        opt.textContent = c.name;
+                        select.appendChild(opt);
+                    });
+                } catch (err) {
+                    console.error('Error populating campaign dropdown:', err);
+                }
+            };
+        }
         if (closeImportBtn) closeImportBtn.onclick = () => { importModal.style.display = 'none'; };
         
         window.onclick = (e) => { 
@@ -580,12 +611,14 @@
             };
         }
 
-        // Wire Sheets Sync execution
+                // Wire Sheets Sync execution
         const btnRunSync = document.getElementById('btn-run-sync');
         if (btnRunSync) {
             btnRunSync.onclick = async () => {
                 const startRow = parseInt(document.getElementById('sync-start-row').value);
                 const endRow = parseInt(document.getElementById('sync-end-row').value);
+                const campaignId = document.getElementById('import-campaign-select').value;
+                const batchId = campaignId; // Map batch_id to campaignId for one campaign = one batch
                 
                 if (isNaN(startRow) || isNaN(endRow) || startRow < 2 || endRow < startRow) {
                     alert('Please enter valid row numbers (Start Row must be 2 or higher, and End Row must be equal or greater).');
@@ -599,7 +632,12 @@
                     const res = await fetch('/api/leads/sync', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ start_row: startRow, end_row: endRow })
+                        body: JSON.stringify({
+                            start_row: startRow,
+                            end_row: endRow,
+                            campaign_id: campaignId || undefined,
+                            batch_id: batchId || undefined
+                        })
                     });
                     const data = await res.json();
                     if (res.ok) {
@@ -619,11 +657,15 @@
             };
         }
 
+
         // Wire CSV paste execution
         const btnRunCsv = document.getElementById('btn-run-csv');
         if (btnRunCsv) {
             btnRunCsv.onclick = async () => {
                 const csvData = document.getElementById('csv-records-data').value.trim();
+                const campaignId = document.getElementById('import-campaign-select').value;
+                const batchId = campaignId; // Map batch_id to campaignId for one campaign = one batch
+                
                 if (!csvData) {
                     alert('Please paste some CSV records first.');
                     return;
@@ -652,7 +694,12 @@
                         const res = await fetch('/api/leads/create', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ name, company })
+                            body: JSON.stringify({
+                                name,
+                                company,
+                                campaign_id: campaignId || undefined,
+                                batch_id: batchId || undefined
+                            })
                         });
                         if (res.ok) successCount++;
                     } catch (err) {

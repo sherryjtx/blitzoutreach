@@ -10,7 +10,7 @@ if sys.platform == 'win32':
     except Exception:
         pass
 
-from fastapi import FastAPI, Request, HTTPException
+from fastapi import FastAPI, Request, HTTPException, BackgroundTasks
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -87,20 +87,31 @@ CALENDLY_URL = os.getenv("CALENDLY_URL", "https://calendly.com/sherryjtx9/30min"
 
 def seed_database_if_empty():
     try:
+        # 1. Seed campaigns if empty
+        camp_res = supabase.table("campaigns").select("id", count="exact").limit(1).execute()
+        if not camp_res.data:
+            logger.info("🌱 Supabase campaigns table is empty. Seeding mock campaigns...")
+            demo_campaigns = [
+                {"id": "saas_founder_outbound", "name": "SaaS Founder Outbound", "template_name": "SaaS Growth Audit V2", "status": "Active"},
+                {"id": "enterprise_ops", "name": "Enterprise Operations Pitch", "template_name": "AI Operations Audit", "status": "Active"},
+                {"id": "ecommerce_scaling", "name": "E-Commerce Scaling", "template_name": "Brand CRO Breakdown", "status": "Paused"},
+                {"id": "yc_outbound", "name": "Y Combinator Outbound", "template_name": "Seed Pitch Audit", "status": "Draft"}
+            ]
+            supabase.table("campaigns").insert(demo_campaigns).execute()
+
+        # 2. Seed leads if empty
         leads_res = supabase.table("leads").select("video_id", count="exact").limit(1).execute()
         if not leads_res.data:
             logger.info("🌱 Supabase leads table is empty. Seeding realistic demo data...")
-            
-            # Realistic leads
             demo_leads = [
-                {"video_id": "tyler_dawson", "name": "Tyler Dawson", "company": "ADknown", "video_url": "https://www.w3schools.com/html/mov_bbb.mp4", "company_logo": "https://logo.clearbit.com/adknown.com", "row_num": 2},
-                {"video_id": "sarah_rodriguez", "name": "Sarah Rodriguez", "company": "MarketPro", "video_url": "https://www.w3schools.com/html/mov_bbb.mp4", "company_logo": "https://logo.clearbit.com/marketpro.io", "row_num": 3},
-                {"video_id": "mike_kowalski", "name": "Mike Kowalski", "company": "ScaleOps", "video_url": "https://www.w3schools.com/html/mov_bbb.mp4", "company_logo": "https://logo.clearbit.com/scaleops.co", "row_num": 4},
-                {"video_id": "jessica_lin", "name": "Jessica Lin", "company": "GrowthLab", "video_url": "https://www.w3schools.com/html/mov_bbb.mp4", "company_logo": "https://logo.clearbit.com/growthlab.ai", "row_num": 5},
-                {"video_id": "chris_dymond", "name": "Chris Dymond", "company": "Unfolding", "video_url": "https://www.w3schools.com/html/mov_bbb.mp4", "company_logo": "https://logo.clearbit.com/unfolding.io", "row_num": 6},
-                {"video_id": "alex_hernandez", "name": "Alex Hernandez", "company": "NovaTech", "video_url": "https://www.w3schools.com/html/mov_bbb.mp4", "company_logo": "https://logo.clearbit.com/novatech.io", "row_num": 7},
-                {"video_id": "brian_park", "name": "Brian Park", "company": "Zenith Co", "video_url": "https://www.w3schools.com/html/mov_bbb.mp4", "company_logo": "https://logo.clearbit.com/zenithco.com", "row_num": 8},
-                {"video_id": "priya_sharma", "name": "Priya Sharma", "company": "DataVault", "video_url": "https://www.w3schools.com/html/mov_bbb.mp4", "company_logo": "https://logo.clearbit.com/datavault.dev", "row_num": 9}
+                {"video_id": "tyler_dawson", "name": "Tyler Dawson", "company": "ADknown", "video_url": "https://www.w3schools.com/html/mov_bbb.mp4", "company_logo": "https://logo.clearbit.com/adknown.com", "row_num": 2, "campaign_id": "saas_founder_outbound", "batch_id": "Batch 1 (Rows 100-200)", "email": "tyler@adknown.com", "email_status": "Opened"},
+                {"video_id": "sarah_rodriguez", "name": "Sarah Rodriguez", "company": "MarketPro", "video_url": "https://www.w3schools.com/html/mov_bbb.mp4", "company_logo": "https://logo.clearbit.com/marketpro.io", "row_num": 3, "campaign_id": "saas_founder_outbound", "batch_id": "Batch 1 (Rows 100-200)", "email": "sarah@marketpro.io", "email_status": "Opened"},
+                {"video_id": "mike_kowalski", "name": "Mike Kowalski", "company": "ScaleOps", "video_url": "https://www.w3schools.com/html/mov_bbb.mp4", "company_logo": "https://logo.clearbit.com/scaleops.co", "row_num": 4, "campaign_id": "saas_founder_outbound", "batch_id": "Batch 2 (Rows 200-300)", "email": "mike@scaleops.co", "email_status": "Sent"},
+                {"video_id": "jessica_lin", "name": "Jessica Lin", "company": "GrowthLab", "video_url": "https://www.w3schools.com/html/mov_bbb.mp4", "company_logo": "https://logo.clearbit.com/growthlab.ai", "row_num": 5, "campaign_id": "enterprise_ops", "batch_id": "Batch 1 (Rows 1-50)", "email": "jessica@growthlab.ai", "email_status": "Opened"},
+                {"video_id": "chris_dymond", "name": "Chris Dymond", "company": "Unfolding", "video_url": "https://www.w3schools.com/html/mov_bbb.mp4", "company_logo": "https://logo.clearbit.com/unfolding.io", "row_num": 6, "campaign_id": "enterprise_ops", "batch_id": "Batch 1 (Rows 1-50)", "email": "chris@unfolding.io", "email_status": "Opened"},
+                {"video_id": "alex_hernandez", "name": "Alex Hernandez", "company": "NovaTech", "video_url": "https://www.w3schools.com/html/mov_bbb.mp4", "company_logo": "https://logo.clearbit.com/novatech.io", "row_num": 7, "campaign_id": "enterprise_ops", "batch_id": "Batch 1 (Rows 1-50)", "email": "alex@novatech.io", "email_status": "Sent"},
+                {"video_id": "brian_park", "name": "Brian Park", "company": "Zenith Co", "video_url": "https://www.w3schools.com/html/mov_bbb.mp4", "company_logo": "https://logo.clearbit.com/zenithco.com", "row_num": 8, "campaign_id": "ecommerce_scaling", "batch_id": "Batch 1 (Rows 1-50)", "email": "brian@zenithco.com", "email_status": "Opened"},
+                {"video_id": "priya_sharma", "name": "Priya Sharma", "company": "DataVault", "video_url": "https://www.w3schools.com/html/mov_bbb.mp4", "company_logo": "https://logo.clearbit.com/datavault.dev", "row_num": 9, "campaign_id": "ecommerce_scaling", "batch_id": "Batch 1 (Rows 1-50)", "email": "priya@datavault.dev", "email_status": "Opened"}
             ]
             supabase.table("leads").insert(demo_leads).execute()
             
@@ -110,29 +121,57 @@ def seed_database_if_empty():
             
             demo_events = [
                 {"video_id": "tyler_dawson", "event_type": "page_view", "timestamp": (now - datetime.timedelta(minutes=2)).isoformat()},
-                {"video_id": "tyler_dawson", "event_type": "progress", "time_offset": 66.2, "timestamp": (now - datetime.timedelta(minutes=1)).isoformat()},
+                {"video_id": "tyler_dawson", "event_type": "progress_25", "time_offset": 18.0, "timestamp": (now - datetime.timedelta(minutes=1)).isoformat()},
+                {"video_id": "tyler_dawson", "event_type": "progress_50", "time_offset": 36.0, "timestamp": (now - datetime.timedelta(minutes=1)).isoformat()},
+                {"video_id": "tyler_dawson", "event_type": "progress_75", "time_offset": 54.0, "timestamp": (now - datetime.timedelta(minutes=1)).isoformat()},
                 
                 {"video_id": "sarah_rodriguez", "event_type": "page_view", "timestamp": (now - datetime.timedelta(minutes=15)).isoformat()},
-                {"video_id": "sarah_rodriguez", "event_type": "progress", "time_offset": 72.0, "timestamp": (now - datetime.timedelta(minutes=14)).isoformat()},
+                {"video_id": "sarah_rodriguez", "event_type": "progress_25", "time_offset": 18.0, "timestamp": (now - datetime.timedelta(minutes=14)).isoformat()},
+                {"video_id": "sarah_rodriguez", "event_type": "progress_50", "time_offset": 36.0, "timestamp": (now - datetime.timedelta(minutes=14)).isoformat()},
+                {"video_id": "sarah_rodriguez", "event_type": "progress_75", "time_offset": 54.0, "timestamp": (now - datetime.timedelta(minutes=14)).isoformat()},
+                {"video_id": "sarah_rodriguez", "event_type": "progress_100", "time_offset": 72.0, "timestamp": (now - datetime.timedelta(minutes=14)).isoformat()},
                 {"video_id": "sarah_rodriguez", "event_type": "booked", "timestamp": (now - datetime.timedelta(minutes=14)).isoformat()},
                 
                 {"video_id": "jessica_lin", "event_type": "page_view", "timestamp": (now - datetime.timedelta(hours=1)).isoformat()},
-                {"video_id": "jessica_lin", "event_type": "progress", "time_offset": 32.4, "timestamp": (now - datetime.timedelta(minutes=58)).isoformat()},
+                {"video_id": "jessica_lin", "event_type": "progress_25", "time_offset": 18.0, "timestamp": (now - datetime.timedelta(minutes=58)).isoformat()},
                 
                 {"video_id": "chris_dymond", "event_type": "page_view", "timestamp": (now - datetime.timedelta(hours=2, minutes=5)).isoformat()},
-                {"video_id": "chris_dymond", "event_type": "progress", "time_offset": 56.1, "timestamp": (now - datetime.timedelta(hours=2, minutes=3)).isoformat()},
+                {"video_id": "chris_dymond", "event_type": "progress_25", "time_offset": 18.0, "timestamp": (now - datetime.timedelta(hours=2, minutes=3)).isoformat()},
+                {"video_id": "chris_dymond", "event_type": "progress_50", "time_offset": 36.0, "timestamp": (now - datetime.timedelta(hours=2, minutes=3)).isoformat()},
                 {"video_id": "chris_dymond", "event_type": "replied", "timestamp": (now - datetime.timedelta(hours=2)).isoformat()},
                 
                 {"video_id": "alex_hernandez", "event_type": "page_view", "timestamp": (now - datetime.timedelta(minutes=10)).isoformat()},
                 
                 {"video_id": "brian_park", "event_type": "page_view", "timestamp": (now - datetime.timedelta(days=1)).isoformat()},
-                {"video_id": "brian_park", "event_type": "progress", "time_offset": 48.2, "timestamp": (now - datetime.timedelta(days=1, minutes=5)).isoformat()},
+                {"video_id": "brian_park", "event_type": "progress_25", "time_offset": 18.0, "timestamp": (now - datetime.timedelta(days=1, minutes=5)).isoformat()},
+                {"video_id": "brian_park", "event_type": "progress_50", "time_offset": 36.0, "timestamp": (now - datetime.timedelta(days=1, minutes=5)).isoformat()},
                 
                 {"video_id": "priya_sharma", "event_type": "page_view", "timestamp": (now - datetime.timedelta(hours=4)).isoformat()},
-                {"video_id": "priya_sharma", "event_type": "progress", "time_offset": 39.6, "timestamp": (now - datetime.timedelta(hours=3, minutes=58)).isoformat()},
+                {"video_id": "priya_sharma", "event_type": "progress_25", "time_offset": 18.0, "timestamp": (now - datetime.timedelta(hours=3, minutes=58)).isoformat()},
+                {"video_id": "priya_sharma", "event_type": "progress_50", "time_offset": 36.0, "timestamp": (now - datetime.timedelta(hours=3, minutes=58)).isoformat()},
             ]
             supabase.table("events").insert(demo_events).execute()
             logger.info("🌱 Seeding completed successfully.")
+        else:
+            # If leads exist, check if campaign_id is filled
+            tyler = supabase.table("leads").select("campaign_id").eq("video_id", "tyler_dawson").execute()
+            if tyler.data and not tyler.data[0].get("campaign_id"):
+                logger.info("🔧 Linking existing leads to mock campaigns...")
+                updates = [
+                    {"video_id": "tyler_dawson", "campaign_id": "saas_founder_outbound", "batch_id": "Batch 1 (Rows 100-200)", "email": "tyler@adknown.com", "email_status": "Opened"},
+                    {"video_id": "sarah_rodriguez", "campaign_id": "saas_founder_outbound", "batch_id": "Batch 1 (Rows 100-200)", "email": "sarah@marketpro.io", "email_status": "Opened"},
+                    {"video_id": "mike_kowalski", "campaign_id": "saas_founder_outbound", "batch_id": "Batch 2 (Rows 200-300)", "email": "mike@scaleops.co", "email_status": "Sent"},
+                    {"video_id": "jessica_lin", "campaign_id": "enterprise_ops", "batch_id": "Batch 1 (Rows 1-50)", "email": "jessica@growthlab.ai", "email_status": "Opened"},
+                    {"video_id": "chris_dymond", "campaign_id": "enterprise_ops", "batch_id": "Batch 1 (Rows 1-50)", "email": "chris@unfolding.io", "email_status": "Opened"},
+                    {"video_id": "alex_hernandez", "campaign_id": "enterprise_ops", "batch_id": "Batch 1 (Rows 1-50)", "email": "alex@novatech.io", "email_status": "Sent"},
+                    {"video_id": "brian_park", "campaign_id": "ecommerce_scaling", "batch_id": "Batch 1 (Rows 1-50)", "email": "brian@zenithco.com", "email_status": "Opened"},
+                    {"video_id": "priya_sharma", "campaign_id": "ecommerce_scaling", "batch_id": "Batch 1 (Rows 1-50)", "email": "priya@datavault.dev", "email_status": "Opened"}
+                ]
+                for up in updates:
+                    try:
+                        supabase.table("leads").update(up).eq("video_id", up["video_id"]).execute()
+                    except Exception as e:
+                        logger.warning(f"Failed to update lead {up['video_id']}: {e}")
     except Exception as e:
         logger.warning(f"⚠️ Failed to seed database: {e}")
 
@@ -484,18 +523,401 @@ async def get_videos():
         logger.error(f"Failed to fetch videos: {e}")
         return JSONResponse(content={"status": "error", "message": str(e)}, status_code=500)
 
-class CampaignPayload(BaseModel):
+class CampaignCreatePayload(BaseModel):
     name: str
-    lead_list: str
     template_name: str
-    subject: str
-    body: str
+    import_method: str  # "manual", "google_sheets", "csv"
+    start_row: int = None
+    end_row: int = None
+    csv_data: str = None
+    batch_name: str = None
+
+# Background processing handlers
+def run_sheets_import_and_video_generation(campaign_id: str, batch_name: str, start_row: int, end_row: int):
+    try:
+        from execution import sheet_sync
+        logger.info(f"Background Sheets Sync: Fetching rows {start_row} to {end_row}")
+        leads = sheet_sync.fetch_leads_batch(start_row, end_row)
+        if not leads:
+            logger.info("Background Sheets Sync: No leads found in this range.")
+            return
+            
+        import random
+        leads_to_process = []
+        for l in leads:
+            fname = l.get("first_name", "").strip()
+            lname = l.get("last_name", "").strip()
+            email = l.get("email", "").strip()
+            company = l.get("company", "").strip()
+            website = l.get("website", "").strip()
+            row_val = l.get("row", 9999)
+            
+            if not fname:
+                continue
+                
+            clean_name = f"{fname.lower()}{lname.lower()}".replace(" ", "")
+            clean_company = company.lower().replace(" ", "")
+            video_id = f"{clean_name}_{clean_company}_{random.randint(100, 999)}"
+            video_id = "".join(c for c in video_id if c.isalnum() or c == "_")
+            
+            clean_domain = website if website else (company.lower().replace(" ", "").replace("ltd", "").replace("inc", "") + ".com")
+            if not clean_domain.startswith("http"):
+                clean_domain = clean_domain.replace("https://", "").replace("http://", "")
+            company_logo = f"https://logo.clearbit.com/{clean_domain}"
+            
+            lead_data = {
+                "video_id": video_id,
+                "name": f"{fname} {lname}".strip(),
+                "company": company,
+                "video_url": "pending",
+                "company_logo": company_logo,
+                "row_num": row_val,
+                "campaign_id": campaign_id,
+                "batch_id": batch_name,
+                "email": email,
+                "email_status": "Sent"
+            }
+            supabase.table("leads").upsert(lead_data, on_conflict="video_id").execute()
+            
+            lead_dict = {
+                "row": row_val,
+                "first_name": fname,
+                "last_name": lname,
+                "email": email,
+                "company": company,
+                "website": clean_domain,
+                "campaign_id": campaign_id,
+                "batch_id": batch_name,
+                "video_id": video_id,
+                "company_logo": company_logo
+            }
+            leads_to_process.append(lead_dict)
+            
+        logger.info(f"Background Sheets Sync: Registered {len(leads_to_process)} leads in database. Starting background video generation...")
+        
+        if leads_to_process:
+            if PROJECT_DIR not in sys.path:
+                sys.path.insert(0, PROJECT_DIR)
+            from execution.factory import run_factory_for_leads
+            run_factory_for_leads(leads_to_process)
+            
+    except Exception as e:
+        logger.error(f"Error in background sheets sync and generation: {e}")
+
+def run_csv_import_and_video_generation(campaign_id: str, batch_name: str, csv_data: str):
+    try:
+        logger.info("Background CSV Sync: Parsing CSV and starting video generation...")
+        lines = csv_data.strip().split("\n")
+        leads_to_process = []
+        import random
+        
+        for idx, line in enumerate(lines):
+            line = line.strip()
+            if not line:
+                continue
+            
+            parts = line.split(",")
+            if len(parts) < 2:
+                continue
+                
+            name = parts[0].strip()
+            company = parts[1].strip()
+            
+            name_parts = name.split(" ")
+            fname = name_parts[0]
+            lname = " ".join(name_parts[1:]) if len(name_parts) > 1 else ""
+            
+            website = parts[2].strip() if len(parts) > 2 else ""
+            email = parts[3].strip() if len(parts) > 3 else f"{fname.lower()}@{company.lower().replace(' ', '')}.com"
+            
+            clean_name = f"{fname.lower()}{lname.lower()}".replace(" ", "")
+            clean_company = company.lower().replace(" ", "")
+            video_id = f"{clean_name}_{clean_company}_{random.randint(100, 999)}"
+            video_id = "".join(c for c in video_id if c.isalnum() or c == "_")
+            
+            clean_domain = website if website else (company.lower().replace(" ", "").replace("ltd", "").replace("inc", "") + ".com")
+            if not clean_domain.startswith("http"):
+                clean_domain = clean_domain.replace("https://", "").replace("http://", "")
+            company_logo = f"https://logo.clearbit.com/{clean_domain}"
+            
+            lead_data = {
+                "video_id": video_id,
+                "name": name,
+                "company": company,
+                "video_url": "pending",
+                "company_logo": company_logo,
+                "row_num": 1000 + idx,
+                "campaign_id": campaign_id,
+                "batch_id": batch_name,
+                "email": email,
+                "email_status": "Sent"
+            }
+            supabase.table("leads").upsert(lead_data, on_conflict="video_id").execute()
+            
+            lead_dict = {
+                "row": 1000 + idx,
+                "first_name": fname,
+                "last_name": lname,
+                "email": email,
+                "company": company,
+                "website": clean_domain,
+                "campaign_id": campaign_id,
+                "batch_id": batch_name,
+                "video_id": video_id,
+                "company_logo": company_logo
+            }
+            leads_to_process.append(lead_dict)
+            
+        logger.info(f"Background CSV Sync: Registered {len(leads_to_process)} leads in database. Starting background video generation...")
+        
+        if leads_to_process:
+            if PROJECT_DIR not in sys.path:
+                sys.path.insert(0, PROJECT_DIR)
+            from execution.factory import run_factory_for_leads
+            run_factory_for_leads(leads_to_process)
+            
+    except Exception as e:
+        logger.error(f"Error in background CSV sync and generation: {e}")
+
+
+# Campaign APIs
+@app.get("/api/campaigns")
+async def get_campaigns():
+    try:
+        c_res = supabase.table("campaigns").select("*").order("created_at", desc=True).execute()
+        campaigns = c_res.data or []
+        
+        leads_res = supabase.table("leads").select("*").execute()
+        leads = leads_res.data or []
+        
+        events_res = supabase.table("events").select("*").execute()
+        events = events_res.data or []
+        
+        lead_events = {}
+        for ev in events:
+            vid = ev.get("video_id")
+            if vid not in lead_events:
+                lead_events[vid] = []
+            lead_events[vid].append(ev)
+            
+        lead_metrics = {}
+        for lead in leads:
+            vid = lead["video_id"]
+            c_id = lead.get("campaign_id")
+            b_id = lead.get("batch_id")
+            e_status = lead.get("email_status", "Sent")
+            
+            v_events = lead_events.get(vid, [])
+            has_page_view = any(ev.get("event_type") == "page_view" for ev in v_events)
+            has_progress = any(ev.get("event_type", "").startswith("progress_") for ev in v_events)
+            has_replied = any(ev.get("event_type") in ["replied", "reply"] for ev in v_events) or lead.get("status") == "Replied"
+            has_booked = any(ev.get("event_type") in ["booked", "meeting_booked"] for ev in v_events) or lead.get("status") == "Booked"
+            
+            opened = e_status == "Opened" or has_page_view
+            watched = has_progress
+            replied = has_replied
+            booked = has_booked
+            
+            lead_metrics[vid] = {
+                "campaign_id": c_id,
+                "batch_id": b_id,
+                "opened": opened,
+                "watched": watched,
+                "replied": replied,
+                "booked": booked
+            }
+            
+        campaign_list = []
+        for camp in campaigns:
+            cid = camp["id"]
+            c_leads = [l for l in leads if l.get("campaign_id") == cid]
+            
+            batches_map = {}
+            for l in c_leads:
+                bid = l.get("batch_id") or "Default Batch"
+                if bid not in batches_map:
+                    batches_map[bid] = []
+                batches_map[bid].append(l)
+                
+            batches_list = []
+            for bid, b_leads in batches_map.items():
+                b_sent = len(b_leads)
+                b_opened = sum(1 for l in b_leads if lead_metrics.get(l["video_id"], {}).get("opened"))
+                b_watched = sum(1 for l in b_leads if lead_metrics.get(l["video_id"], {}).get("watched"))
+                b_replied = sum(1 for l in b_leads if lead_metrics.get(l["video_id"], {}).get("replied"))
+                b_booked = sum(1 for l in b_leads if lead_metrics.get(l["video_id"], {}).get("booked"))
+                
+                batches_list.append({
+                    "batch_id": bid,
+                    "total_sent": b_sent,
+                    "total_opened": b_opened,
+                    "total_watched": b_watched,
+                    "total_replied": b_replied,
+                    "total_booked": b_booked
+                })
+                
+            c_sent = len(c_leads)
+            c_opened = sum(1 for l in c_leads if lead_metrics.get(l["video_id"], {}).get("opened"))
+            c_watched = sum(1 for l in c_leads if lead_metrics.get(l["video_id"], {}).get("watched"))
+            c_replied = sum(1 for l in c_leads if lead_metrics.get(l["video_id"], {}).get("replied"))
+            c_booked = sum(1 for l in c_leads if lead_metrics.get(l["video_id"], {}).get("booked"))
+            
+            c_pending = sum(1 for l in c_leads if l.get("video_url") == "pending" or not l.get("video_url"))
+            c_processing = sum(1 for l in c_leads if l.get("video_url") == "processing")
+            c_failed = sum(1 for l in c_leads if l.get("video_url") == "failed")
+            c_generated = c_sent - c_pending - c_processing - c_failed
+            
+            campaign_list.append({
+                "id": cid,
+                "name": camp["name"],
+                "template_name": camp.get("template_name"),
+                "status": camp.get("status", "Active"),
+                "created_at": camp.get("created_at"),
+                "total_sent": c_sent,
+                "total_opened": c_opened,
+                "total_watched": c_watched,
+                "total_replied": c_replied,
+                "total_booked": c_booked,
+                "total_leads": c_sent,
+                "total_pending": c_pending,
+                "total_processing": c_processing,
+                "total_failed": c_failed,
+                "total_generated": c_generated,
+                "batches": batches_list
+            })
+            
+        return campaign_list
+    except Exception as e:
+        logger.error(f"Failed to fetch campaigns: {e}")
+        return JSONResponse(content={"status": "error", "message": str(e)}, status_code=500)
+
+@app.get("/api/campaigns/{campaign_id}/batches/{batch_id}/leads")
+async def get_campaign_batch_leads(campaign_id: str, batch_id: str):
+    try:
+        leads_res = supabase.table("leads").select("*").eq("campaign_id", campaign_id).eq("batch_id", batch_id).execute()
+        leads = leads_res.data or []
+        
+        events_res = supabase.table("events").select("*").execute()
+        events = events_res.data or []
+        
+        lead_events = {}
+        for ev in events:
+            vid = ev.get("video_id")
+            if vid not in lead_events:
+                lead_events[vid] = []
+            lead_events[vid].append(ev)
+            
+        results = []
+        for lead in leads:
+            vid = lead["video_id"]
+            name = lead["name"]
+            company = lead["company"]
+            video_url = lead["video_url"]
+            logo = lead.get("company_logo")
+            row = lead.get("row_num")
+            created_at = lead.get("created_at")
+            email = lead.get("email") or ""
+            email_status = lead.get("email_status", "Sent")
+            
+            v_events = lead_events.get(vid, [])
+            
+            # Simple milestones watch percent
+            has_25 = any(ev.get("event_type") == "progress_25" for ev in v_events)
+            has_50 = any(ev.get("event_type") == "progress_50" for ev in v_events)
+            has_75 = any(ev.get("event_type") == "progress_75" for ev in v_events)
+            has_100 = any(ev.get("event_type") == "progress_100" for ev in v_events)
+            
+            watch_pct = "-"
+            if has_100: watch_pct = "100%"
+            elif has_75: watch_pct = "75%"
+            elif has_50: watch_pct = "50%"
+            elif has_25: watch_pct = "25%"
+            
+            has_page_view = any(ev.get("event_type") == "page_view" for ev in v_events)
+            has_replied = any(ev.get("event_type") in ["replied", "reply"] for ev in v_events) or lead.get("status") == "Replied"
+            has_booked = any(ev.get("event_type") in ["booked", "meeting_booked"] for ev in v_events) or lead.get("status") == "Booked"
+            
+            status = "Sent"
+            if has_booked:
+                status = "Booked"
+                watch_pct = "100%"
+            elif has_replied:
+                status = "Replied"
+            elif has_page_view:
+                status = "Viewed"
+                
+            # Get last activity timestamp
+            last_activity = created_at
+            if v_events:
+                sorted_events = sorted(v_events, key=lambda e: e.get("timestamp", ""))
+                last_activity = sorted_events[-1].get("timestamp")
+                
+            results.append({
+                "video_id": vid,
+                "name": name,
+                "company": company,
+                "video_url": video_url,
+                "company_logo": logo,
+                "row_num": row,
+                "status": status,
+                "watch_percent": watch_pct,
+                "email": email,
+                "email_status": email_status,
+                "last_activity": last_activity,
+                "created_at": created_at
+            })
+            
+        return results
+    except Exception as e:
+        logger.error(f"Failed to fetch batch leads: {e}")
+        return JSONResponse(content={"status": "error", "message": str(e)}, status_code=500)
 
 @app.post("/api/campaigns/create")
-async def create_campaign(payload: CampaignPayload):
+async def create_campaign(payload: CampaignCreatePayload, background_tasks: BackgroundTasks):
     try:
-        logger.info(f"🚀 Campaign '{payload.name}' launched on list '{payload.lead_list}' using template '{payload.template_name}'!")
-        return {"status": "success", "message": f"Campaign '{payload.name}' active."}
+        import re
+        import random
+        
+        # Generate slugified ID
+        slug = re.sub(r'[^a-zA-Z0-9]+', '_', payload.name.lower()).strip('_')
+        campaign_id = f"{slug}_{random.randint(100, 999)}"
+        
+        camp_data = {
+            "id": campaign_id,
+            "name": payload.name,
+            "template_name": payload.template_name,
+            "status": "Active"
+        }
+        supabase.table("campaigns").insert(camp_data).execute()
+        
+        batch_name = campaign_id
+        
+        if payload.import_method == "google_sheets":
+            if not payload.start_row or not payload.end_row:
+                raise HTTPException(status_code=400, detail="start_row and end_row are required for google_sheets import.")
+            background_tasks.add_task(
+                run_sheets_import_and_video_generation,
+                campaign_id,
+                batch_name,
+                payload.start_row,
+                payload.end_row
+            )
+            return {"status": "success", "campaign_id": campaign_id, "message": "Campaign created! Importing leads and generating videos in background."}
+            
+        elif payload.import_method == "csv":
+            if not payload.csv_data:
+                raise HTTPException(status_code=400, detail="csv_data is required for csv import.")
+            background_tasks.add_task(
+                run_csv_import_and_video_generation,
+                campaign_id,
+                batch_name,
+                payload.csv_data
+            )
+            return {"status": "success", "campaign_id": campaign_id, "message": "Campaign created! Parsing CSV and generating videos in background."}
+            
+        else:
+            return {"status": "success", "campaign_id": campaign_id, "message": "Campaign created manually."}
+            
     except Exception as e:
         logger.error(f"Failed to create campaign: {e}")
         return JSONResponse(content={"status": "error", "message": str(e)}, status_code=500)
@@ -503,6 +925,8 @@ async def create_campaign(payload: CampaignPayload):
 class SyncPayload(BaseModel):
     start_row: int
     end_row: int
+    campaign_id: str = None
+    batch_id: str = None
 
 @app.post("/api/leads/sync")
 async def sync_leads(payload: SyncPayload):
@@ -517,6 +941,9 @@ async def sync_leads(payload: SyncPayload):
             
         import random
         imported_count = 0
+        campaign_id = payload.campaign_id
+        batch_id = payload.batch_id
+        
         for l in leads:
             fname = l.get("first_name", "").strip()
             lname = l.get("last_name", "").strip()
@@ -546,10 +973,16 @@ async def sync_leads(payload: SyncPayload):
                 "video_id": video_id,
                 "name": f"{fname} {lname}".strip(),
                 "company": company,
-                "video_url": "https://www.w3schools.com/html/mov_bbb.mp4",
+                "video_url": "pending",
                 "company_logo": company_logo,
-                "row_num": row_val
+                "row_num": row_val,
+                "email": email,
+                "email_status": "Sent"
             }
+            if campaign_id:
+                lead_data["campaign_id"] = campaign_id
+            if batch_id:
+                lead_data["batch_id"] = batch_id
             
             # Upsert in Supabase
             supabase.table("leads").upsert(lead_data, on_conflict="video_id").execute()
@@ -566,6 +999,8 @@ class LeadCreatePayload(BaseModel):
     company: str
     video_url: str = None
     company_logo: str = None
+    campaign_id: str = None
+    batch_id: str = None
 
 @app.post("/api/leads/create")
 async def create_lead(payload: LeadCreatePayload):
@@ -585,7 +1020,7 @@ async def create_lead(payload: LeadCreatePayload):
             
         video_url = payload.video_url
         if not video_url:
-            video_url = "https://www.w3schools.com/html/mov_bbb.mp4"
+            video_url = "pending"
             
         lead_data = {
             "video_id": video_id,
@@ -593,9 +1028,14 @@ async def create_lead(payload: LeadCreatePayload):
             "company": payload.company,
             "video_url": video_url,
             "company_logo": company_logo,
-            "row_num": 9999
+            "row_num": 9999,
+            "email_status": "Sent"
         }
-        
+        if payload.campaign_id:
+            lead_data["campaign_id"] = payload.campaign_id
+        if payload.batch_id:
+            lead_data["batch_id"] = payload.batch_id
+            
         response = supabase.table("leads").insert(lead_data).execute()
         return {"status": "success", "lead": response.data[0]}
     except Exception as e:

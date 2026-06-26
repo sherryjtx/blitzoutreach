@@ -6,9 +6,17 @@ import argparse
 from concurrent.futures import ThreadPoolExecutor
 from dotenv import load_dotenv
 
-# Ensure workspace root is in python path
-WORKSPACE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-sys.path.insert(0, WORKSPACE_DIR)
+# Ensure execution, project root and workspace root are in python path
+exec_dir = os.path.dirname(os.path.abspath(__file__))
+project_dir = os.path.dirname(exec_dir)
+workspace_dir = os.path.dirname(project_dir)
+
+if exec_dir not in sys.path:
+    sys.path.insert(0, exec_dir)
+if project_dir not in sys.path:
+    sys.path.insert(0, project_dir)
+if workspace_dir not in sys.path:
+    sys.path.insert(0, workspace_dir)
 
 # Import local modules
 from capture_website import capture_website
@@ -19,7 +27,7 @@ from upload_to_oci import upload_to_oci
 import sheet_sync
 
 # Load environment variables
-PROJECT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+PROJECT_DIR = project_dir
 WORKSPACE_DIR = os.path.dirname(PROJECT_DIR)
 load_dotenv(dotenv_path=os.path.join(WORKSPACE_DIR, ".env"))
 
@@ -37,7 +45,7 @@ def is_mock_mode():
         or OCI_NAMESPACE == "your_oci_object_storage_namespace_here"
     )
 
-def register_lead_in_portal(video_id: str, name: str, company: str, video_url: str, logo_url: str, row_num: int):
+def register_lead_in_portal(video_id: str, name: str, company: str, video_url: str, logo_url: str, row_num: int, campaign_id: str = None, batch_id: str = None, email: str = None):
     """Registers the generated video details inside Supabase for FastAPI to serve."""
     url = os.getenv("SUPABASE_URL")
     key = os.getenv("SUPABASE_SERVICE_ROLE_KEY") or os.getenv("SUPABASE_ANON_KEY")
@@ -57,12 +65,32 @@ def register_lead_in_portal(video_id: str, name: str, company: str, video_url: s
             "company_logo": logo_url,
             "row_num": row_num
         }
+        if campaign_id:
+            data["campaign_id"] = campaign_id
+        if batch_id:
+            data["batch_id"] = batch_id
+        if email:
+            data["email"] = email
         
         # Upsert in Supabase
         supabase.table("leads").upsert(data, on_conflict="video_id").execute()
-        print(f"✅ Lead '{name}' registered in Supabase portal under ID: {video_id}")
+        print(f"SUCCESS: Lead '{name}' registered in Supabase portal under ID: {video_id}")
     except Exception as e:
-        print(f"❌ Failed to register lead in Supabase: {e}")
+        print(f"ERROR: Failed to register lead in Supabase: {e}")
+
+def update_lead_video_url(video_id: str, video_url: str):
+    """Updates only the video_url column in Supabase leads table to track generation status."""
+    url = os.getenv("SUPABASE_URL")
+    key = os.getenv("SUPABASE_SERVICE_ROLE_KEY") or os.getenv("SUPABASE_ANON_KEY")
+    if not url or not key:
+        return
+    try:
+        from supabase import create_client
+        supabase = create_client(url, key)
+        supabase.table("leads").update({"video_url": video_url}).eq("video_id", video_id).execute()
+        print(f"STATUS: Updated video status to '{video_url}' for lead ID: {video_id}")
+    except Exception as e:
+        print(f"WARNING: Failed to update lead video_url in Supabase: {e}")
 
 def process_lead(lead: dict, paths: dict, today: str, mock: bool):
     """Processes a single lead row end-to-end in a parallel worker thread."""
@@ -92,9 +120,11 @@ def process_lead(lead: dict, paths: dict, today: str, mock: bool):
     if len(safe_name) > 60:
         safe_name = safe_name[:60]
         
-    video_id = f"{clean_fname.lower()}_{clean_lname.lower()}_{clean_company.lower()}"
-    if len(video_id) > 80:
-        video_id = video_id[:80]
+    video_id = lead.get("video_id")
+    if not video_id:
+        video_id = f"{clean_fname.lower()}_{clean_lname.lower()}_{clean_company.lower()}"
+        if len(video_id) > 80:
+            video_id = video_id[:80]
     
     # Path settings
     ss_path = os.path.join(paths["ss"], f"{safe_name}.webm")
@@ -105,9 +135,10 @@ def process_lead(lead: dict, paths: dict, today: str, mock: bool):
     # Determine website target URL
     target_url = website if (website and website.startswith("http")) else f"https://{website}" if website else "https://google.com"
     
-    print(f"\n🚀 Row {row_num}: Processing '{fname} {lname}' from '{company}'...")
+    print(f"\nRow {row_num}: Processing '{fname} {lname}' from '{company}'...")
     
     try:
+        update_lead_video_url(video_id, "processing")
         # Step 1: Capture Website Video Scroll
         screenshot_path = os.path.join(PROJECT_DIR, "server/static/output_screenshots", f"{video_id}.png")
         if mock:
@@ -162,7 +193,7 @@ def process_lead(lead: dict, paths: dict, today: str, mock: bool):
                 subprocess.run(cmd_thumb, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
                 print(f"   Generated cover screenshot with bubble at {screenshot_path}")
             except Exception as thumb_err:
-                print(f"⚠️ Failed to extract cover screenshot: {thumb_err}")
+                print(f"WARNING: Failed to extract cover screenshot: {thumb_err}")
             
         # Step 4: Generate GIF Thumbnail for Email
         if mock:
@@ -185,7 +216,7 @@ def process_lead(lead: dict, paths: dict, today: str, mock: bool):
             video_url = upload_to_oci(video_path, video_obj_name)
             gif_url = upload_to_oci(gif_path, gif_obj_name)
             
-        # Step 6: Register Video in Local SQLite database for FastAPI portal
+        # Step 6: Register Video in Supabase database for FastAPI portal
         landing_page_url = f"https://{LANDING_PAGE_DOMAIN}/v/{video_id}"
         register_lead_in_portal(
             video_id=video_id,
@@ -193,7 +224,10 @@ def process_lead(lead: dict, paths: dict, today: str, mock: bool):
             company=company,
             video_url=video_url,
             logo_url=None, # Will auto-resolve via Clearbit API on page load
-            row_num=row_num
+            row_num=row_num,
+            campaign_id=lead.get("campaign_id"),
+            batch_id=lead.get("batch_id"),
+            email=lead.get("email")
         )
         print(f"   Registered video ID '{video_id}' in SQLite portal.")
         
@@ -203,11 +237,12 @@ def process_lead(lead: dict, paths: dict, today: str, mock: bool):
         else:
             sheet_sync.update_lead_urls(row_num, landing_page_url, gif_url, "Stitched")
             
-        print(f"✅ Row {row_num}: Finished processing '{fname}' successfully!")
+        print(f"Row {row_num}: Finished processing '{fname}' successfully!")
         return True
         
     except Exception as e:
-        print(f"❌ Row {row_num}: Failed to process lead: {e}")
+        print(f"Row {row_num}: Failed to process lead: {e}")
+        update_lead_video_url(video_id, "failed")
         # Mark as failed in sheet
         if not mock:
             try:
@@ -235,10 +270,10 @@ def run_factory(start_row: int, end_row: int):
         
     mock = is_mock_mode()
     if mock:
-        print("\nℹ️  LAUNCHING IN MOCK MODE (Placeholder API keys or storage parameters detected in .env)")
+        print("\nLAUNCHING IN MOCK MODE (Placeholder API keys or storage parameters detected in .env)")
         print("   The script will generate mock visual/audio files locally for verification.")
     else:
-        print(f"\n🚀 LAUNCHING PRODUCTION FACTORY FOR ROWS {start_row} TO {end_row}")
+        print(f"\nLAUNCHING PRODUCTION FACTORY FOR ROWS {start_row} TO {end_row}")
         print(f"   Target OCI Bucket: {os.getenv('OCI_BUCKET_NAME')}")
         print(f"   Target Google Sheet: {os.getenv('GOOGLE_SHEET_ID')}")
         
@@ -246,11 +281,11 @@ def run_factory(start_row: int, end_row: int):
     try:
         leads = sheet_sync.fetch_leads_batch(start_row, end_row)
     except Exception as e:
-        print(f"❌ Failed to fetch lead rows: {e}")
+        print(f"ERROR: Failed to fetch lead rows: {e}")
         return
         
     if not leads:
-        print("❌ No leads found to process in the specified range. Exiting.")
+        print("ERROR: No leads found to process in the specified range. Exiting.")
         return
         
     print(f"\nProcessing {len(leads)} leads using 4 parallel workers...\n")
@@ -264,8 +299,45 @@ def run_factory(start_row: int, end_row: int):
         
     success_count = sum(1 for r in results if r)
     print(f"\n{'='*50}")
-    print(f"🏁 FACTORY COMPLETE: Processed {success_count}/{len(leads)} leads successfully.")
+    print(f"FACTORY COMPLETE: Processed {success_count}/{len(leads)} leads successfully.")
     print(f"{'='*50}\n")
+
+def run_factory_for_leads(leads: list):
+    """Runs the parallel video generation pipeline for a provided list of lead dicts."""
+    today = datetime.datetime.now().strftime("%Y-%m-%d")
+    
+    # Establish folder paths inside output/
+    output_base = os.path.join(PROJECT_DIR, "output", today)
+    paths = {
+        "ss": os.path.join(output_base, "screenshots"),
+        "voice": os.path.join(output_base, "voices"),
+        "video": os.path.join(output_base, "videos"),
+        "gif": os.path.join(output_base, "thumbnails"),
+        "assets": os.path.join(PROJECT_DIR, "assets")
+    }
+    
+    for k, p in paths.items():
+        os.makedirs(p, exist_ok=True)
+        
+    mock = is_mock_mode()
+    if mock:
+        print("\nLAUNCHING IN MOCK MODE FOR PROVIDED LEADS")
+    else:
+        print(f"\nLAUNCHING PRODUCTION FACTORY FOR {len(leads)} LEADS")
+        
+    print(f"\nProcessing {len(leads)} leads using 4 parallel workers...\n")
+    
+    with ThreadPoolExecutor(max_workers=4) as executor:
+        results = list(executor.map(
+            lambda l: process_lead(l, paths, today, mock),
+            leads
+        ))
+        
+    success_count = sum(1 for r in results if r)
+    print(f"\n{'='*50}")
+    print(f"FACTORY COMPLETE: Processed {success_count}/{len(leads)} leads successfully.")
+    print(f"{'='*50}\n")
+    return success_count
 
 if __name__ == "__main__":
     # Reconfigure console streams to UTF-8 on Windows to prevent encoding crashes with emojis

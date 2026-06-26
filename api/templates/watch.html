@@ -9,6 +9,166 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Geist:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/static/style.css?v=5.0">
+    <style>
+        /* ── Loading Screen & Failed State styles ── */
+        .loading-wrapper, .failed-wrapper {
+            position: relative;
+            background: rgba(17, 17, 20, 0.4);
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 380px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .loading-overlay-glass {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 32px;
+            background: rgba(8, 8, 10, 0.6);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            text-align: center;
+            gap: 20px;
+        }
+
+        .loading-spinner-container {
+            position: relative;
+            width: 60px;
+            height: 60px;
+            margin-bottom: 8px;
+        }
+
+        .loading-spinner-circle {
+            position: absolute;
+            inset: 0;
+            border: 3px solid rgba(220, 38, 38, 0.1);
+            border-top: 3px solid var(--red-600);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        .loading-spinner-glow {
+            position: absolute;
+            inset: -4px;
+            background: radial-gradient(circle, rgba(220, 38, 38, 0.3) 0%, transparent 70%);
+            filter: blur(8px);
+            animation: pulse-glow 2s infinite ease-in-out;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { opacity: 0.6; transform: scale(0.95); }
+            50% { opacity: 1; transform: scale(1.05); }
+        }
+
+        .loading-content-block {
+            max-width: 380px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .loading-status-text {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #fff;
+            letter-spacing: -0.01em;
+        }
+
+        .loading-explain-text {
+            font-size: 0.8125rem;
+            line-height: 1.5;
+            color: var(--ink-secondary);
+        }
+
+        .loading-progress-bar-container {
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 8px;
+            position: relative;
+        }
+
+        .loading-progress-bar-fill {
+            height: 100%;
+            width: 45%;
+            background: linear-gradient(90deg, var(--red-700), var(--red-500));
+            border-radius: 2px;
+            animation: loader-anim 8s infinite ease-in-out;
+        }
+
+        @keyframes loader-anim {
+            0% { width: 5%; }
+            30% { width: 35%; }
+            60% { width: 70%; }
+            90% { width: 92%; }
+            100% { width: 95%; }
+        }
+
+        .loading-badge {
+            display: inline-block;
+            font-size: 0.6875rem;
+            font-weight: 500;
+            color: var(--red-500);
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.15);
+            padding: 4px 10px;
+            border-radius: 20px;
+            margin-top: 4px;
+            letter-spacing: 0.02em;
+            text-transform: uppercase;
+        }
+
+        /* Failed State Styling */
+        .failed-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: rgba(239, 68, 68, 0.1);
+            margin-bottom: 8px;
+        }
+
+        .btn-scroll-booking {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--red-600);
+            color: #fff;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            padding: 10px 18px;
+            border-radius: var(--radius-sm);
+            text-decoration: none;
+            transition: all 150ms var(--ease-out);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-top: 8px;
+            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.2);
+        }
+
+        .btn-scroll-booking:hover {
+            background: var(--red-500);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(220, 38, 38, 0.35);
+        }
+    </style>
 </head>
 <body>
     <div class="watch-card">
@@ -44,8 +204,16 @@
                         </div>
                     {% endif %}
                 </div>
+                {% if video_url == 'pending' or video_url == 'processing' %}
+                <h1 class="personalized-title">{{ name.split(' ')[0] }}, personalizing your video breakdown...</h1>
+                <p class="personalized-subtitle">I noticed {{ company }} might benefit from a speed-to-lead AI system. I'm stitching together a custom webcam talking head walkthrough and website capture for you. This will load automatically in a few seconds.</p>
+                {% elif video_url == 'failed' %}
+                <h1 class="personalized-title">{{ name.split(' ')[0] }}, let's connect live...</h1>
+                <p class="personalized-subtitle">I noticed {{ company }} might benefit from a speed-to-lead AI system. While your video walkthrough is compiling, feel free to book a live discovery slot below to review how we automate this.</p>
+                {% else %}
                 <h1 class="personalized-title">{{ name.split(' ')[0] }}, I've recorded you a quick video...</h1>
                 <p class="personalized-subtitle">I noticed your agency might benefit from a speed-to-lead AI system to instantly contact and qualify inbound leads. I recorded a quick video breakdown for {{ company }} showing how we automate this.</p>
+                {% endif %}
                 <a href="#booking" class="chat-btn" id="chatBtn">Lets chat {{ name.split(' ')[0] }}</a>
             </div>
 
@@ -63,6 +231,41 @@
                             <span class="dot dot-green"></span>
                         </div>
                     </div>
+                    {% if video_url == 'pending' or video_url == 'processing' %}
+                    <div class="video-wrapper loading-wrapper" id="videoWrapper">
+                        <div class="loading-overlay-glass">
+                            <div class="loading-spinner-container">
+                                <div class="loading-spinner-glow"></div>
+                                <div class="loading-spinner-circle"></div>
+                            </div>
+                            <div class="loading-content-block">
+                                <h3 class="loading-status-text">Personalizing Your Video...</h3>
+                                <p class="loading-explain-text">Hi {{ name.split(' ')[0] }}, I'm personalizing your video breakdown... Stitching the webcam talking head and capturing your website. This takes ~15-30 seconds. Do not close this page.</p>
+                                <div class="loading-progress-bar-container">
+                                    <div class="loading-progress-bar-fill"></div>
+                                </div>
+                                <div class="loading-badge">Active Stitching & Capture...</div>
+                            </div>
+                        </div>
+                    </div>
+                    {% elif video_url == 'failed' %}
+                    <div class="video-wrapper failed-wrapper" id="videoWrapper">
+                        <div class="loading-overlay-glass failed-glass">
+                            <div class="failed-icon">
+                                <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                                    <line x1="12" y1="9" x2="12" y2="13"/>
+                                    <line x1="12" y1="17" x2="12.01" y2="17"/>
+                                </svg>
+                            </div>
+                            <div class="loading-content-block">
+                                <h3 class="loading-status-text" style="color: #ef4444;">Video Breakdown Compiling</h3>
+                                <p class="loading-explain-text">Hi {{ name.split(' ')[0] }}, your video breakdown is currently compiling in the background. You can book a discovery call below directly to walk through the breakdown live.</p>
+                                <a href="#booking" class="btn-scroll-booking">Book Discovery Call</a>
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
                     <div class="video-wrapper" id="videoWrapper">
                         <video id="outreachVideo" playsinline controls preload="metadata" poster="/static/output_screenshots/{{ video_id }}.png" disablepictureinpicture="true" disableremoteplayback="true" controlslist="nodownload" disable-smart-video="true" ext-disable-smart-video="true">
                             <source src="{{ video_url }}" type="video/mp4">
@@ -88,8 +291,10 @@
                             </button>
                         </div>
                     </div>
+                    {% endif %}
                 </div>
 
+                {% if video_url != 'pending' and video_url != 'processing' and video_url != 'failed' %}
                 <!-- Comment Input Drawer (Toggled by the floating comment button) -->
                 <div class="comment-drawer" id="commentDrawer">
                     <div class="comment-input-wrapper">
@@ -100,6 +305,7 @@
                     </div>
                     <p class="comment-sent-msg" id="commentSentMsg">Comment sent — thank you!</p>
                 </div>
+                {% endif %}
             </div>
         </section>
 
@@ -151,19 +357,19 @@
             video.addEventListener('play', () => {
                 videoWrapper.classList.add('playing');
                 // Hide floating actions during playback
-                videoFloatingActions.classList.add('hidden');
+                if (videoFloatingActions) videoFloatingActions.classList.add('hidden');
             });
             video.addEventListener('pause', () => {
                 videoWrapper.classList.remove('playing');
                 // Show floating actions when paused
-                videoFloatingActions.classList.remove('hidden');
+                if (videoFloatingActions) videoFloatingActions.classList.remove('hidden');
             });
             video.addEventListener('ended', () => {
                 videoWrapper.classList.remove('playing');
                 // Show floating actions at the end
-                videoFloatingActions.classList.remove('hidden');
+                if (videoFloatingActions) videoFloatingActions.classList.remove('hidden');
                 // Auto open comment drawer at the end to prompt response
-                commentDrawer.classList.add('open');
+                if (commentDrawer) commentDrawer.classList.add('open');
             });
         }
 
@@ -286,6 +492,14 @@
             return e.origin === "https://calendly.com" && e.data.event && e.data.event.indexOf("calendly.") === 0;
         }
 
+        window.addEventListener('message', (e) => {
+            if (isCalendlyEvent(e)) {
+                if (e.data.event === 'calendly.event_scheduled') {
+                    logEvent('booked', { event_name: 'calendly.event_scheduled' });
+                }
+            }
+        });
+
         /* --- Spacebar to Play/Pause --- */
         window.addEventListener('keydown', (e) => {
             if (e.key === ' ' || e.code === 'Space') {
@@ -307,6 +521,26 @@
                 }
             }
         });
+
+        // Polling logic for pending/processing videos
+        const initialVideoUrl = "{{ video_url }}";
+        if (initialVideoUrl === 'pending' || initialVideoUrl === 'processing') {
+            const interval = setInterval(async () => {
+                try {
+                    const res = await fetch('/api/leads');
+                    if (res.ok) {
+                        const leads = await res.json();
+                        const lead = leads.find(l => l.video_id === videoId);
+                        if (lead && lead.video_url !== 'pending' && lead.video_url !== 'processing') {
+                            clearInterval(interval);
+                            window.location.reload();
+                        }
+                    }
+                } catch (err) {
+                    console.error("Error polling lead status:", err);
+                }
+            }, 3000);
+        }
     </script>
 </body>
 </html>

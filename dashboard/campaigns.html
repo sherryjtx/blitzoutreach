@@ -325,6 +325,182 @@
             from { opacity: 0; transform: scale(0.96); }
             to { opacity: 1; transform: scale(1); }
         }
+
+        /* Drawer Styles */
+        .drawer-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(3, 3, 5, 0.75);
+            backdrop-filter: blur(4px);
+            z-index: 1040;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 250ms var(--ease-out-expo);
+        }
+        .drawer-overlay.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .drawer {
+            position: fixed;
+            top: 0; right: 0; bottom: 0;
+            width: 960px;
+            max-width: 90%;
+            background: var(--bg-base);
+            border-left: 1px solid var(--border-strong);
+            z-index: 1050;
+            box-shadow: -20px 0 80px rgba(0,0,0,0.8),
+                        0 0 60px -20px var(--brand-primary-glow);
+            transform: translateX(100%);
+            transition: transform 350ms cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex;
+            flex-direction: column;
+        }
+        .drawer.open {
+            transform: translateX(0);
+        }
+        .drawer-header {
+            padding: var(--space-xl);
+            border-bottom: 1px solid var(--border-subtle);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .drawer-title-block {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .drawer-title {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: -0.02em;
+        }
+        .drawer-subtitle {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+        .drawer-close {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 150ms;
+        }
+        .drawer-close:hover {
+            background: var(--bg-surface-hover);
+            color: var(--text-primary);
+        }
+        .drawer-body {
+            flex: 1;
+            padding: 0;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+        /* Drawer Table layout */
+        .drawer-table-header {
+            display: grid;
+            grid-template-columns: 36px 1.8fr 1fr 1fr 110px 90px 100px 40px;
+            gap: var(--space-md);
+            align-items: center;
+            padding: var(--space-md) var(--space-xl);
+            border-bottom: 1px solid var(--border-subtle);
+            background: rgba(255, 255, 255, 0.01);
+        }
+        .drawer-table-header span {
+            font-size: 0.6875rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+        .drawer-lead-row {
+            display: grid;
+            grid-template-columns: 36px 1.8fr 1fr 1fr 110px 90px 100px 40px;
+            gap: var(--space-md);
+            align-items: center;
+            padding: var(--space-md) var(--space-xl);
+            border-bottom: 1px solid var(--border-subtle);
+            transition: background 150ms var(--ease-out-expo);
+            cursor: pointer;
+        }
+        .drawer-lead-row:hover {
+            background: var(--bg-surface-hover);
+        }
+        .drawer-lead-row .checkbox {
+            margin: 0;
+        }
+        .lead-identity {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+            min-width: 0;
+        }
+        .lead-avatar {
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.6875rem;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+        .lead-name-block { min-width: 0; }
+        .lead-name {
+            font-size: 0.8125rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .lead-email {
+            font-size: 0.6875rem;
+            color: var(--text-muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        /* Batches UI list */
+        .batch-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 12px;
+            background: rgba(255,255,255,0.01);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            font-size: 0.75rem;
+            transition: all 150ms;
+            cursor: pointer;
+        }
+        .batch-row:hover {
+            background: rgba(255,255,255,0.03);
+            border-color: var(--border-strong);
+        }
+        .batch-name-lbl {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        /* Video Generation Shimmer & Progress styles */
+        @keyframes shimmer {
+            0% { background-position: -200px 0; }
+            100% { background-position: 200px 0; }
+        }
+        .generating-shimmer {
+            background: linear-gradient(90deg, #CC2222 25%, #ef4444 50%, #CC2222 75%);
+            background-size: 200px 100%;
+            animation: shimmer 1.5s infinite linear;
+        }
     </style>
 </head>
 <body>
@@ -393,236 +569,47 @@
             </div>
 
             <!-- Grid -->
-            <div class="campaigns-grid">
-                <!-- Card 1 -->
-                <div class="campaign-card">
-                    <div class="campaign-header">
-                        <div class="campaign-title-block">
-                            <span class="status-badge status-active">Active</span>
-                            <h3 class="campaign-name" style="margin-top: var(--space-xs);">SaaS Founder Outbound</h3>
-                        </div>
-                    </div>
-                    <div class="campaign-template">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
-                        <span>Template: SaaS Growth Audit V2</span>
-                    </div>
-                    <div class="campaign-stats-row">
-                        <div class="campaign-stat-item">
-                            <span class="campaign-stat-val">1,240</span>
-                            <span class="campaign-stat-lbl">Sent</span>
-                        </div>
-                        <div class="campaign-stat-item">
-                            <span class="campaign-stat-val" style="color: var(--brand-primary-light);">72.5%</span>
-                            <span class="campaign-stat-lbl">Opens</span>
-                        </div>
-                        <div class="campaign-stat-item">
-                            <span class="campaign-stat-val" style="color: var(--color-success);">24.8%</span>
-                            <span class="campaign-stat-lbl">Replies</span>
-                        </div>
-                        <div class="campaign-stat-item">
-                            <span class="campaign-stat-val" style="color: #22C55E; text-shadow: 0 0 8px rgba(34,197,94,0.2);">12</span>
-                            <span class="campaign-stat-lbl">Booked</span>
-                        </div>
-                    </div>
-                    <div class="campaign-progress-block">
-                        <div class="progress-meta">
-                            <span>Leads Processed</span>
-                            <span>1,240 / 2,000 (62%)</span>
-                        </div>
-                        <div class="progress-track">
-                            <div class="progress-fill" style="width: 62%;"></div>
-                        </div>
-                    </div>
-                    <div class="campaign-actions-footer">
-                        <div class="campaign-leads-preview">
-                            <span style="font-size: 0.6875rem; color: var(--text-muted);">Recent:</span>
-                            <div class="lead-avatar-stack">
-                                <div class="stack-avatar" style="background: #CC5555;">TD</div>
-                                <div class="stack-avatar" style="background: #55CC55;">SR</div>
-                                <div class="stack-avatar" style="background: #5555CC;">MK</div>
-                                <div class="stack-avatar" style="background: var(--bg-elevated); border-color: var(--border-subtle); color: var(--text-muted);">+85</div>
-                            </div>
-                        </div>
-                        <div class="campaign-card-btns">
-                            <a href="leads.html" class="card-btn" title="View Campaign Leads">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                            </a>
-                            <a href="analytics.html" class="card-btn" title="Detailed Analytics">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Card 2 -->
-                <div class="campaign-card">
-                    <div class="campaign-header">
-                        <div class="campaign-title-block">
-                            <span class="status-badge status-active">Active</span>
-                            <h3 class="campaign-name" style="margin-top: var(--space-xs);">Enterprise Operations Pitch</h3>
-                        </div>
-                    </div>
-                    <div class="campaign-template">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
-                        <span>Template: AI Operations Audit</span>
-                    </div>
-                    <div class="campaign-stats-row">
-                        <div class="campaign-stat-item">
-                            <span class="campaign-stat-val">980</span>
-                            <span class="campaign-stat-lbl">Sent</span>
-                        </div>
-                        <div class="campaign-stat-item">
-                            <span class="campaign-stat-val" style="color: var(--brand-primary-light);">65.1%</span>
-                            <span class="campaign-stat-lbl">Opens</span>
-                        </div>
-                        <div class="campaign-stat-item">
-                            <span class="campaign-stat-val" style="color: var(--color-success);">21.4%</span>
-                            <span class="campaign-stat-lbl">Replies</span>
-                        </div>
-                        <div class="campaign-stat-item">
-                            <span class="campaign-stat-val" style="color: #22C55E; text-shadow: 0 0 8px rgba(34,197,94,0.2);">8</span>
-                            <span class="campaign-stat-lbl">Booked</span>
-                        </div>
-                    </div>
-                    <div class="campaign-progress-block">
-                        <div class="progress-meta">
-                            <span>Leads Processed</span>
-                            <span>980 / 1,000 (98%)</span>
-                        </div>
-                        <div class="progress-track">
-                            <div class="progress-fill" style="width: 98%;"></div>
-                        </div>
-                    </div>
-                    <div class="campaign-actions-footer">
-                        <div class="campaign-leads-preview">
-                            <span style="font-size: 0.6875rem; color: var(--text-muted);">Recent:</span>
-                            <div class="lead-avatar-stack">
-                                <div class="stack-avatar" style="background: #CC9955;">JL</div>
-                                <div class="stack-avatar" style="background: #55CC99;">CD</div>
-                                <div class="stack-avatar" style="background: #9955CC;">AH</div>
-                                <div class="stack-avatar" style="background: var(--bg-elevated); border-color: var(--border-subtle); color: var(--text-muted);">+12</div>
-                            </div>
-                        </div>
-                        <div class="campaign-card-btns">
-                            <a href="leads.html" class="card-btn" title="View Campaign Leads">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                            </a>
-                            <a href="analytics.html" class="card-btn" title="Detailed Analytics">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Card 3 -->
-                <div class="campaign-card">
-                    <div class="campaign-header">
-                        <div class="campaign-title-block">
-                            <span class="status-badge status-paused">Paused</span>
-                            <h3 class="campaign-name" style="margin-top: var(--space-xs);">E-Commerce Scaling</h3>
-                        </div>
-                    </div>
-                    <div class="campaign-template">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
-                        <span>Template: Brand CRO Breakdown</span>
-                    </div>
-                    <div class="campaign-stats-row">
-                        <div class="campaign-stat-item">
-                            <span class="campaign-stat-val">412</span>
-                            <span class="campaign-stat-lbl">Sent</span>
-                        </div>
-                        <div class="campaign-stat-item">
-                            <span class="campaign-stat-val" style="color: var(--brand-primary-light);">59.2%</span>
-                            <span class="campaign-stat-lbl">Opens</span>
-                        </div>
-                        <div class="campaign-stat-item">
-                            <span class="campaign-stat-val" style="color: var(--color-warning);">15.7%</span>
-                            <span class="campaign-stat-lbl">Replies</span>
-                        </div>
-                        <div class="campaign-stat-item">
-                            <span class="campaign-stat-val" style="color: var(--text-muted);">2</span>
-                            <span class="campaign-stat-lbl">Booked</span>
-                        </div>
-                    </div>
-                    <div class="campaign-progress-block">
-                        <div class="progress-meta">
-                            <span>Leads Processed</span>
-                            <span>412 / 1,500 (27%)</span>
-                        </div>
-                        <div class="progress-track">
-                            <div class="progress-fill" style="width: 27%; background: var(--color-warning);"></div>
-                        </div>
-                    </div>
-                    <div class="campaign-actions-footer">
-                        <div class="campaign-leads-preview">
-                            <span style="font-size: 0.6875rem; color: var(--text-muted);">Recent:</span>
-                            <div class="lead-avatar-stack">
-                                <div class="stack-avatar" style="background: #5599CC;">BP</div>
-                                <div class="stack-avatar" style="background: #CC5599;">PS</div>
-                                <div class="stack-avatar" style="background: var(--bg-elevated); border-color: var(--border-subtle); color: var(--text-muted);">+3</div>
-                            </div>
-                        </div>
-                        <div class="campaign-card-btns">
-                            <a href="leads.html" class="card-btn" title="View Campaign Leads">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                            </a>
-                            <a href="analytics.html" class="card-btn" title="Detailed Analytics">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Card 4 (Draft) -->
-                <div class="campaign-card">
-                    <div class="campaign-header">
-                        <div class="campaign-title-block">
-                            <span class="status-badge status-draft">Draft</span>
-                            <h3 class="campaign-name" style="margin-top: var(--space-xs);">Y Combinator Outbound</h3>
-                        </div>
-                    </div>
-                    <div class="campaign-template">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
-                        <span>Template: Seed Pitch Audit</span>
-                    </div>
-                    <div class="campaign-stats-row" style="opacity: 0.5;">
-                        <div class="campaign-stat-item">
-                            <span class="campaign-stat-val">—</span>
-                            <span class="campaign-stat-lbl">Sent</span>
-                        </div>
-                        <div class="campaign-stat-item">
-                            <span class="campaign-stat-val">—</span>
-                            <span class="campaign-stat-lbl">Opens</span>
-                        </div>
-                        <div class="campaign-stat-item">
-                            <span class="campaign-stat-val">—</span>
-                            <span class="campaign-stat-lbl">Replies</span>
-                        </div>
-                        <div class="campaign-stat-item">
-                            <span class="campaign-stat-val">—</span>
-                            <span class="campaign-stat-lbl">Booked</span>
-                        </div>
-                    </div>
-                    <div class="campaign-progress-block">
-                        <div class="progress-meta" style="color: var(--text-dim);">
-                            <span>Leads Processed</span>
-                            <span>0 / 500 (0%)</span>
-                        </div>
-                        <div class="progress-track">
-                            <div class="progress-fill" style="width: 0%;"></div>
-                        </div>
-                    </div>
-                    <div class="campaign-actions-footer">
-                        <div class="campaign-leads-preview">
-                            <span style="font-size: 0.6875rem; color: var(--text-dim);">No leads added</span>
-                        </div>
-                        <div class="campaign-card-btns">
-                            <button class="card-btn card-btn-primary btn-primary" onclick="window.location.href='leads.html?open=import'">Add Leads</button>
-                        </div>
-                    </div>
-                </div>
+            <div class="campaigns-grid" id="campaigns-container">
+                <!-- Dynamic campaign cards rendered here -->
             </div>
         </main>
+    </div>
+
+    <!-- ═══ Lead Analytics Slide-Over Drawer ═══ -->
+    <div class="drawer-overlay" id="drawerOverlay"></div>
+    <div class="drawer" id="leadsDrawer">
+        <div class="drawer-header">
+            <div class="drawer-title-block">
+                <h3 class="drawer-title" id="drawerTitle">Batch Lead Analytics</h3>
+                <span class="drawer-subtitle" id="drawerSubtitle">Campaign: SaaS Founder Outbound</span>
+            </div>
+            <button class="drawer-close" id="closeDrawerBtn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+        <!-- Drawer Filter Tabs -->
+        <div style="padding: 12px var(--space-xl); border-bottom: 1px solid var(--border-subtle); display:flex; align-items:center;">
+            <div class="tab-nav" id="drawerTabNav">
+                <button class="tab-item active" data-filter="all">All</button>
+                <button class="tab-item" data-filter="contacted">Contacted</button>
+                <button class="tab-item" data-filter="replied">Replied</button>
+                <button class="tab-item" data-filter="booked">Booked</button>
+            </div>
+        </div>
+        <!-- Drawer Table Headers -->
+        <div class="drawer-table-header">
+            <input type="checkbox" class="checkbox" style="pointer-events: none; opacity: 0.5;">
+            <span>Name</span>
+            <span>Company</span>
+            <span>Website</span>
+            <span>Status</span>
+            <span>Watch</span>
+            <span>Last Activity</span>
+            <span></span>
+        </div>
+        <div class="drawer-body" id="drawerBody">
+            <!-- leads list rendered here -->
+        </div>
     </div>
 
     <!-- ═══ Create Campaign Modal ═══ -->
@@ -634,44 +621,89 @@
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                 </button>
             </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <label style="font-size: 0.75rem; font-weight: 600; color: var(--text-secondary);">Campaign Name</label>
-                    <input type="text" placeholder="e.g. SaaS Outreach Summer 2026" style="padding: 10px 12px; background: rgba(255,255,255,0.02); border: 1px solid var(--border-default); border-radius: var(--radius-sm); color: var(--text-primary);">
+            <form id="createCampaignForm">
+                <div class="modal-body" style="display: flex; flex-direction: column; gap: var(--space-md);">
+                    <div class="form-group" style="display: flex; flex-direction: column; gap: 4px;">
+                        <label style="font-size: 0.75rem; font-weight: 600; color: var(--text-secondary);">Campaign Name</label>
+                        <input type="text" id="campaignNameInput" required placeholder="e.g. SaaS Outreach Summer 2026" style="padding: 10px 12px; background: rgba(255,255,255,0.02); border: 1px solid var(--border-default); border-radius: var(--radius-sm); color: var(--text-primary); outline: none;">
+                    </div>
+                    <div class="form-group" style="display: flex; flex-direction: column; gap: 4px;">
+                        <label style="font-size: 0.75rem; font-weight: 600; color: var(--text-secondary);">Video Template</label>
+                        <select id="templateSelect" required style="padding: 10px 12px; background: var(--bg-base); border: 1px solid var(--border-default); border-radius: var(--radius-sm); color: var(--text-primary); outline: none;">
+                            <option value="">Select a template...</option>
+                            <option value="SaaS Growth Audit V2">SaaS Growth Audit V2</option>
+                            <option value="AI Operations Audit">AI Operations Audit</option>
+                            <option value="Brand CRO Breakdown">Brand CRO Breakdown</option>
+                            <option value="Custom Video Upload...">Custom Video Upload...</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group" style="display: flex; flex-direction: column; gap: 4px;">
+                        <label style="font-size: 0.75rem; font-weight: 600; color: var(--text-secondary);">Lead Import Method</label>
+                        <select id="importMethodSelect" required style="padding: 10px 12px; background: var(--bg-base); border: 1px solid var(--border-default); border-radius: var(--radius-sm); color: var(--text-primary); outline: none;">
+                            <option value="manual">Add Leads Manually (Empty Campaign)</option>
+                            <option value="google_sheets">Import & Sync Google Sheet</option>
+                            <option value="csv">Import & Paste CSV Leads</option>
+                        </select>
+                    </div>
+
+                    <!-- Google Sheets Sync Fields -->
+                    <div id="sheetsImportGroup" style="display: none; flex-direction: column; gap: var(--space-sm);">
+                        <div class="form-group" style="display: flex; flex-direction: column; gap: 4px;">
+                            <label style="font-size: 0.75rem; font-weight: 600; color: var(--text-secondary);">Start Row (Headers on Row 1)</label>
+                            <input type="number" id="syncStartRow" value="2" min="2" style="padding: 10px 12px; background: rgba(255,255,255,0.02); border: 1px solid var(--border-default); border-radius: var(--radius-sm); color: var(--text-primary); outline: none;">
+                        </div>
+                        <div class="form-group" style="display: flex; flex-direction: column; gap: 4px;">
+                            <label style="font-size: 0.75rem; font-weight: 600; color: var(--text-secondary);">End Row (Inclusive)</label>
+                            <input type="number" id="syncEndRow" value="11" min="2" style="padding: 10px 12px; background: rgba(255,255,255,0.02); border: 1px solid var(--border-default); border-radius: var(--radius-sm); color: var(--text-primary); outline: none;">
+                        </div>
+                    </div>
+
+                    <!-- CSV Paste Fields -->
+                    <div id="csvImportGroup" style="display: none; flex-direction: column; gap: 4px;">
+                        <label style="font-size: 0.75rem; font-weight: 600; color: var(--text-secondary);">CSV Records</label>
+                        <textarea id="csvRecordsData" placeholder="John Doe, Acme Inc, acme.com, john@acme.com&#10;Sarah Connor, Cyberdyne, cyberdyne.com, sarah@cyberdyne.com" style="min-height: 100px; background: rgba(255,255,255,0.02); border: 1px solid var(--border-default); color: #fff; padding: var(--space-md); border-radius: var(--radius-sm); font-size: 0.8125rem; font-family: var(--font-mono); resize: vertical; outline: none;"></textarea>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label style="font-size: 0.75rem; font-weight: 600; color: var(--text-secondary);">Video Template</label>
-                    <select style="padding: 10px 12px; background: var(--bg-base); border: 1px solid var(--border-default); border-radius: var(--radius-sm); color: var(--text-primary); outline: none;">
-                        <option>Select a template...</option>
-                        <option>SaaS Growth Audit V2</option>
-                        <option>AI Operations Audit</option>
-                        <option>Brand CRO Breakdown</option>
-                        <option>Custom Video Upload...</option>
-                    </select>
+                <div class="modal-footer" style="padding-top: var(--space-md);">
+                    <button type="button" class="btn btn-secondary" id="cancelModalBtn" style="padding: 8px 16px;">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="btnSubmitCampaign" style="padding: 8px 16px;">Generate Campaign</button>
                 </div>
-                <div class="form-group">
-                    <label style="font-size: 0.75rem; font-weight: 600; color: var(--text-secondary);">Select Leads List</label>
-                    <select style="padding: 10px 12px; background: var(--bg-base); border: 1px solid var(--border-default); border-radius: var(--radius-sm); color: var(--text-primary); outline: none;">
-                        <option>Select list...</option>
-                        <option>All Active Leads (2,847 leads)</option>
-                        <option>Imported Google Sheet List</option>
-                        <option>Create new empty list...</option>
-                    </select>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" id="cancelModalBtn" style="padding: 8px 16px;">Cancel</button>
-                <button class="btn btn-primary" style="padding: 8px 16px;" onclick="alert('Campaign created successfully! Generating outreach queue.'); document.getElementById('campaignModal').style.display = 'none';">Create Campaign</button>
-            </div>
+            </form>
         </div>
     </div>
 
-    <!-- Modal Trigger Script -->
+    <!-- Modal and Controller Script -->
     <script>
         const modal = document.getElementById('campaignModal');
         const openBtn = document.getElementById('openModalBtn');
         const closeBtn = document.getElementById('closeModalBtn');
         const cancelBtn = document.getElementById('cancelModalBtn');
+        
+        const importMethodSelect = document.getElementById('importMethodSelect');
+        const sheetsImportGroup = document.getElementById('sheetsImportGroup');
+        const csvImportGroup = document.getElementById('csvImportGroup');
+        
+        const createCampaignForm = document.getElementById('createCampaignForm');
+        
+        const drawer = document.getElementById('leadsDrawer');
+        const drawerOverlay = document.getElementById('drawerOverlay');
+        const closeDrawerBtn = document.getElementById('closeDrawerBtn');
+
+        // Toggle Form Groups based on Import Mode
+        importMethodSelect.addEventListener('change', (e) => {
+            const method = e.target.value;
+            if (method === 'google_sheets') {
+                sheetsImportGroup.style.display = 'flex';
+                csvImportGroup.style.display = 'none';
+            } else if (method === 'csv') {
+                sheetsImportGroup.style.display = 'none';
+                csvImportGroup.style.display = 'flex';
+            } else {
+                sheetsImportGroup.style.display = 'none';
+                csvImportGroup.style.display = 'none';
+            }
+        });
 
         openBtn.addEventListener('click', () => {
             modal.style.display = 'flex';
@@ -690,11 +722,341 @@
             }
         });
 
-        // Auto open modal from URL parameter
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('open') === 'modal') {
-            modal.style.display = 'flex';
+        // Close Drawer Handlers
+        const closeDrawer = () => {
+            drawer.classList.remove('open');
+            drawerOverlay.classList.remove('open');
+        };
+        closeDrawerBtn.addEventListener('click', closeDrawer);
+        drawerOverlay.addEventListener('click', closeDrawer);
+
+        // Fetch and Render Campaigns
+        let campaigns = [];
+        
+        async function fetchCampaigns() {
+            try {
+                const res = await fetch('/api/campaigns');
+                campaigns = await res.json();
+                renderCampaigns();
+            } catch (err) {
+                console.error('Error fetching campaigns:', err);
+            }
         }
+
+        function renderCampaigns() {
+            const container = document.getElementById('campaigns-container');
+            if (!container) return;
+            
+            container.innerHTML = '';
+            
+            if (campaigns.length === 0) {
+                container.innerHTML = `
+                    <div style="grid-column: 1/-1; padding: var(--space-2xl); text-align: center; color: var(--text-muted);">
+                        <h3>No campaigns found</h3>
+                        <p style="font-size: 0.8125rem;">Create a campaign to start tracking outbound analytics.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            campaigns.forEach(camp => {
+                let statusClass = 'status-active';
+                if (camp.status === 'Paused') statusClass = 'status-paused';
+                else if (camp.status === 'Draft') statusClass = 'status-draft';
+                
+                // Progress percentage calculation
+                let progressPercent = 0;
+                if (camp.total_sent > 0) {
+                    progressPercent = Math.round((camp.total_opened / camp.total_sent) * 100);
+                }
+                
+                // Video Generation Progress calculation
+                const isGenerating = (camp.total_pending + camp.total_processing) > 0;
+                const genPercent = camp.total_leads > 0 ? Math.round((camp.total_generated / camp.total_leads) * 100) : 0;
+                
+                const card = document.createElement('div');
+                card.className = 'campaign-card';
+                card.innerHTML = `
+                    <div class="campaign-header">
+                        <div class="campaign-title-block">
+                            <span class="status-badge ${statusClass}">${camp.status}</span>
+                            <h3 class="campaign-name" style="margin-top: var(--space-xs);">${camp.name}</h3>
+                        </div>
+                    </div>
+                    <div class="campaign-template">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+                        <span>Template: ${camp.template_name || 'Generic Template'}</span>
+                    </div>
+                    
+                    <!-- Stats Grid -->
+                    <div class="campaign-stats-row">
+                        <div class="campaign-stat-item">
+                            <span class="campaign-stat-val">${camp.total_sent}</span>
+                            <span class="campaign-stat-lbl">Sent</span>
+                        </div>
+                        <div class="campaign-stat-item">
+                            <span class="campaign-stat-val" style="color: var(--brand-primary-light);">${camp.total_sent > 0 ? Math.round(camp.total_opened / camp.total_sent * 100) : 0}%</span>
+                            <span class="campaign-stat-lbl">Views</span>
+                        </div>
+                        <div class="campaign-stat-item">
+                            <span class="campaign-stat-val" style="color: var(--color-warning);">${camp.total_sent > 0 ? Math.round(camp.total_replied / camp.total_sent * 100) : 0}%</span>
+                            <span class="campaign-stat-lbl">Replies</span>
+                        </div>
+                        <div class="campaign-stat-item">
+                            <span class="campaign-stat-val" style="color: #22C55E; text-shadow: 0 0 8px rgba(34,197,94,0.2);">${camp.total_booked}</span>
+                            <span class="campaign-stat-lbl">Booked</span>
+                        </div>
+                    </div>
+
+                    <!-- Video Generation Progress -->
+                    <div class="generation-progress-block" style="display: flex; flex-direction: column; gap: 6px; margin-top: var(--space-sm); padding-top: var(--space-sm); border-top: 1px dashed var(--border-subtle);">
+                        <div style="display: flex; justify-content: space-between; font-size: 0.6875rem; color: var(--text-muted);">
+                            <span style="font-weight:600; display:flex; align-items:center; gap: 4px;">
+                                ${isGenerating ? 
+                                    `<span class="live-dot" style="background:#f59e0b; box-shadow: 0 0 8px rgba(245,158,11,0.6); width:6px; height:6px; margin-right:4px;"></span>Generating Videos...` : 
+                                    `All Videos Stitched ✅`
+                                }
+                            </span>
+                            <span style="font-family:var(--font-mono); font-weight:600;">${camp.total_generated} / ${camp.total_leads} Done</span>
+                        </div>
+                        <div class="progress-track" style="height: 6px; background: rgba(255,255,255,0.03); border-radius: var(--radius-pill); overflow: hidden; position: relative;">
+                            <div class="progress-fill ${isGenerating ? 'generating-shimmer' : ''}" style="width: ${genPercent}%; height: 100%; background: ${isGenerating ? 'linear-gradient(90deg, #CC2222, #ef4444)' : '#22C55E'}; border-radius: var(--radius-pill); box-shadow: ${isGenerating ? '0 0 10px rgba(239, 68, 68, 0.4)' : '0 0 8px rgba(34, 197, 94, 0.3)'};"></div>
+                        </div>
+                        <div style="display: flex; gap: 6px; flex-wrap: wrap; font-size: 0.625rem; color: var(--text-dim); margin-top: 2px;">
+                            <span style="padding: 1px 4px; background: rgba(255,255,255,0.02); border-radius:3px;">Pending: ${camp.total_pending}</span>
+                            <span style="padding: 1px 4px; background: rgba(245,158,11,0.08); color: #f59e0b; border-radius:3px;">Stitching: ${camp.total_processing}</span>
+                            <span style="padding: 1px 4px; background: rgba(34,197,94,0.08); color: #22c55e; border-radius:3px;">Ready: ${camp.total_generated}</span>
+                            ${camp.total_failed > 0 ? `<span style="padding: 1px 4px; background: rgba(239,68,68,0.08); color: #ef4444; border-radius:3px;">Failed: ${camp.total_failed}</span>` : ''}
+                        </div>
+                    </div>
+
+                    <!-- Card Actions -->
+                    <div class="campaign-actions-footer" style="padding-top: var(--space-sm); border-top: 1px solid var(--border-subtle); margin-top: var(--space-md); display: flex; align-items: center; justify-content: space-between;">
+                        <span style="font-size: 0.6875rem; color: var(--text-dim);">Outbound Funnel</span>
+                        <div style="display:flex; gap: 8px;">
+                            <button class="btn btn-primary" onclick="openBatchLeads('${camp.id}', '${camp.id}', '${camp.name}')" style="padding: 6px 12px; font-size: 0.75rem; border-radius: var(--radius-sm);">
+                                View Leads
+                            </button>
+                            <a href="analytics.html" class="card-btn" title="Detailed Analytics" style="width:28px; height:28px;">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="12" height="12"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                            </a>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // Relative Time Formatter
+        function timeAgo(dateString) {
+            if (!dateString) return 'Just now';
+            const date = new Date(dateString);
+            const now = new Date();
+            const seconds = Math.floor((now - date) / 1000);
+            if (seconds < 60) return 'Just now';
+            const minutes = Math.floor(seconds / 60);
+            if (minutes < 60) return `${minutes}m ago`;
+            const hours = Math.floor(minutes / 60);
+            if (hours < 24) return `${hours}h ago`;
+            const days = Math.floor(hours / 24);
+            return `${days}d ago`;
+        }
+
+        let drawerLeads = [];
+        let drawerFilter = 'all';
+        let currentCampaignId = '';
+        let currentBatchId = '';
+        let currentCampaignName = '';
+
+        // Wire Drawer tab listeners
+        document.querySelectorAll('#drawerTabNav .tab-item').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('#drawerTabNav .tab-item').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                drawerFilter = e.target.getAttribute('data-filter');
+                renderDrawerLeads();
+            });
+        });
+
+        function getAvatarColor(name) {
+            const colors = ['#1a3a2a', '#2a1a1a', '#1a1a2a', '#2a2a1a', '#1a2a2a', '#2a1a2a'];
+            const textColors = ['#22C55E', '#E63939', '#8B8BCC', '#F59E0B', '#22D3EE', '#CC88CC'];
+            let hash = 0;
+            for (let i = 0; i < name.length; i++) {
+                hash = name.charCodeAt(i) + ((hash << 5) - hash);
+            }
+            const index = Math.abs(hash) % colors.length;
+            return { bg: colors[index], text: textColors[index] };
+        }
+
+        function renderDrawerLeads() {
+            const body = document.getElementById('drawerBody');
+            if (!body) return;
+            
+            let filtered = drawerLeads.filter(lead => {
+                if (drawerFilter === 'all') return true;
+                if (drawerFilter === 'contacted') return lead.status === 'Sent' || lead.status === 'Viewed';
+                if (drawerFilter === 'replied') return lead.status === 'Replied';
+                if (drawerFilter === 'booked') return lead.status === 'Booked';
+                return true;
+            });
+            
+            body.innerHTML = '';
+            if (filtered.length === 0) {
+                body.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: var(--space-xl); font-size: 0.8125rem;">No leads match this filter.</div>`;
+                return;
+            }
+            
+            filtered.forEach(lead => {
+                const row = document.createElement('div');
+                row.className = 'drawer-lead-row';
+                
+                let statusClass = 'status-sent';
+                let displayStatus = lead.status;
+                let watchText = lead.watch_percent;
+                
+                if (lead.video_url === 'pending') {
+                    statusClass = 'status-draft';
+                    displayStatus = 'Pending';
+                    watchText = 'Pending';
+                } else if (lead.video_url === 'processing') {
+                    statusClass = 'status-paused';
+                    displayStatus = 'Stitching...';
+                    watchText = 'In Process';
+                } else if (lead.video_url === 'failed') {
+                    statusClass = 'status-no-reply';
+                    displayStatus = 'Failed';
+                    watchText = 'Failed';
+                } else {
+                    if (lead.status === 'Viewed') statusClass = 'status-viewed';
+                    else if (lead.status === 'Replied') statusClass = 'status-replied';
+                    else if (lead.status === 'Booked') statusClass = 'status-booked';
+                }
+                
+                const initials = lead.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+                const colors = getAvatarColor(lead.name);
+                const activeTime = timeAgo(lead.last_activity);
+                const cleanDomain = lead.company.toLowerCase().replace(/[^a-z0-9]/g, '') + '.com';
+                const emailFallback = `${lead.name.split(' ')[0].toLowerCase()}@${cleanDomain}`;
+                
+                // Style watch percentage
+                let watchPctColor = 'var(--text-muted)';
+                if (watchText !== '-' && watchText !== 'Pending' && watchText !== 'In Process' && watchText !== 'Failed') {
+                    const val = parseInt(watchText);
+                    if (val === 100) watchPctColor = 'var(--color-success)';
+                    else if (val >= 50) watchPctColor = 'var(--brand-primary-light)';
+                    else watchPctColor = 'var(--color-warning)';
+                }
+                
+                row.innerHTML = `
+                    <input type="checkbox" class="checkbox">
+                    <div class="lead-identity" onclick="window.open('/v/${lead.video_id}', '_blank')">
+                        <div class="lead-avatar" style="background: ${colors.bg}; color: ${colors.text};">${initials}</div>
+                        <div class="lead-name-block">
+                            <div class="lead-name">${lead.name}</div>
+                            <div class="lead-email">${lead.email || emailFallback}</div>
+                        </div>
+                    </div>
+                    <span style="font-size: 0.8125rem; color: var(--text-secondary);">${lead.company}</span>
+                    <a href="https://${cleanDomain}" target="_blank" style="font-size: 0.75rem; color: var(--text-muted); text-decoration: none;">${cleanDomain}</a>
+                    <span class="status-pill ${statusClass}" style="font-size: 0.625rem; padding: 2px 6px;">${displayStatus}</span>
+                    <span style="font-size: 0.75rem; font-family: var(--font-mono); font-weight: 600; color: ${watchPctColor}">${watchText}</span>
+                    <span style="font-size: 0.75rem; color: var(--text-muted);">${activeTime}</span>
+                    <div style="display:flex; gap: 4px; flex-shrink:0;">
+                        <button class="lead-action-btn" title="Open Video Page" onclick="window.open('/v/${lead.video_id}', '_blank'); event.stopPropagation();" style="border:none; background:none; cursor:pointer; color:var(--text-muted); padding:4px;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+                    </div>
+                `;
+                body.appendChild(row);
+            });
+        }
+
+        // Open Drawer to Load Batch Leads list
+        async function openBatchLeads(campaignId, batchId, campaignName) {
+            currentCampaignId = campaignId;
+            currentBatchId = batchId;
+            currentCampaignName = campaignName;
+            
+            document.getElementById('drawerTitle').textContent = campaignName;
+            document.getElementById('drawerSubtitle').textContent = `Campaign ID: ${campaignId}`;
+            
+            // Reset tab highlights to 'All'
+            document.querySelectorAll('#drawerTabNav .tab-item').forEach(b => b.classList.remove('active'));
+            document.querySelector('#drawerTabNav .tab-item[data-filter="all"]').classList.add('active');
+            drawerFilter = 'all';
+            
+            const body = document.getElementById('drawerBody');
+            body.innerHTML = `
+                <div style="display: flex; justify-content: center; align-items: center; min-height: 200px; color: var(--text-muted); font-size: 0.875rem;">
+                    <span style="animation: pulse 1s infinite;">Loading batch leads...</span>
+                </div>
+            `;
+            
+            // Slide open drawer
+            drawer.classList.add('open');
+            drawerOverlay.classList.add('open');
+            
+            try {
+                const res = await fetch(`/api/campaigns/${campaignId}/batches/${batchId}/leads`);
+                drawerLeads = await res.json();
+                renderDrawerLeads();
+            } catch (err) {
+                console.error(err);
+                body.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: var(--space-xl);">Error loading leads.</div>`;
+            }
+        }
+
+        // Submit Campaign Creation Form
+        createCampaignForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const submitBtn = document.getElementById('btnSubmitCampaign');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span style="animation: pulse 1s infinite;">Processing...</span>';
+            
+            const name = document.getElementById('campaignNameInput').value;
+            const template_name = document.getElementById('templateSelect').value;
+            const import_method = document.getElementById('importMethodSelect').value;
+            
+            const payload = {
+                name,
+                template_name,
+                import_method,
+                batch_name: undefined
+            };
+            
+            if (import_method === 'google_sheets') {
+                payload.start_row = parseInt(document.getElementById('syncStartRow').value);
+                payload.end_row = parseInt(document.getElementById('syncEndRow').value);
+            } else if (import_method === 'csv') {
+                payload.csv_data = document.getElementById('csvRecordsData').value;
+            }
+            
+            try {
+                const res = await fetch('/api/campaigns/create', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                const data = await res.json();
+                if (res.ok) {
+                    alert(data.message || 'Campaign successfully configured!');
+                    createCampaignForm.reset();
+                    sheetsImportGroup.style.display = 'none';
+                    csvImportGroup.style.display = 'none';
+                    modal.style.display = 'none';
+                    fetchCampaigns();
+                } else {
+                    alert(`Error: ${data.detail || data.message || 'Server error'}`);
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Network error trying to create campaign.');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Create Campaign';
+            }
+        });
 
         // Live filtering search
         const campaignSearch = document.getElementById('campaign-search');
@@ -712,6 +1074,16 @@
                 });
             });
         }
+
+        // Auto open modal from URL parameter
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('open') === 'modal') {
+            modal.style.display = 'flex';
+        }
+
+        // Initial fetch
+        fetchCampaigns();
+        setInterval(fetchCampaigns, 10000);
     </script>
 </body>
 </html>

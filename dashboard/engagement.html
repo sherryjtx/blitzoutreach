@@ -453,16 +453,34 @@
                         
                         const cleanDomain = ev.company.toLowerCase().replace(/[^a-z0-9]/g, '') + '.com';
                         
+                        if (ev.event_type === 'play' || ev.event_type === 'pause') {
+                            return; // Filter out play/pause noise
+                        }
+
                         if (ev.event_type === 'page_view') {
                             iconSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
                             iconClass = 'view';
                             headlineHtml = `<strong>${ev.name}</strong> visited your video landing page`;
-                        } else if (ev.event_type === 'progress') {
-                            const pct = Math.min(Math.round((ev.time_offset / 72.0) * 100), 100);
+                        } else if (ev.event_type.startsWith('progress_')) {
+                            const pct = ev.event_type.split('_')[1];
                             iconSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>';
                             iconClass = 'play';
                             headlineHtml = `<strong>${ev.name}</strong> watched <span class="accent">${pct}%</span> of your video`;
-                            if (pct > 75) headlineHtml += ` — this is a <span class="accent" style="font-weight:700;">hot lead</span>`;
+                            if (parseInt(pct) >= 75) headlineHtml += ` — this is a <span class="accent" style="font-weight:700;">hot lead</span>`;
+                        } else if (ev.event_type === 'reaction') {
+                            const emojiName = ev.metadata ? ev.metadata.emoji : '';
+                            let emoji = '👍';
+                            if (emojiName === 'heart_eyes') emoji = '😍';
+                            else if (emojiName === 'thinking') emoji = '🤔';
+                            else if (emojiName === 'fire') emoji = '🔥';
+                            iconSvg = `<span style="font-size:16px; line-height:1; display:block;">${emoji}</span>`;
+                            iconClass = 'click';
+                            headlineHtml = `<strong>${ev.name}</strong> reacted with <strong>${emoji}</strong> to your video`;
+                        } else if (ev.event_type === 'comment') {
+                            const text = ev.metadata ? ev.metadata.text : '';
+                            iconSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>';
+                            iconClass = 'click';
+                            headlineHtml = `<strong>${ev.name}</strong> commented: <span style="font-style: italic; color: var(--text-primary);">"${text}"</span>`;
                         } else if (ev.event_type === 'replied' || ev.event_type === 'reply') {
                             iconSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="9 17 4 12 9 7"/><path d="M20 18v-2a4 4 0 0 0-4-4H4"/></svg>';
                             iconClass = 'reply';
