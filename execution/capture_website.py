@@ -185,27 +185,29 @@ def capture_website(url: str, output_path: str, screenshot_path: str = None):
                         });
                     };
 
-                    // 1. Fully loaded settle time (1.5 seconds)
-                    await delay(1500);
+                    // 1. Fully loaded settle time (5 seconds)
+                    await delay(5000);
 
-                    // 2. 4 micro-scrolls down (each 180px smoothly over 600ms, then pause 800ms)
-                    await smoothScrollTo(180, 600);
-                    await delay(800);
-                    await smoothScrollTo(360, 600);
-                    await delay(800);
-                    await smoothScrollTo(540, 600);
-                    await delay(800);
-                    await smoothScrollTo(720, 600);
-                    await delay(1200);
+                    // 2. 5 micro-scrolls down (each 200px over 1500ms, then pause 6000ms)
+                    await smoothScrollTo(200, 1500);
+                    await delay(6000);
+                    await smoothScrollTo(400, 1500);
+                    await delay(6000);
+                    await smoothScrollTo(600, 1500);
+                    await delay(6000);
+                    await smoothScrollTo(800, 1500);
+                    await delay(6000);
+                    await smoothScrollTo(1000, 1500);
+                    await delay(6000);
 
-                    // 3. One smooth scroll back to top (scroll to 0 over 1200ms)
-                    await smoothScrollTo(0, 1200);
-                    await delay(1500); // end settle
+                    // 3. Smooth scroll back to top (scroll to 0 over 5000ms)
+                    await smoothScrollTo(0, 5000);
+                    await delay(12500); // end settle
                 }
             """)
         except Exception as scroll_err:
             print(f"⚠️ Scrolling error: {scroll_err}")
-            page.wait_for_timeout(12000) # Safe recording delay fallback
+            page.wait_for_timeout(60000) # Safe recording delay fallback
             
         # Get path to the recorded video before closing context
         video_path = page.video.path() if page.video else None
