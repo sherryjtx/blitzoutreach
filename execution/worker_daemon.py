@@ -59,7 +59,10 @@ def process_single_lead(lead, paths, today, mock):
     # Recover website domain from clearbit logo or sanitizing company name
     logo_url = lead.get("company_logo")
     website = ""
-    if logo_url and "logo.clearbit.com/" in logo_url:
+    if logo_url and logo_url.startswith("http") and "logo.clearbit.com/" not in logo_url:
+        # Direct website URL stored in company_logo
+        website = logo_url
+    elif logo_url and "logo.clearbit.com/" in logo_url:
         website = logo_url.split("logo.clearbit.com/")[-1]
     else:
         clean_company = company.lower().replace(" ", "").replace("ltd", "").replace("inc", "")

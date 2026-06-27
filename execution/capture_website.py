@@ -205,7 +205,11 @@ def capture_website(url: str, output_path: str, screenshot_path: str = None, log
             with open(fallback_path, "w", encoding="utf-8") as f:
                 f.write(fallback_content)
             fallback_path_clean = fallback_path.replace('\\', '/')
-            page.goto(f"file:///{fallback_path_clean}", wait_until="load")
+            if fallback_path_clean.startswith('/'):
+                file_url = f"file://{fallback_path_clean}"
+            else:
+                file_url = f"file:///{fallback_path_clean}"
+            page.goto(file_url, wait_until="load")
             page.wait_for_timeout(1000)
             load_duration = 1.5 # Fixed short trim duration for fallback page
             print(f"   Branded fallback page loaded successfully.")
