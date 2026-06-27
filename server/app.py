@@ -275,7 +275,13 @@ async def watch_video(video_id: str, request: Request):
             company_logo_wordmark = "/static/lemieux_logo_main.svg"
             company_badge_bg = "#58652d"
         else:
-            # Fallback to Clearbit logo for general companies
+            # Fallback/parsing for general company logos
+            if company_logo and company_logo.startswith("http") and not any(ext in company_logo.lower() for ext in [".png", ".jpg", ".jpeg", ".svg", ".gif", ".ico"]):
+                # It's a website homepage URL rather than a direct image. Convert to Clearbit logo URL using the domain.
+                from urllib.parse import urlparse
+                domain = urlparse(company_logo).netloc.replace("www.", "")
+                company_logo = f"https://logo.clearbit.com/{domain}"
+                
             if not company_logo and company:
                 clean_company = company.lower().replace(" ", "").replace("ltd", "").replace("inc", "")
                 company_logo = f"https://logo.clearbit.com/{clean_company}.com"
