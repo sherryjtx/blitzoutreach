@@ -7,13 +7,73 @@ import shutil
 import subprocess
 from playwright.sync_api import sync_playwright
 
-def capture_website(url: str, output_path: str, screenshot_path: str = None):
+def scrape_logo(page, url: str, logo_save_path: str) -> str:
+    """
+    Attempts to scrape the company logo from the loaded page.
+    Tries in order: og:image, apple-touch-icon, large favicon, then standard favicon.
+    Returns the path to the saved logo file, or None if not found.
+    """
+    try:
+        os.makedirs(os.path.dirname(logo_save_path), exist_ok=True)
+        from urllib.parse import urlparse, urljoin
+        base_url = f"{urlparse(url).scheme}://{urlparse(url).netloc}"
+        
+        # Try multiple logo sources in priority order
+        logo_url = page.evaluate("""
+            () => {
+                // 1. og:image (often the best quality brand image)
+                const og = document.querySelector('meta[property="og:image"]');
+                if (og && og.content) return og.content;
+                
+                // 2. Apple touch icon (usually a clean, high-res square logo)
+                const apple = document.querySelector('link[rel="apple-touch-icon"]') 
+                           || document.querySelector('link[rel="apple-touch-icon-precomposed"]');
+                if (apple && apple.href) return apple.href;
+                
+                // 3. Largest icon from <link rel="icon">
+                const icons = [...document.querySelectorAll('link[rel="icon"], link[rel="shortcut icon"]')];
+                if (icons.length > 0) {
+                    // Sort by sizes attribute descending, pick the largest
+                    icons.sort((a, b) => {
+                        const sizeA = parseInt((a.getAttribute('sizes') || '0').split('x')[0]) || 0;
+                        const sizeB = parseInt((b.getAttribute('sizes') || '0').split('x')[0]) || 0;
+                        return sizeB - sizeA;
+                    });
+                    return icons[0].href;
+                }
+                
+                // 4. Default /favicon.ico
+                return null;
+            }
+        """)
+        
+        if not logo_url:
+            logo_url = urljoin(base_url, "/favicon.ico")
+        elif not logo_url.startswith("http"):
+            logo_url = urljoin(base_url, logo_url)
+            
+        # Download the logo
+        import urllib.request
+        urllib.request.urlretrieve(logo_url, logo_save_path)
+        file_size = os.path.getsize(logo_save_path)
+        if file_size < 100:  # Too small, likely a 404 page or empty
+            os.remove(logo_save_path)
+            return None
+        print(f"   Scraped company logo ({file_size} bytes) from {logo_url}")
+        return logo_save_path
+    except Exception as e:
+        print(f"   Could not scrape logo: {e}")
+        return None
+
+
+def capture_website(url: str, output_path: str, screenshot_path: str = None, logo_save_path: str = None):
     """
     Captures a dynamic, smooth-scrolling video of a website using headless Playwright.
     Records viewport at 1080p, waits for full page load, captures a cover screenshot,
     scrolls down/up the page, and trims the loading frames from the final output video.
+    Optionally scrapes the company logo from the page.
     """
-    print(f"📹 Recording website scroll for {url}...")
+    print(f"Recording website scroll for {url}...")
     
     # Ensure output directory exists
     output_dir = os.path.dirname(output_path)
@@ -21,6 +81,7 @@ def capture_website(url: str, output_path: str, screenshot_path: str = None):
         os.makedirs(output_dir, exist_ok=True)
         
     temp_dir = tempfile.mkdtemp()
+    scraped_logo_path = None
     
     with sync_playwright() as p:
         # Launch headless Chromium
@@ -87,7 +148,7 @@ def capture_website(url: str, output_path: str, screenshot_path: str = None):
             load_duration = time.time() - start_time
             print(f"   Website fully settled in {load_duration:.2f} seconds.")
         except Exception as e:
-            print(f"⚠️ Navigation timeout/error (loading branded fallback page): {e}")
+            print(f"   Navigation timeout/error (loading branded fallback page): {e}")
             navigation_success = False
             
         if not navigation_success:
@@ -148,17 +209,22 @@ def capture_website(url: str, output_path: str, screenshot_path: str = None):
             page.wait_for_timeout(1000)
             load_duration = 1.5 # Fixed short trim duration for fallback page
             print(f"   Branded fallback page loaded successfully.")
+
+        # Scrape company logo from the page (before scrolling, while page is fully loaded)
+        if logo_save_path and navigation_success:
+            scraped_logo_path = scrape_logo(page, url, logo_save_path)
             
         # Capture cover screenshot of the fully loaded page (before scrolling)
         if screenshot_path:
             try:
                 os.makedirs(os.path.dirname(screenshot_path), exist_ok=True)
                 page.screenshot(path=screenshot_path, full_page=False)
-                print(f"📸 Saved cover screenshot to {screenshot_path}")
+                print(f"   Saved cover screenshot to {screenshot_path}")
             except Exception as ss_err:
-                print(f"⚠️ Failed to capture cover screenshot: {ss_err}")
+                print(f"   Failed to capture cover screenshot: {ss_err}")
         
         # Perform smooth cinematic scroll
+        # Pattern: 3 smooth continuous scrolls down, then smooth back to top, stay there
         try:
             print("   Scrolling website...")
             page.evaluate("""
@@ -168,13 +234,16 @@ def capture_website(url: str, output_path: str, screenshot_path: str = None):
                         return new Promise((resolve) => {
                             const startY = window.scrollY;
                             const difference = targetY - startY;
+                            if (Math.abs(difference) < 1) { resolve(); return; }
                             const startTime = performance.now();
                             
                             function step(timestamp) {
                                 const elapsed = timestamp - startTime;
                                 const progress = Math.min(elapsed / duration, 1);
-                                // easeInOutQuad curve
-                                const ease = progress < 0.5 ? 2 * progress * progress : -1 + (4 - 2 * progress) * progress;
+                                // easeInOutCubic for buttery smooth motion
+                                const ease = progress < 0.5
+                                    ? 4 * progress * progress * progress
+                                    : 1 - Math.pow(-2 * progress + 2, 3) / 2;
                                 window.scrollTo(0, startY + ease * difference);
                                 if (progress < 1) {
                                     requestAnimationFrame(step);
@@ -186,29 +255,27 @@ def capture_website(url: str, output_path: str, screenshot_path: str = None):
                         });
                     };
 
-                    // 1. Fully loaded settle time (5 seconds)
-                    await delay(5000);
+                    // 1. Hero settle (show the top of the site)
+                    await delay(3000);
 
-                    // 2. 5 micro-scrolls down (each 200px over 1500ms, then pause 6000ms)
-                    await smoothScrollTo(200, 1500);
-                    await delay(6000);
-                    await smoothScrollTo(400, 1500);
-                    await delay(6000);
-                    await smoothScrollTo(600, 1500);
-                    await delay(6000);
-                    await smoothScrollTo(800, 1500);
-                    await delay(6000);
-                    await smoothScrollTo(1000, 1500);
-                    await delay(6000);
+                    // 2. Three smooth scrolls down with brief pauses
+                    await smoothScrollTo(350, 2000);
+                    await delay(1500);
+                    await smoothScrollTo(700, 2000);
+                    await delay(1500);
+                    await smoothScrollTo(1050, 2000);
+                    await delay(1500);
 
-                    // 3. Smooth scroll back to top (scroll to 0 over 5000ms)
-                    await smoothScrollTo(0, 5000);
-                    await delay(12500); // end settle
+                    // 3. Smooth glide back to the very top
+                    await smoothScrollTo(0, 2500);
+
+                    // 4. Stay at top (hero shot ending)
+                    await delay(4000);
                 }
             """)
         except Exception as scroll_err:
-            print(f"⚠️ Scrolling error: {scroll_err}")
-            page.wait_for_timeout(60000) # Safe recording delay fallback
+            print(f"   Scrolling error: {scroll_err}")
+            page.wait_for_timeout(22000) # Safe recording delay fallback
             
         # Get path to the recorded video before closing context
         video_path = page.video.path() if page.video else None
@@ -218,7 +285,7 @@ def capture_website(url: str, output_path: str, screenshot_path: str = None):
         
         if video_path and os.path.exists(video_path):
             # Trim the first `load_duration` seconds (the blank loading phase)
-            print(f"✂️ Trimming the first {load_duration:.2f} seconds of loading frames...")
+            print(f"   Trimming the first {load_duration:.2f} seconds of loading frames...")
             cmd_trim = [
                 "ffmpeg", "-y",
                 "-ss", f"{load_duration:.2f}",
@@ -227,13 +294,15 @@ def capture_website(url: str, output_path: str, screenshot_path: str = None):
                 output_path
             ]
             subprocess.run(cmd_trim, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
-            print(f"✅ Website video scroll saved and trimmed to {output_path}")
+            print(f"   Website video scroll saved and trimmed to {output_path}")
         else:
             raise Exception("Playwright failed to record video.")
             
     # Cleanup temp directory
     if os.path.exists(temp_dir):
         shutil.rmtree(temp_dir, ignore_errors=True)
+    
+    return scraped_logo_path
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Capture website scrolling video using Playwright.")

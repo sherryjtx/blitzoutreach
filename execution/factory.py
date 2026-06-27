@@ -129,15 +129,17 @@ def process_lead(lead: dict, paths: dict, today: str, mock: bool):
     voice_path = os.path.join(paths["voice"], f"{safe_name}_voice.mp3")
     video_path = os.path.join(paths["video"], f"{safe_name}_outreach.mp4")
     gif_path = os.path.join(paths["gif"], f"{safe_name}_preview.gif")
+    logo_path = os.path.join(paths["gif"], f"{safe_name}_logo.png")
     
     # Determine website target URL
     target_url = website if (website and website.startswith("http")) else f"https://{website}" if website else "https://google.com"
     
     print(f"\nRow {row_num}: Processing '{fname} {lname}' from '{company}'...")
     
+    scraped_logo_path = None
     try:
         update_lead_video_url(video_id, "processing")
-        # Step 1: Capture Website Video Scroll
+        # Step 1: Capture Website Video Scroll + Scrape Logo
         screenshot_path = os.path.join(PROJECT_DIR, "server/static/output_screenshots", f"{video_id}.png")
         if mock:
             # Create a mock video background file
@@ -154,7 +156,7 @@ def process_lead(lead: dict, paths: dict, today: str, mock: bool):
                 f.write("mock screenshot")
             print(f"   [MOCK] Created mock video background and cover screenshot")
         else:
-            capture_website(target_url, ss_path, screenshot_path)
+            scraped_logo_path = capture_website(target_url, ss_path, screenshot_path, logo_save_path=logo_path)
             
         # Step 2: Generate Voice Greeting (ElevenLabs)
         if mock:
@@ -218,6 +220,15 @@ def process_lead(lead: dict, paths: dict, today: str, mock: bool):
             video_url = upload_to_oci(video_path, video_obj_name)
             gif_url = upload_to_oci(gif_path, gif_obj_name)
             
+        # Step 5b: Upload scraped logo to OCI if available
+        logo_url = lead.get("company_logo")  # fallback to Clearbit
+        if not mock and scraped_logo_path and os.path.exists(scraped_logo_path):
+            try:
+                logo_obj_name = f"logos/{today}/{safe_name}_logo.png"
+                logo_url = upload_to_oci(scraped_logo_path, logo_obj_name)
+            except Exception as logo_err:
+                print(f"   Warning: Logo upload failed, using Clearbit fallback: {logo_err}")
+        
         # Step 6: Register Video in Supabase database for FastAPI portal
         landing_page_url = f"https://{LANDING_PAGE_DOMAIN}/v/{video_id}"
         register_lead_in_portal(
@@ -225,13 +236,13 @@ def process_lead(lead: dict, paths: dict, today: str, mock: bool):
             name=fname,
             company=company,
             video_url=video_url,
-            logo_url=None, # Will auto-resolve via Clearbit API on page load
+            logo_url=logo_url,
             row_num=row_num,
             campaign_id=lead.get("campaign_id"),
             batch_id=lead.get("batch_id"),
             email=lead.get("email")
         )
-        print(f"   Registered video ID '{video_id}' in SQLite portal.")
+        print(f"   Registered video ID '{video_id}' in Supabase portal.")
         
         # Step 7: Update Google Sheet with Output URLs
         if mock:
