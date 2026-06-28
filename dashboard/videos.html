@@ -49,8 +49,11 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
-            opacity: 0.4;
-            filter: blur(1px);
+            transition: transform 300ms var(--ease-out-expo);
+        }
+
+        .video-card:hover .video-thumb-bg {
+            transform: scale(1.04);
         }
 
         .video-thumb-overlay {
@@ -511,14 +514,17 @@
                 }
                 const gradient = gradients[Math.abs(hash) % gradients.length];
                 
+                const posterUrl = `https://objectstorage.us-phoenix-1.oraclecloud.com/n/axv9qsbet8n5/b/blitz-outreach-videos/o/posters/${lead.video_id}.png`;
+
                 card.innerHTML = `
                     <div class="video-thumb">
-                        <div style="width:100%;height:100%;background:${gradient};"></div>
-                        <div class="video-thumb-overlay">
+                        <img src="${posterUrl}" class="video-thumb-bg" style="position:relative; z-index:1; width:100%; height:100%; object-fit:cover;" alt="" onerror="this.style.opacity='0';">
+                        <div style="position:absolute; inset:0; z-index:0; background:${gradient};"></div>
+                        <div class="video-thumb-overlay" style="z-index:2;">
                             <div class="video-play-icon"><svg viewBox="0 0 24 24"><polygon points="8,5 20,12 8,19"/></svg></div>
                         </div>
-                        <div class="video-webcam-bubble"><img src="../assets/profile_photo.png" alt=""></div>
-                        <span class="video-duration">1:10</span>
+                        <div class="video-webcam-bubble" style="z-index:3;"><img src="../assets/profile_photo.png" alt=""></div>
+                        <span class="video-duration" style="z-index:3;">1:10</span>
                     </div>
                     <div class="video-card-info">
                         <div class="video-card-name">Hey ${lead.name.split(' ')[0]} — ${cleanDomain}</div>

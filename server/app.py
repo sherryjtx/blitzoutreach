@@ -339,6 +339,26 @@ async def track_event(payload: TrackingPayload, request: Request):
         }
         supabase.table("events").insert(event_data).execute()
         logger.info(f"📊 Event '{payload.event_type}' logged for video '{payload.video_id}' (Time: {payload.time_offset}s)")
+        
+        # If a meeting was booked, update the status to Booked in Google Sheets
+        if payload.event_type in ["booked", "meeting_booked"]:
+            try:
+                lead_res = supabase.table("leads").select("row_num, campaign_id").eq("video_id", payload.video_id).execute()
+                if lead_res.data:
+                    lead_data = lead_res.data[0]
+                    row_num = lead_data.get("row_num")
+                    campaign_id = lead_data.get("campaign_id")
+                    if row_num and campaign_id:
+                        camp_res = supabase.table("campaigns").select("sheet_id, sheet_tab").eq("id", campaign_id).execute()
+                        if camp_res.data:
+                            camp_data = camp_res.data[0]
+                            sheet_id = camp_data.get("sheet_id")
+                            sheet_tab = camp_data.get("sheet_tab")
+                            from execution import sheet_sync
+                            sheet_sync.update_lead_status(row_num, "Booked", sheet_id=sheet_id, sheet_tab=sheet_tab)
+            except Exception as sheet_err:
+                logger.error(f"Failed to update lead status to Booked in Google Sheet: {sheet_err}")
+                
         return JSONResponse(content={"status": "logged"})
     except Exception as e:
         logger.error(f"Failed to log event to Supabase: {e}")
@@ -366,8 +386,27 @@ async def track_beacon(request: Request):
             "metadata": metadata
         }
         supabase.table("events").insert(event_data).execute()
-        
         logger.info(f"📊 Beacon '{event_type}' logged for video '{video_id}': {metadata}")
+        
+        # If a meeting was booked, update the status to Booked in Google Sheets
+        if event_type in ["booked", "meeting_booked"]:
+            try:
+                lead_res = supabase.table("leads").select("row_num, campaign_id").eq("video_id", video_id).execute()
+                if lead_res.data:
+                    lead_data = lead_res.data[0]
+                    row_num = lead_data.get("row_num")
+                    campaign_id = lead_data.get("campaign_id")
+                    if row_num and campaign_id:
+                        camp_res = supabase.table("campaigns").select("sheet_id, sheet_tab").eq("id", campaign_id).execute()
+                        if camp_res.data:
+                            camp_data = camp_res.data[0]
+                            sheet_id = camp_data.get("sheet_id")
+                            sheet_tab = camp_data.get("sheet_tab")
+                            from execution import sheet_sync
+                            sheet_sync.update_lead_status(row_num, "Booked", sheet_id=sheet_id, sheet_tab=sheet_tab)
+            except Exception as sheet_err:
+                logger.error(f"Failed to update lead status to Booked in Google Sheet: {sheet_err}")
+                
         return JSONResponse(content={"status": "logged"})
     except Exception as e:
         logger.error(f"Beacon logging failed: {e}")

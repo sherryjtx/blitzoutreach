@@ -138,3 +138,32 @@ def update_lead_urls(row_num: int, landing_page_url: str, gif_url: str, status_m
             else:
                 print(f"❌ [ERROR] Sheet update failed for row {row_num}: {e}")
                 return False
+
+def update_lead_status(row_num: int, status_msg: str, sheet_id: str = None, sheet_tab: str = None):
+    """
+    Updates only the status column of a lead row.
+    """
+    service = get_sheets_service()
+    spreadsheet_id = sheet_id or SHEET_ID
+    tab_name = sheet_tab or TAB_NAME
+    
+    range_name = f"{tab_name}!{col_letter(COL_STATUS)}{row_num}"
+    body = {
+        'values': [[status_msg]]
+    }
+    for attempt in range(3):
+        try:
+            service.spreadsheets().values().update(
+                spreadsheetId=spreadsheet_id,
+                range=range_name,
+                valueInputOption='USER_ENTERED',
+                body=body
+            ).execute()
+            print(f"Stamped row {row_num} status as {status_msg}.")
+            return True
+        except Exception as e:
+            if attempt < 2:
+                time.sleep(3 * (attempt + 1))
+            else:
+                print(f"❌ [ERROR] Sheet status update failed for row {row_num}: {e}")
+                return False
