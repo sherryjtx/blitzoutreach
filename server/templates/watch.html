@@ -179,9 +179,11 @@
                 <img src="/static/logo_wordmark_tight.png" alt="Sherry Automates" class="co-brand-logo-sa">
                 <span class="co-brand-x">×</span>
                 {% if company_wordmark %}
-                    <img src="{{ company_wordmark }}" alt="{{ company }}" class="co-brand-logo-company">
+                    <img src="{{ company_wordmark }}" alt="{{ company }}" class="co-brand-logo-company" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';">
+                    <span class="co-brand-text-company" style="display:none;">{{ company }}</span>
                 {% elif company_logo %}
-                    <img src="{{ company_logo }}" alt="{{ company }}" class="co-brand-logo-company">
+                    <img src="{{ company_logo }}" alt="{{ company }}" class="co-brand-logo-company" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';">
+                    <span class="co-brand-text-company" style="display:none;">{{ company }}</span>
                 {% else %}
                     <span class="co-brand-text-company">{{ company }}</span>
                 {% endif %}
@@ -200,7 +202,12 @@
                     </div>
                     {% if company_logo %}
                         <div class="sign-logo-badge badge-company" style="background-color: {{ company_badge_bg }};">
-                            <img src="{{ company_logo }}" alt="{{ company }}">
+                            <img src="{{ company_logo }}" alt="{{ company }}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                            <span class="badge-fallback-letter" style="display:none; width:100%; height:100%; align-items:center; justify-content:center; font-family:'Outfit',sans-serif; font-size:16px; font-weight:700; color:#fff; text-transform:uppercase; user-select:none;">{{ company[0] }}</span>
+                        </div>
+                    {% else %}
+                        <div class="sign-logo-badge badge-company" style="background-color: #1a1a24; display: flex; align-items: center; justify-content: center;">
+                            <span class="badge-fallback-letter" style="font-family:'Outfit',sans-serif; font-size:16px; font-weight:700; color:#fff; text-transform:uppercase; user-select:none;">{{ company[0] }}</span>
                         </div>
                     {% endif %}
                 </div>
