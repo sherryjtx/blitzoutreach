@@ -372,11 +372,25 @@
                             actionText = `watched <span class="highlight">0%</span> of your video (visited landing page)`;
                             badgeClass = 'status-viewed';
                             badgeText = 'Viewed';
-                        } else if (ev.event_type === 'progress') {
-                            const pct = Math.min(Math.round((ev.time_offset / 72.0) * 100), 100);
+                        } else if (ev.event_type.startsWith('progress_')) {
+                            const pct = ev.event_type.split('_')[1];
                             actionText = `watched <span class="highlight">${pct}%</span> of your video`;
-                            badgeClass = pct > 50 ? 'status-replied' : 'status-viewed';
-                            badgeText = pct > 75 ? 'Hot' : 'Watched';
+                            badgeClass = parseInt(pct) > 50 ? 'status-replied' : 'status-viewed';
+                            badgeText = parseInt(pct) > 75 ? 'Hot' : 'Watched';
+                        } else if (ev.event_type === 'reaction') {
+                            const emojiName = ev.metadata ? ev.metadata.emoji : '';
+                            let emoji = '👍';
+                            if (emojiName === 'heart_eyes') emoji = '😍';
+                            else if (emojiName === 'thinking') emoji = '🤔';
+                            else if (emojiName === 'fire') emoji = '🔥';
+                            actionText = `reacted with ${emoji} to your video`;
+                            badgeClass = 'status-viewed';
+                            badgeText = 'Reacted';
+                        } else if (ev.event_type === 'comment') {
+                            const text = ev.metadata ? ev.metadata.text : '';
+                            actionText = `commented: <span style="font-style: italic; color: var(--text-primary);">"${text}"</span>`;
+                            badgeClass = 'status-replied';
+                            badgeText = 'Comment';
                         } else if (ev.event_type === 'replied' || ev.event_type === 'reply') {
                             actionText = `replied to your email outreach`;
                             badgeClass = 'status-replied';

@@ -523,7 +523,8 @@ async def get_events():
                 "user_agent": ev.get("user_agent"),
                 "timestamp": ev["timestamp"],
                 "name": lead_name,
-                "company": lead_company
+                "company": lead_company,
+                "metadata": ev.get("metadata")
             })
         return results
     except Exception as e:
