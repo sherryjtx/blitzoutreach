@@ -86,6 +86,9 @@ def process_single_lead(lead, paths, today, mock):
         "sheet_tab": os.getenv("GOOGLE_SHEET_TAB")
     }
     
+    # Claim the task
+    supabase.table("leads").update({"video_url": "processing"}).eq("video_id", video_id).execute()
+    
     # Run the generation process
     success = factory.process_lead(lead_dict, paths, today, mock)
     return video_id, name, success
@@ -93,20 +96,14 @@ def process_single_lead(lead, paths, today, mock):
 def poll_and_process():
     print(f"[{datetime.datetime.now().isoformat()}] Polling Supabase for pending video generations...")
     try:
-        # Atomic work-claiming loop to safely fetch and lock leads one by one
-        pending_leads = []
-        for _ in range(MAX_WORKERS):
-            res = supabase.rpc("claim_next_lead").execute()
-            # The RPC returns a list of matching claimed rows (usually 0 or 1 row)
-            if res.data and len(res.data) > 0:
-                pending_leads.append(res.data[0])
-            else:
-                break
-                
+        # Fetch pending leads (up to MAX_WORKERS at once)
+        res = supabase.table("leads").select("*").eq("video_url", "pending").order("created_at").limit(MAX_WORKERS).execute()
+        pending_leads = res.data or []
+        
         if not pending_leads:
             return
             
-        print(f"Claimed {len(pending_leads)} pending leads to process in parallel.")
+        print(f"Found {len(pending_leads)} pending leads to process with {MAX_WORKERS} workers.")
         
         today = datetime.datetime.now().strftime("%Y-%m-%d")
         paths = get_paths(today)
