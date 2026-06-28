@@ -296,14 +296,81 @@
             }
         }
 
+        /* ── Centered Stack Layout overrides ── */
+        .hero-split {
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: center !important;
+            text-align: center !important;
+            max-width: 820px !important;
+            margin: 0 auto 64px !important;
+            width: 100% !important;
+            gap: 0 !important;
+        }
+
+        .hero-header-stack {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            margin-bottom: 24px;
+            width: 100%;
+        }
+
+        .hero-video {
+            width: 100% !important;
+            margin: 0 0 28px 0 !important;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .hero-footer-stack {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            width: 100%;
+            margin-top: 16px;
+        }
+
+        .personalized-title {
+            text-align: center !important;
+            font-size: 2.6rem !important;
+            margin-top: 16px !important;
+            line-height: 1.2 !important;
+            max-width: 25ch !important;
+        }
+
+        .personalized-subtitle {
+            text-align: center !important;
+            max-width: 65ch !important;
+            margin: 0 auto 28px !important;
+            line-height: 1.6 !important;
+            font-size: 1.05rem !important;
+        }
+
+        .chat-btn {
+            display: inline-flex !important;
+            justify-content: center !important;
+            align-items: center !important;
+            min-width: 220px !important;
+            margin: 0 auto !important;
+        }
+
+        .sign-logos-wrapper {
+            margin: 0 auto 8px !important;
+            justify-content: center !important;
+        }
+
         @media (max-width: 768px) {
-            .hero-split {
-                display: flex !important;
-                flex-direction: column-reverse !important;
-                gap: 28px !important;
+            .personalized-title {
+                font-size: 1.75rem !important;
+                max-width: 100% !important;
             }
-            .hero-text {
-                margin-top: 24px;
+            .personalized-subtitle {
+                font-size: 0.95rem !important;
+                padding: 0 12px;
             }
         }
     </style>
@@ -328,12 +395,11 @@
             </div>
         </header>
 
-        <!-- Hero Split: Left Text + Right Video -->
+        <!-- Hero Split: Centered Stack Layout -->
         <section class="hero-split">
 
-            <!-- Left Column: Greeting + CTA -->
-            <div class="hero-text">
-                <!-- Co-branding Sign Logos -->
+            <!-- 1. Overlapping logos and title greeting at the top -->
+            <div class="hero-header-stack">
                 <div class="sign-logos-wrapper">
                     <div class="sign-logo-badge badge-sa">
                         <img src="/static/logo_sa_square.png" alt="Sherry Automates">
@@ -349,25 +415,20 @@
                         </div>
                     {% endif %}
                 </div>
+                
                 {% if video_url == 'pending' or video_url == 'processing' %}
                 <h1 class="personalized-title">{{ name.split(' ')[0] }}, personalizing your video breakdown...</h1>
-                <p class="personalized-subtitle">I noticed {{ company }} might benefit from a speed-to-lead AI system. I'm stitching together a custom webcam talking head walkthrough and website capture for you. This will load automatically in a few seconds.</p>
                 {% elif video_url == 'failed' %}
                 <h1 class="personalized-title">{{ name.split(' ')[0] }}, let's connect live...</h1>
-                <p class="personalized-subtitle">I noticed {{ company }} might benefit from a speed-to-lead AI system. While your video walkthrough is compiling, feel free to book a live discovery slot below to review how we automate this.</p>
                 {% else %}
                 <h1 class="personalized-title">{{ name.split(' ')[0] }}, I've recorded you a quick video...</h1>
-                <p class="personalized-subtitle">I noticed your agency might benefit from a speed-to-lead AI system to instantly contact and qualify inbound leads. I recorded a quick video breakdown for {{ company }} showing how we automate this.</p>
                 {% endif %}
-                <a href="#booking" class="chat-btn" id="chatBtn">Lets chat {{ name.split(' ')[0] }}</a>
             </div>
 
-            <!-- Right Column: Video + Reactions + Comments -->
+            <!-- 2. Video Player in the middle -->
             <div class="hero-video">
                 <!-- Red glow behind video -->
                 <div class="video-glow"></div>
-
-                <!-- Browser-frame video player -->
                 <div class="video-browser-frame">
                     <div class="browser-header">
                         <div class="browser-dots">
@@ -448,6 +509,19 @@
                 <p class="comment-sent-msg" id="commentSentMsg">Comment sent — thank you!</p>
                 {% endif %}
             </div>
+
+            <!-- 3. Explanatory text and Let's Chat button at the bottom -->
+            <div class="hero-footer-stack">
+                {% if video_url == 'pending' or video_url == 'processing' %}
+                <p class="personalized-subtitle">I noticed {{ company }} might benefit from a speed-to-lead AI system. I'm stitching together a custom webcam talking head walkthrough and website capture for you. This will load automatically in a few seconds.</p>
+                {% elif video_url == 'failed' %}
+                <p class="personalized-subtitle">I noticed {{ company }} might benefit from a speed-to-lead AI system. While your video walkthrough is compiling, feel free to book a live discovery slot below to review how we automate this.</p>
+                {% else %}
+                <p class="personalized-subtitle">I noticed your agency might benefit from a speed-to-lead AI system to instantly contact and qualify inbound leads. I recorded a quick video breakdown for {{ company }} showing how we automate this.</p>
+                {% endif %}
+                <a href="#booking" class="chat-btn" id="chatBtn">Lets chat {{ name.split(' ')[0] }}</a>
+            </div>
+
         </section>
 
         <!-- Divider -->
