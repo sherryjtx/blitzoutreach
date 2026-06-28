@@ -75,7 +75,7 @@ def stitch_video(background_video_path: str, voice_path: str, output_path: str):
                     "[v0][a0][v1][a1]concat=n=2:v=1:a=1[outv][outa]"
                 ),
                 "-map", "[outv]", "-map", "[outa]",
-                "-c:v", "libx264", "-preset", "ultrafast", "-crf", "23",
+                "-c:v", "libx264", "-preset", "medium", "-crf", "20",
                 "-c:a", "aac", "-ar", "44100",
                 full_webcam
             ]
@@ -97,9 +97,9 @@ def stitch_video(background_video_path: str, voice_path: str, output_path: str):
                 "[bg][bub_m]overlay=30:H-h-80:shortest=1[outv]"
             ),
             "-map", "[outv]", "-map", "1:a?",
-            "-c:v", "libx264", "-crf", "30", "-pix_fmt", "yuv420p", "-preset", "fast",
+            "-c:v", "libx264", "-crf", "20", "-pix_fmt", "yuv420p", "-preset", "medium",
             "-color_range", "tv", "-colorspace", "bt709", "-color_primaries", "bt709", "-color_trc", "bt709",
-            "-c:a", "aac", "-b:a", "96k",
+            "-c:a", "aac", "-b:a", "192k",
             output_path
         ]
         subprocess.run(cmd_overlay, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)

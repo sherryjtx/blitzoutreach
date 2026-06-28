@@ -287,6 +287,16 @@ async def watch_video(video_id: str, request: Request):
                 company_logo = f"https://logo.clearbit.com/{clean_company}.com"
             company_logo_sign = company_logo
             
+        # Construct dynamic OCI poster URL
+        oci_namespace = os.getenv("OCI_NAMESPACE", "axv9qsbet8n5")
+        oci_bucket = os.getenv("OCI_BUCKET_NAME", "blitz-outreach-videos")
+        region = "us-phoenix-1"
+        
+        if video_url and video_url.startswith("file:///"):
+            poster_url = f"/static/output_screenshots/{video_id}.png"
+        else:
+            poster_url = f"https://objectstorage.{region}.oraclecloud.com/n/{oci_namespace}/b/{oci_bucket}/o/posters/{video_id}.png"
+            
         return templates.TemplateResponse(
             request=request,
             name="watch.html",
@@ -298,7 +308,8 @@ async def watch_video(video_id: str, request: Request):
                 "company_wordmark": company_logo_wordmark,
                 "company_badge_bg": company_badge_bg,
                 "video_id": video_id,
-                "calendly_url": CALENDLY_URL
+                "calendly_url": CALENDLY_URL,
+                "poster_url": poster_url
             }
         )
     except HTTPException as http_err:

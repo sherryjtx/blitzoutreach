@@ -216,9 +216,16 @@ def process_lead(lead: dict, paths: dict, today: str, mock: bool):
             # Upload to Oracle Object Storage
             video_obj_name = f"videos/{today}/{safe_name}_outreach.mp4"
             gif_obj_name = f"thumbnails/{today}/{safe_name}_preview.gif"
+            screenshot_obj_name = f"posters/{video_id}.png"
             
             video_url = upload_to_oci(video_path, video_obj_name)
             gif_url = upload_to_oci(gif_path, gif_obj_name)
+            if os.path.exists(screenshot_path):
+                try:
+                    upload_to_oci(screenshot_path, screenshot_obj_name)
+                    print(f"   Uploaded cover screenshot to OCI: {screenshot_obj_name}")
+                except Exception as ss_upload_err:
+                    print(f"   Warning: Cover screenshot upload failed: {ss_upload_err}")
             
         # Step 5b: Upload scraped logo to OCI if available
         logo_url = lead.get("company_logo")  # fallback to Clearbit
